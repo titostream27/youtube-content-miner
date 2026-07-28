@@ -73,6 +73,13 @@ function videoItemToCandidate(
     hasCaptions: item.contentDetails?.caption === undefined
       ? null
       : item.contentDetails.caption === 'true',
+    license:
+      item.status?.license === 'creativeCommon'
+        ? 'creativeCommon'
+        : item.status?.license === 'youtube'
+          ? 'youtube'
+          : null,
+    embeddable: item.status?.embeddable ?? null,
     channel: channels.get(item.snippet.channelId) ?? null,
   };
 }

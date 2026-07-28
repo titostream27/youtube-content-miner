@@ -3,6 +3,10 @@ import { AGENT_ROLES, AGENT_ROLE_DEFINITIONS } from '@/lib/ai/agents/roles';
 import { PROVIDER_CATALOG, resolveProviderRuntime } from '@/lib/ai/providers/catalog';
 import { resolveAgent } from '@/lib/ai/client';
 import { isSttConfigured } from '@/lib/transcript/stt';
+import { describeProviderChain } from '@/lib/transcript';
+import { describeTranscriptVendor } from '@/lib/settings/transcript-vendor';
+import { TRANSCRIPT_VENDORS } from '@/lib/transcript/vendors';
+import { TranscriptVendorSettings } from '@/components/transcript-vendor-settings';
 import { Card, CardHeader, KeyValue, Pill } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils/cn';
 
@@ -25,6 +29,21 @@ export default function SettingsPage() {
   }));
 
   const configuredCount = providers.filter((entry) => entry.runtime.configured).length;
+  const transcriptChain = describeProviderChain();
+  const vendorStatus = describeTranscriptVendor();
+  const vendorOptions = TRANSCRIPT_VENDORS.map((vendor) => ({
+    id: vendor.id,
+    label: vendor.label,
+    docsUrl: vendor.docsUrl,
+    verified: vendor.verified,
+    freeTierNote: vendor.freeTierNote,
+    notes: vendor.notes,
+    urlTemplate: vendor.request.urlTemplate,
+    authHeader: vendor.request.authHeader,
+    authScheme: vendor.request.authScheme,
+    timeUnit: vendor.response.timeUnit,
+    asynchronous: Boolean(vendor.response.asyncJob),
+  }));
 
   return (
     <div className="space-y-8">
@@ -140,9 +159,60 @@ export default function SettingsPage() {
       </section>
 
       <section>
+        <TranscriptVendorSettings vendors={vendorOptions} status={vendorStatus} />
+      </section>
+
+      <section>
         <Card>
           <CardHeader
-            title="Providers"
+            title="Transcript acquisition chain"
+            description="Tried in order. The first provider that returns a transcript wins."
+          />
+          <div className="px-5 pt-4">
+            <p className="max-w-3xl text-xs leading-relaxed text-slate-400">
+              Mining podcasts you do not own means YouTube&apos;s anti-bot layer is a real
+              constraint. Measured from a datacenter IP, the direct watch-page scrape receives a
+              zero-byte refusal and yt-dlp&apos;s default player clients are rejected without a
+              proof-of-origin token. A hosted transcript vendor absorbs that problem for a fraction
+              of a cent per video; a residential proxy solves it too, with more maintenance.
+            </p>
+          </div>
+          <ul className="divide-y divide-[var(--color-line)] px-5 py-4">
+            {transcriptChain.map((entry) => (
+              <li key={entry.id} className="flex flex-wrap items-center gap-3 py-2.5">
+                <span className="numeric w-6 text-xs text-slate-600">
+                  {entry.position ?? '-'}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-medium text-slate-200">{entry.label}</span>
+                  {entry.reason ? (
+                    <span className="block text-[11px] text-slate-500">{entry.reason}</span>
+                  ) : null}
+                </span>
+                <Pill
+                  className={
+                    entry.ready
+                      ? 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/20'
+                      : 'bg-slate-500/10 text-slate-400 ring-slate-500/20'
+                  }
+                >
+                  {entry.ready ? 'ready' : 'unavailable'}
+                </Pill>
+              </li>
+            ))}
+          </ul>
+          <div className="border-t border-[var(--color-line)] px-5 py-3">
+            <p className="font-mono text-[11px] text-slate-600">
+              TRANSCRIPT_PROVIDERS · TRANSCRIPT_API_URL · YTDLP_PLAYER_CLIENT · YTDLP_PROXY
+            </p>
+          </div>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <CardHeader
+            title="AI providers"
             description={`${configuredCount} of ${providers.length} reachable. Ten vendors across three wire protocols.`}
           />
           <div className="overflow-x-auto">
