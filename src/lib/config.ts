@@ -1,0 +1,242 @@
+import { DEFAULT_EPISODE_SCORE_THRESHOLD } from '@/lib/scoring/episode-opportunity';
+import { LIBRARY_MIN_SCORE } from '@/lib/domain/thresholds';
+import {
+  AGENT_ROLES,
+  AGENT_ROLE_DEFINITIONS,
+  type AgentRole,
+} from '@/lib/ai/agents/roles';
+import {
+  availableProviders,
+  isProviderId,
+  resolveProviderRuntime,
+  type ProviderId,
+} from '@/lib/ai/providers/catalog';
+
+/**
+ * Runtime configuration, resolved once from the environment.
+ *
+ * A deliberate design goal: the app must be fully runnable with an empty
+ * `.env`. Without a YouTube key it serves a deterministic fixture catalogue,
+ * and without any AI key it scores with the heuristic engine. Nothing throws at
+ * import time, so a reviewer can clone, `npm run dev`, and watch the whole
+ * pipeline run before signing up for anything.
+ */
+
+function readInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function readBool(name: string, fallback = false): boolean {
+  const raw = process.env[name]?.trim().toLowerCase();
+  if (!raw) return fallback;
+  return raw === '1' || raw === 'true' || raw === 'yes';
+}
+
+function readString(name: string): string | null {
+  const raw = process.env[name]?.trim();
+  return raw && raw.length > 0 ? raw : null;
+}
+
+/* -------------------------------------------------------------------------- */
+/* AI provider + agent resolution                                             */
+/* -------------------------------------------------------------------------- */
+
+export interface AgentAssignment {
+  role: AgentRole;
+  /** `null` means no usable provider, so this role falls back to heuristics. */
+  providerId: ProviderId | null;
+  model: string | null;
+  temperature: number;
+  maxOutputTokens: number;
+}
+
+/**
+ * The global default provider.
+ *
+ * `AI_PROVIDER=heuristic` (or `none`) forces the deterministic engine, which is
+ * useful for reproducible scoring runs and for CI.
+ */
+function resolveDefaultProvider(): ProviderId | null {
+  const explicit = readString('AI_PROVIDER')?.toLowerCase();
+
+  if (explicit === 'heuristic' || explicit === 'none') return null;
+
+  if (explicit && isProviderId(explicit)) {
+    const runtime = resolveProviderRuntime(explicit);
+    // An explicitly requested provider with no key is a configuration mistake,
+    // not a reason to silently use a different vendor.
+    return runtime.configured ? explicit : null;
+  }
+
+  // Auto-detect: first configured provider in catalogue order.
+  return availableProviders()[0]?.definition.id ?? null;
+}
+
+const defaultProvider = resolveDefaultProvider();
+
+/** Per-role overrides, falling back to the global default. */
+function resolveAgentAssignments(): Record<AgentRole, AgentAssignment> {
+  const assignments = {} as Record<AgentRole, AgentAssignment>;
+
+  for (const role of AGENT_ROLES) {
+    const definition = AGENT_ROLE_DEFINITIONS[role];
+    const requested = readString(definition.providerEnv)?.toLowerCase();
+
+    let providerId: ProviderId | null = defaultProvider;
+
+    if (requested === 'heuristic' || requested === 'none') {
+      providerId = null;
+    } else if (requested && isProviderId(requested)) {
+      providerId = resolveProviderRuntime(requested).configured ? requested : null;
+    }
+
+    const model =
+      readString(definition.modelEnv) ??
+      (providerId ? resolveProviderRuntime(providerId).defaultModel : null);
+
+    assignments[role] = {
+      role,
+      providerId,
+      model,
+      temperature: Number(readString(`${definition.providerEnv}_TEMPERATURE`) ?? definition.temperature),
+      maxOutputTokens: definition.maxOutputTokens,
+    };
+  }
+
+  return assignments;
+}
+
+export const config = {
+  youtube: {
+    apiKey: readString('YOUTUBE_API_KEY'),
+    /** Serve fixture data instead of calling the API. */
+    demoMode: readBool('DEMO_MODE') || !readString('YOUTUBE_API_KEY'),
+    /** Preferred caption languages, in order. */
+    transcriptLanguages: (readString('TRANSCRIPT_LANGUAGES') ?? 'en,en-US,en-GB')
+      .split(',')
+      .map((language) => language.trim())
+      .filter(Boolean),
+  },
+
+  ai: {
+    /** Global default; individual agents may override it. */
+    defaultProvider,
+    agents: resolveAgentAssignments(),
+    /** Segments scored per LLM request. */
+    batchSize: readInt('AI_BATCH_SIZE', 6),
+    /** Concurrent in-flight requests per episode. */
+    concurrency: readInt('AI_CONCURRENCY', 3),
+    requestTimeoutMs: readInt('AI_TIMEOUT_MS', 90_000),
+    maxRetries: readInt('AI_MAX_RETRIES', 2),
+    /**
+     * Let API callers choose the provider per request. Off by default: in a
+     * hosted deployment the operator, not the caller, should decide where
+     * transcripts are sent.
+     */
+    allowRequestOverrides: readBool('AI_ALLOW_REQUEST_OVERRIDES', true),
+  },
+
+  pipeline: {
+    /** Episodes pulled from discovery per run. */
+    maxEpisodesPerRun: readInt('MAX_EPISODES_PER_RUN', 12),
+    /** Episodes actually transcribed and scored per run - the real cost cap. */
+    maxEpisodesAnalysedPerRun: readInt('MAX_EPISODES_ANALYSED_PER_RUN', 4),
+    /**
+     * Cost ceiling per episode. Only the highest-salience segments are scored;
+     * the rest are discarded before any model sees them.
+     */
+    maxScoredSegmentsPerEpisode: readInt('MAX_SCORED_SEGMENTS_PER_EPISODE', 40),
+    episodeScoreThreshold: readInt('EPISODE_SCORE_THRESHOLD', DEFAULT_EPISODE_SCORE_THRESHOLD),
+    clipScoreThreshold: readInt('CLIP_SCORE_THRESHOLD', LIBRARY_MIN_SCORE),
+    segment: {
+      minDurationSec: readInt('SEGMENT_MIN_SEC', 15),
+      maxDurationSec: readInt('SEGMENT_MAX_SEC', 90),
+      targetDurationSec: readInt('SEGMENT_TARGET_SEC', 45),
+    },
+  },
+
+  stt: {
+    /** Speech-to-text fallback for episodes with no caption track. */
+    provider: readString('STT_PROVIDER'),
+    apiKey: readString('STT_API_KEY'),
+    model: readString('STT_MODEL') ?? 'whisper-1',
+  },
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Introspection helpers                                                      */
+/* -------------------------------------------------------------------------- */
+
+export function agentAssignment(role: AgentRole): AgentAssignment {
+  return config.ai.agents[role];
+}
+
+/** True when at least one agent has a usable provider. */
+export function isAiEnabled(): boolean {
+  return AGENT_ROLES.some((role) => config.ai.agents[role].providerId !== null);
+}
+
+/** True when the agent that actually determines quality has a provider. */
+export function isClipScoringAgentEnabled(): boolean {
+  return config.ai.agents.clip_scoring.providerId !== null;
+}
+
+export interface ConfigSummary {
+  youtube: 'live' | 'demo';
+  scoring: 'llm' | 'heuristic';
+  /** Short label for the clip scoring agent, e.g. "Anthropic / claude-sonnet-4-5". */
+  llmModelLabel: string;
+  defaultProvider: ProviderId | null;
+  configuredProviders: { id: ProviderId; label: string; model: string }[];
+  agents: {
+    role: AgentRole;
+    label: string;
+    purpose: string;
+    provider: ProviderId | null;
+    providerLabel: string;
+    model: string | null;
+    active: boolean;
+  }[];
+  stt: 'configured' | 'unavailable';
+}
+
+function clipScoringLabel(): string {
+  const assignment = config.ai.agents.clip_scoring;
+  if (!assignment.providerId) return 'Heuristic scoring';
+
+  const label = resolveProviderRuntime(assignment.providerId).definition.label;
+  return assignment.model ? `${label} / ${assignment.model}` : label;
+}
+
+export function describeConfig(): ConfigSummary {
+  return {
+    youtube: config.youtube.demoMode ? 'demo' : 'live',
+    scoring: isClipScoringAgentEnabled() ? 'llm' : 'heuristic',
+    llmModelLabel: clipScoringLabel(),
+    defaultProvider,
+    configuredProviders: availableProviders().map((runtime) => ({
+      id: runtime.definition.id,
+      label: runtime.definition.label,
+      model: runtime.defaultModel,
+    })),
+    agents: AGENT_ROLES.map((role) => {
+      const assignment = config.ai.agents[role];
+      const definition = AGENT_ROLE_DEFINITIONS[role];
+      return {
+        role,
+        label: definition.label,
+        purpose: definition.purpose,
+        provider: assignment.providerId,
+        providerLabel: assignment.providerId
+          ? resolveProviderRuntime(assignment.providerId).definition.label
+          : 'Heuristic engine',
+        model: assignment.model,
+        active: assignment.providerId !== null,
+      };
+    }),
+    stt: config.stt.provider && config.stt.apiKey ? 'configured' : 'unavailable',
+  };
+}
