@@ -56,6 +56,7 @@ export const clipQuerySchema = z.object({
   status: z.union([z.string(), z.array(z.string())]).optional(),
   videoId: z.string().optional(),
   channelId: z.string().optional(),
+  license: z.union([z.string(), z.array(z.string())]).optional(),
   runId: numericString.optional(),
   minScore: numericString.min(0).max(100).optional(),
   minConfidence: numericString.min(0).max(100).optional(),
