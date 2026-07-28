@@ -37,8 +37,22 @@ export interface EpisodeCandidate {
   tags: string[];
   /** `null` when the caption track list could not be inspected. */
   hasCaptions: boolean | null;
+  /**
+   * Reuse rights, straight from the Data API.
+   *
+   * `creativeCommon` means the owner licensed the video under CC BY, so clips
+   * may be reused with attribution. `youtube` is the standard licence and
+   * requires the owner's permission. This is the single most useful signal when
+   * mining channels you do not own, because it separates the material you can
+   * act on from the material that needs a conversation first.
+   */
+  license: VideoLicense;
+  /** False when the owner disabled embedding - a weak signal of reuse posture. */
+  embeddable: boolean | null;
   channel: ChannelSummary | null;
 }
+
+export type VideoLicense = 'youtube' | 'creativeCommon' | null;
 
 /* -------------------------------------------------------------------------- */
 /* Step 2 - Episode Opportunity Score                                         */

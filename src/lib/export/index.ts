@@ -60,6 +60,7 @@ const CSV_COLUMNS = [
   'Confidence %',
   'Priority',
   'Category',
+  'Licence',
   'Start',
   'End',
   'Duration (s)',
@@ -87,6 +88,7 @@ export function clipsToCsv(clips: readonly ClipRecord[]): string {
         clip.confidence,
         tierLabel(clip.tier),
         clip.category,
+        clip.license ?? 'unknown',
         formatTimecode(clip.startSec),
         formatTimecode(clip.endSec),
         Math.round(clip.durationSec),
@@ -145,6 +147,7 @@ export function clipsToTxt(clips: readonly ClipRecord[]): string {
       );
       lines.push(`  TITLE      ${clip.title}`);
       lines.push(`  CATEGORY   ${clip.category}`);
+      lines.push(`  LICENCE    ${clip.license ?? 'unknown'}`);
       lines.push(`  LINK       ${youtubeTimestampUrl(clip.videoId, clip.startSec)}`);
       lines.push(`  WHY        ${clip.whyThisWorks.join(' / ')}`);
       if (clip.suggestedHook) lines.push(`  HOOK       ${clip.suggestedHook}`);

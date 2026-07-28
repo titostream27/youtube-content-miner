@@ -14,6 +14,7 @@ import { OpportunityScore } from '@/components/tier-badge';
 import { ClipCard } from '@/components/clip-card';
 import { ExportLinks } from '@/components/export-links';
 import { AnalyzeButton } from '@/components/analyze-button';
+import { LicenseBadge } from '@/components/license-badge';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,8 @@ export default async function EpisodePage({
           {compactNumber(episode.viewCount)} views · {shortDate(episode.publishedAt)}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
+          <LicenseBadge license={episode.license} />
+          <span className="text-slate-700">·</span>
           <a
             href={`https://www.youtube.com/watch?v=${episode.videoId}`}
             target="_blank"
