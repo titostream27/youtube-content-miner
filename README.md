@@ -112,10 +112,28 @@ Two things follow from this.
 
 | Provider | When it makes sense |
 |---|---|
-| `hosted` | Cloud deployments. A vendor maintains the proxy pool and tracks token changes for a fraction of a cent per video. Vendor-neutral adapter — switching is a config change |
+| `hosted` | Cloud deployments. A vendor maintains the proxy pool and tracks token changes for a fraction of a cent per video. **Choose the vendor and paste its key in the app** under *AI Agents → Transcript vendor* |
 | `ytdlp` | Free, subtitle-only (`--skip-download`, never audio). Reliable at volume with a residential proxy or cookies |
 | `captions` | Zero-config fallback. Fine locally, usually refused from a datacenter |
 | `stt` | Last resort. See below |
+
+### Choosing a vendor
+
+Vendor setup is in the app, not the env file: pick a vendor, paste the key, and run the connection test. Presets carry the request contract, the time unit, and whether long videos come back asynchronously — the three details that otherwise produce a transcript that looks fine and is quietly unusable.
+
+The connection test is the point. It checks the things that make a vendor unusable *here*, each of which can return HTTP 200 and still be broken:
+
+| Check | Why it matters |
+|---|---|
+| Per-segment timestamps | Without them there are no clip in/out points at all |
+| Time unit | Milliseconds read as seconds misplaces every timecode. Detected from words-per-second, which needs no second API call |
+| Punctuation | Segmentation cuts on sentence boundaries; low punctuation weakens every downstream score |
+| Segment granularity | One giant blob is unusable; caption-like granularity is ideal |
+| Coverage | A vendor that truncates long videos looks like "this episode had few moments" |
+
+Test against a real two-hour episode, not a short clip — truncation and async handling only appear on long videos.
+
+Keys chosen in the app are stored in the local SQLite database as plaintext and are never returned by any API or rendered on any page. That is appropriate for a single-operator install; for a shared deployment set `TRANSCRIPT_API_URL` in the environment, which takes precedence and locks the UI.
 
 Every provider reports *why* it failed and whether the failure was enforcement or genuine absence — because "this video has no captions" and "we were blocked" need completely different fixes. To see the chain run against a real video:
 
