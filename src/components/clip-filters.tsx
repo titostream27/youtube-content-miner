@@ -28,6 +28,7 @@ export function ClipFilters() {
 
   const activeTiers = new Set((params.get('tier') ?? '').split(',').filter(Boolean));
   const activeCategories = new Set((params.get('category') ?? '').split(',').filter(Boolean));
+  const activeLicenses = new Set((params.get('license') ?? '').split(',').filter(Boolean));
   const sort = params.get('sort') ?? 'score';
   const [search, setSearch] = useState(params.get('search') ?? '');
 
@@ -36,7 +37,7 @@ export function ClipFilters() {
     router.push(query.length > 0 ? `/clips?${query}` : '/clips');
   }
 
-  function toggleMulti(key: 'tier' | 'category', value: string): void {
+  function toggleMulti(key: 'tier' | 'category' | 'license', value: string): void {
     const next = new URLSearchParams(params.toString());
     const current = new Set((next.get(key) ?? '').split(',').filter(Boolean));
 
@@ -102,6 +103,36 @@ export function ClipFilters() {
               )}
             >
               {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          Reuse rights
+        </p>
+        <p className="mt-1 text-[11px] leading-snug text-slate-600">
+          CC BY videos are licensed for reuse with attribution. Standard licence needs the
+          owner&apos;s permission before publishing.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {[
+            { value: 'creativeCommon', label: 'CC BY · reusable', active: 'bg-emerald-500/15 text-emerald-200 ring-emerald-500/30' },
+            { value: 'youtube', label: 'Standard licence', active: 'bg-amber-500/15 text-amber-200 ring-amber-500/30' },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => toggleMulti('license', option.value)}
+              className={cn(
+                'rounded-md px-2 py-0.5 text-[11px] ring-1 ring-inset transition-colors',
+                activeLicenses.has(option.value)
+                  ? option.active
+                  : 'bg-slate-500/5 text-slate-400 ring-slate-500/20 hover:bg-slate-500/15 hover:text-slate-200',
+              )}
+            >
+              {option.label}
             </button>
           ))}
         </div>

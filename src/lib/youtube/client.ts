@@ -143,6 +143,12 @@ export interface VideoItem {
     likeCount?: string;
     commentCount?: string;
   };
+  /** Reuse rights. Requested via the `status` part, which costs no extra quota. */
+  status?: {
+    license?: string;
+    embeddable?: boolean;
+    privacyStatus?: string;
+  };
 }
 
 export interface ChannelItem {
@@ -242,7 +248,9 @@ export async function listVideos(videoIds: string[]): Promise<VideoItem[]> {
   const results: VideoItem[] = [];
   for (const batch of batches) {
     const response = await request<ListResponse<VideoItem>>('videos', {
-      part: 'snippet,contentDetails,statistics',
+      // `status` carries the licence and embeddable flags. Adding parts to a
+      // videos.list call does not increase its 1-unit quota cost.
+      part: 'snippet,contentDetails,statistics,status',
       id: batch.join(','),
       maxResults: 50,
     });

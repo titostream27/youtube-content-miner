@@ -13,6 +13,12 @@ import {
 } from '@/lib/ai/providers/catalog';
 
 /**
+ * Declared locally rather than imported from `lib/transcript/providers` to keep
+ * config free of dependencies on the modules that read it.
+ */
+type TranscriptProviderId = 'hosted' | 'ytdlp' | 'captions' | 'stt';
+
+/**
  * Runtime configuration, resolved once from the environment.
  *
  * A deliberate design goal: the app must be fully runnable with an empty
@@ -155,6 +161,66 @@ export const config = {
       minDurationSec: readInt('SEGMENT_MIN_SEC', 15),
       maxDurationSec: readInt('SEGMENT_MAX_SEC', 90),
       targetDurationSec: readInt('SEGMENT_TARGET_SEC', 45),
+    },
+  },
+
+  /**
+   * PRD Step 3 - transcript acquisition.
+   *
+   * Mining third-party podcasts means YouTube's anti-bot layer is a first-class
+   * engineering constraint, not an edge case. Measured from a datacenter IP the
+   * direct scrape is refused outright, so the acquisition method has to be
+   * deployment-specific: hence an ordered, pluggable chain rather than one path.
+   */
+  transcript: {
+    order: (readString('TRANSCRIPT_PROVIDERS') ?? 'hosted,ytdlp,captions,stt')
+      .split(',')
+      .map((entry) => entry.trim().toLowerCase())
+      .filter((entry): entry is TranscriptProviderId =>
+        (['hosted', 'ytdlp', 'captions', 'stt'] as const).includes(entry as TranscriptProviderId),
+      ),
+
+    /** Vendor-neutral hosted transcript API. */
+    hosted: {
+      /** Supports a `{videoId}` placeholder, otherwise the id is added as a query param. */
+      url: readString('TRANSCRIPT_API_URL'),
+      apiKey: readString('TRANSCRIPT_API_KEY'),
+      authHeader: readString('TRANSCRIPT_API_AUTH_HEADER') ?? 'x-api-key',
+      /** e.g. `Bearer`. Empty means the key is sent raw. */
+      authScheme: readString('TRANSCRIPT_API_AUTH_SCHEME'),
+      videoIdParam: readString('TRANSCRIPT_API_VIDEO_PARAM') ?? 'videoId',
+      /**
+       * Declared rather than inferred. Several vendors report offsets in
+       * milliseconds, and guessing from magnitude fails precisely where it
+       * matters: an offset of 5000 is 5 seconds in ms, but a magnitude heuristic
+       * reads it as 5000 seconds and misplaces every timecode in the first
+       * hundred seconds of the episode.
+       */
+      timeUnit: (readString('TRANSCRIPT_API_TIME_UNIT') === 'ms' ? 'ms' : 's') as 'ms' | 's',
+      timeoutMs: readInt('TRANSCRIPT_API_TIMEOUT_MS', 30_000),
+      /** Poll URL for asynchronous jobs; `{jobId}` is substituted. */
+      pollUrlTemplate: readString('TRANSCRIPT_API_JOB_URL'),
+      /** Ceiling for polling an asynchronous transcript job. */
+      jobTimeoutMs: readInt('TRANSCRIPT_API_JOB_TIMEOUT_MS', 180_000),
+    },
+
+    ytdlp: {
+      enabled: readBool('YTDLP_ENABLED', true),
+      binary: readString('YTDLP_BINARY') ?? 'yt-dlp',
+      /**
+       * Default player clients are refused without a proof-of-origin token.
+       * `android` was measured to return caption files from a datacenter IP
+       * without one. YouTube changes this, so it stays configurable.
+       */
+      playerClient: readString('YTDLP_PLAYER_CLIENT') ?? 'android',
+      proxy: readString('YTDLP_PROXY'),
+      cookiesFile: readString('YTDLP_COOKIES_FILE'),
+      cookiesFromBrowser: readString('YTDLP_COOKIES_FROM_BROWSER'),
+      extraArgs: (readString('YTDLP_EXTRA_ARGS') ?? '')
+        .split(' ')
+        .map((arg) => arg.trim())
+        .filter(Boolean),
+      timeoutMs: readInt('YTDLP_TIMEOUT_MS', 60_000),
     },
   },
 

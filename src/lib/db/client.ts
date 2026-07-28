@@ -47,8 +47,37 @@ function createDatabase(): Database.Database {
   db.pragma('busy_timeout = 5000');
 
   db.exec(SCHEMA_SQL);
+  applyColumnMigrations(db);
 
   return db;
+}
+
+/**
+ * Additive column migrations.
+ *
+ * `SCHEMA_SQL` uses `CREATE TABLE IF NOT EXISTS`, which means a new column in
+ * that DDL is silently ignored on a database that already exists - the schema
+ * would only be correct for fresh installs. SQLite has no
+ * `ADD COLUMN IF NOT EXISTS`, so each column is checked against `table_info`
+ * first.
+ *
+ * Additive only, by design. Anything that rewrites or drops data belongs in a
+ * real versioned migration, not here.
+ */
+function applyColumnMigrations(db: Database.Database): void {
+  const columns: { table: string; column: string; definition: string }[] = [
+    // Reuse rights. Mining third-party podcasts makes this operationally
+    // critical: `creativeCommon` videos are licensed for reuse with
+    // attribution, everything else needs the owner's permission.
+    { table: 'episodes', column: 'license', definition: 'TEXT' },
+    { table: 'episodes', column: 'embeddable', definition: 'INTEGER' },
+  ];
+
+  for (const { table, column, definition } of columns) {
+    const existing = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (existing.some((row) => row.name === column)) continue;
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
 }
 
 export function getDb(): Database.Database {
