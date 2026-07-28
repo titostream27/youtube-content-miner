@@ -3,8 +3,11 @@
 Everything needed to run this on a self-hosted box, for a single operator.
 Written to be executed top to bottom.
 
-**Target shape:** one Docker container, one persistent volume, behind an existing
-reverse proxy. No external database server, no queue, no object storage.
+**Target shape:** one Docker container on the AelfLab homelab (Windows 11), one
+persistent volume, reached through the existing Cloudflare Tunnel. No external
+database server, no queue, no object storage.
+
+Integrated into AelfLab Hub as a launcher entry — see section 9.
 
 ---
 
@@ -17,9 +20,11 @@ reverse proxy. No external database server, no queue, no object storage.
 | CPU | 2 cores | Scoring is I/O-bound, waiting on APIs |
 | RAM | 1 GB for the container | A run holds one transcript plus scoring batches in memory. Compose caps it at 1 GB |
 | Disk | 3 GB + growth | Image is ~900 MB (measured). Data grows slowly: a 3-hour transcript is ~1 MB, clips are rows |
-| Docker | Engine 24+ with Compose v2 | `docker compose version` |
+| OS | Windows 11 (the AelfLab host) | Commands below use PowerShell |
+| Docker | Docker Desktop with WSL2 backend | `docker compose version` |
+| Free port | **8083** | Follows 8081 Hub / 8082 redirect. **Not 3000** — Open WebUI owns it |
 | Outbound HTTPS | required | `googleapis.com`, `youtube.com`, plus whichever AI provider you use |
-| Reverse proxy | recommended | Anything that already terminates TLS on your homelab |
+| Cloudflare Tunnel | already running | Route `miner.aelflab.com` → 8083 |
 
 **No database server is needed.** Storage is SQLite — a single file on a mounted
 volume. Given a single operator and a write pattern of one pipeline run at a
@@ -31,7 +36,7 @@ scale.
 ### Verified on this image
 
 The runbook below was executed against a real build, not written from intent.
-Confirmed working: container start, Basic auth enforcement (401 without
+Confirmed working: container start, the optional Basic auth layer (401 without
 credentials, including on the vendor-key endpoint), `/api/health`, all five pages,
 `db:seed` and `npm run pipeline` from inside the container, the backup script
 including its integrity check, data surviving a container restart on the volume,
@@ -65,12 +70,12 @@ subscription entirely.
 
 ## 2. Deploy
 
-```bash
-# On the homelab host
-git clone https://github.com/titostream27/youtube-content-miner.git /srv/content-miner
-cd /srv/content-miner
+```powershell
+# On the AelfLab host. Kept alongside the other Hermes workspace projects.
+git clone https://github.com/titostream27/youtube-content-miner.git D:\homelab\hermes-workspace\content-miner
+cd D:\homelab\hermes-workspace\content-miner
 
-cp .env.example .env
+Copy-Item .env.example .env
 # Edit .env. Everything is optional; start with YOUTUBE_API_KEY and one AI key.
 
 docker compose up -d --build
@@ -79,8 +84,8 @@ docker compose logs -f app        # ctrl-c once you see the ready line
 
 Verify:
 
-```bash
-curl -s localhost:3000/api/health | head -c 400
+```powershell
+curl.exe -s http://127.0.0.1:8083/api/health
 ```
 
 Expected: `"status":"ok"`, `"database":"connected"`, and a `transcriptProviders`
@@ -88,58 +93,75 @@ array showing which providers are ready.
 
 Populate something to look at:
 
-```bash
+```powershell
 docker compose exec app npm run db:seed
 ```
 
 That runs the real pipeline across eight topics. With no keys it uses the demo
 catalogue — useful for confirming the whole chain works before spending anything.
 
+The Hub monitoring row will show `N clips (demo)` once this succeeds. The
+`(demo)` suffix disappears when `YOUTUBE_API_KEY` is set.
+
 ---
 
 ## 3. Access control
 
-**The application has no login of its own.** Anything that can reach port 3000
-can trigger runs that spend your API credits, and can write a transcript vendor
-API key. Compose therefore binds to `127.0.0.1:3000`, so only this host can reach
-it.
+The AelfLab convention is Cloudflare Access in front of the tunnel, with no
+authentication at the application layer — the same as Hub, finance and pdf. This
+follows that.
 
-Pick one:
+### Route the hostname
 
-### Option A — private network only (simplest, recommended)
-
-Expose it over Tailscale/WireGuard and never publish it publicly. Nothing else to
-configure.
-
-### Option B — reverse proxy with auth
-
-Standard for a homelab already running Caddy, Traefik or nginx. Example for
-Caddy:
-
-```caddyfile
-miner.aelflab.com {
-    basicauth {
-        # generate with: docker run --rm caddy caddy hash-password
-        operator $2a$14$...hash...
-    }
-    reverse_proxy 127.0.0.1:3000
-}
+```powershell
+& "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel route dns <tunnel-id> miner.aelflab.com
 ```
 
-### Option C — application-level Basic auth (defence in depth)
+Add the ingress rule to `C:\Users\Home\.cloudflared\config.yml`:
 
-Independent of the proxy, so a misconfigured proxy rule is not the only barrier.
-Since `aelflab.com` resolves publicly, this is worth enabling **in addition to**
-A or B:
+```yaml
+  - hostname: miner.aelflab.com
+    service: http://127.0.0.1:8083
+```
+
+Then copy the user config to the service config and restart cloudflared, as with
+any tunnel change on this host.
+
+### Confirm the Access policy before exposing it
+
+**Do this before the hostname is reachable, not after.** `AGENTS.md` already
+records that `finance.aelflab.com` and `pdf.aelflab.com` are used by applications
+but were not confirmed to be covered by a tunnel route or an Access policy. The
+same gap here is worse, because this app has endpoints that are not merely
+readable:
+
+| Endpoint | Consequence if reachable without auth |
+|---|---|
+| `PUT /api/settings/transcript` | Writes a transcript vendor API key |
+| `POST /api/runs` | Spends AI credits and YouTube quota |
+| `POST /api/episodes/:id/analyze` | Spends AI credits |
+
+Verify with `cloudflared tunnel route dns` and the Access policy list for
+`miner.aelflab.com` specifically.
+
+### Interim layer while Access is unconfirmed
+
+The app ships optional HTTP Basic auth, inert unless both variables are set:
 
 ```bash
-# in .env
 APP_BASIC_AUTH_USER=operator
 APP_BASIC_AUTH_PASSWORD=<long random string>
 ```
 
-Inert unless both are set. `/api/health` stays open so the container healthcheck
-keeps working; it exposes only provider names and library counts.
+This is **not** the preferred mechanism here and not a replacement for Access —
+it exists so that a hostname which turns out to be unprotected does not leave the
+vendor-key endpoint open. Leave it off once the Access policy is confirmed, or
+keep it as a second layer. `/api/health` stays open either way so the Hub
+monitoring probe keeps working; it exposes provider names and library counts, no
+secrets.
+
+Compose binds to `127.0.0.1:8083`, so nothing reaches the app except through the
+tunnel on this host.
 
 ---
 
@@ -190,30 +212,44 @@ docker compose up -d --build
 
 ## 5. Scheduled discovery
 
-The PRD's *continuous discovery* milestone: cron fills the dashboard before you
+The PRD's *continuous discovery* milestone: the dashboard fills itself before you
 open it.
 
-```cron
-# Topic sweeps, staggered so quota and tokens are spread across the morning
-15 6 * * *  cd /srv/content-miner && docker compose exec -T app npm run pipeline -- --topic "artificial intelligence" >> /var/log/content-miner.log 2>&1
-45 6 * * *  cd /srv/content-miner && docker compose exec -T app npm run pipeline -- --topic "startup" >> /var/log/content-miner.log 2>&1
+This host uses Windows Scheduled Tasks, following the existing `AelfLab_Hub` and
+`AelfLab_Redirect` pattern — not cron.
+
+Create `D:\homelab\hermes-workspace\content-miner\run-topic.bat`:
+
+```bat
+@echo off
+cd /d D:\homelab\hermes-workspace\content-miner
+docker compose exec -T app npm run pipeline -- --topic %1 >> D:\homelab\logs\content-miner.log 2>&1
+```
+
+Register the tasks:
+
+```powershell
+$dir = "D:\homelab\hermes-workspace\content-miner"
+
+# Topic sweeps, staggered so quota and tokens spread across the morning
+schtasks /create /tn "AelfLab_Miner_AI"      /tr "$dir\run-topic.bat `"artificial intelligence`"" /sc daily /st 06:15 /f
+schtasks /create /tn "AelfLab_Miner_Startup" /tr "$dir\run-topic.bat `"startup`""                 /sc daily /st 06:45 /f
 
 # New episodes from tracked channels
-15 7 * * *  cd /srv/content-miner && docker compose exec -T app npm run pipeline -- --mode tracked_channels >> /var/log/content-miner.log 2>&1
+schtasks /create /tn "AelfLab_Miner_Tracked" /tr "cmd /c cd /d $dir && docker compose exec -T app npm run pipeline -- --mode tracked_channels" /sc daily /st 07:15 /f
 
 # Nightly backup
-30 3 * * *  cd /srv/content-miner && docker compose exec -T app scripts/backup-db.sh /data/backups >> /var/log/content-miner-backup.log 2>&1
+schtasks /create /tn "AelfLab_Miner_Backup"  /tr "cmd /c cd /d $dir && docker compose exec -T app scripts/backup-db.sh /data/backups" /sc daily /st 03:30 /f
 ```
 
 Use the CLI rather than `POST /api/runs` for scheduled work. Runs are synchronous
-and a long one can exceed the HTTP route's 300-second ceiling; the CLI has no
-such limit.
+and a long one can exceed the HTTP route's 300-second ceiling; the CLI has no such
+limit.
 
-**Spend control.** Each run analyses at most
-`MAX_EPISODES_ANALYSED_PER_RUN` (default 4) episodes and scores at most
-`MAX_SCORED_SEGMENTS_PER_EPISODE` (default 40) moments. Four cron entries per day
-is therefore a bounded, predictable cost. Raise the caps deliberately, not by
-adding cron lines.
+**Spend control.** Each run analyses at most `MAX_EPISODES_ANALYSED_PER_RUN`
+(default 4) episodes and scores at most `MAX_SCORED_SEGMENTS_PER_EPISODE`
+(default 40) moments. Four scheduled runs a day is therefore a bounded,
+predictable cost. Raise the caps deliberately rather than by adding tasks.
 
 ---
 
@@ -309,3 +345,36 @@ Stated plainly so nothing is a surprise later:
   blindly, mine 30-50 clips, judge them yourself, and compare. If the
   correlation is weak, the weights in `src/lib/scoring/weights.ts` need tuning —
   and it is much cheaper to learn that now.
+
+
+---
+
+## 9. AelfLab Hub integration
+
+The Hub is a launcher and monitoring dashboard, so this app is registered there
+rather than absorbed into it. The Hub changes live in the `aelflab-hub` repo.
+
+**Why not mount it inside the Hub's FastAPI process**, the way `finance` and `pdf`
+are. Those are Python routers sharing one process and one SQLite file. This is a
+Next.js application with its own database and its own runtime; there is no router
+to include. Making the Hub reverse-proxy it instead would mean owning asset
+paths and streaming behaviour for no benefit, when a tunnel hostname already does
+that correctly.
+
+What the integration consists of:
+
+| Piece | Where |
+|---|---|
+| Launcher tile → `miner.aelflab.com` | `index.html`, `apps` array |
+| Monitoring row showing clip count | `index.html`, `renderMonitor` |
+| Health probe → `GET 127.0.0.1:8083/api/health` | `backend/main.py`, `miner_health()` |
+| `/miner` → 307 redirect to the subdomain | `backend/main.py` |
+| Address override | `MINER_URL` env var on the Hub |
+
+The probe reports `N clips`, appends `(demo)` when `YOUTUBE_API_KEY` is unset, and
+returns `Offline` on any failure. It cannot raise: a stopped container must not
+break the Hub's `/api/status`, which the whole dashboard depends on.
+
+`(demo)` in the Hub is the fastest way to catch the most likely misconfiguration —
+a missing YouTube key degrades to a synthetic catalogue rather than failing, which
+is convenient during evaluation and misleading afterwards.

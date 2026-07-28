@@ -22,7 +22,7 @@ Only the last step is craft. This tool deletes the middle three and outputs a ra
 
 ---
 
-**Self-hosting?** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) is a complete homelab runbook: prerequisites, Docker, access control, scheduled discovery, and backups.
+**Self-hosting?** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) is a complete homelab runbook: prerequisites, Docker, Cloudflare Access, scheduled discovery, backups, and AelfLab Hub integration.
 
 ## Quick start
 

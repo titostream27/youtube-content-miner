@@ -4,10 +4,9 @@
 #   cp .env.example .env      # fill in what you have; everything is optional
 #   docker compose up -d --build
 #
-# The app is intentionally not published on a public port here. Put it behind
-# whatever already terminates TLS on your homelab and require authentication
-# there - see docs/DEPLOYMENT.md. The application itself has no login, so
-# anything that can reach the port can spend your API credits.
+# Not published on a public port. Reached through the Cloudflare Tunnel with an
+# Access policy in front - see docs/DEPLOYMENT.md section 3. Anything that can
+# reach this port can spend your API credits and write a vendor API key.
 ###############################################################################
 
 services:
@@ -22,10 +21,11 @@ services:
     container_name: content-miner
     restart: unless-stopped
 
-    # Bound to loopback so only the reverse proxy on this host can reach it.
-    # Change to "3000:3000" only if you know the network is already trusted.
+    # Bound to loopback so only the Cloudflare Tunnel on this host can reach it.
+    # 8083 follows the local convention (8081 Hub, 8082 redirect). Do not use
+    # 3000 - Open WebUI already owns it.
     ports:
-      - '127.0.0.1:3000:3000'
+      - '127.0.0.1:8083:3000'
 
     env_file:
       - .env
