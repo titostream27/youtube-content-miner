@@ -189,7 +189,19 @@ export const config = {
       /** e.g. `Bearer`. Empty means the key is sent raw. */
       authScheme: readString('TRANSCRIPT_API_AUTH_SCHEME'),
       videoIdParam: readString('TRANSCRIPT_API_VIDEO_PARAM') ?? 'videoId',
+      /**
+       * Declared rather than inferred. Several vendors report offsets in
+       * milliseconds, and guessing from magnitude fails precisely where it
+       * matters: an offset of 5000 is 5 seconds in ms, but a magnitude heuristic
+       * reads it as 5000 seconds and misplaces every timecode in the first
+       * hundred seconds of the episode.
+       */
+      timeUnit: (readString('TRANSCRIPT_API_TIME_UNIT') === 'ms' ? 'ms' : 's') as 'ms' | 's',
       timeoutMs: readInt('TRANSCRIPT_API_TIMEOUT_MS', 30_000),
+      /** Poll URL for asynchronous jobs; `{jobId}` is substituted. */
+      pollUrlTemplate: readString('TRANSCRIPT_API_JOB_URL'),
+      /** Ceiling for polling an asynchronous transcript job. */
+      jobTimeoutMs: readInt('TRANSCRIPT_API_JOB_TIMEOUT_MS', 180_000),
     },
 
     ytdlp: {

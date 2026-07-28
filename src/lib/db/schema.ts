@@ -12,6 +12,14 @@
  * reimplementing these modules and nothing else.
  */
 export const SCHEMA_SQL = `
+-- Operator-editable settings, e.g. the transcript vendor credential chosen in
+-- the UI. Environment variables take precedence over anything stored here.
+CREATE TABLE IF NOT EXISTS app_settings (
+  key        TEXT PRIMARY KEY,
+  value      TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS channels (
   channel_id       TEXT PRIMARY KEY,
   title            TEXT NOT NULL,
