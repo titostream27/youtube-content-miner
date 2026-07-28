@@ -64,3 +64,36 @@ folder.
 An episode is routinely rediscovered by a later run on an unrelated topic where
 it legitimately fails the relevance gate. It still has clips in the library.
 `markEpisodeSkipped` guards against this; keep that guard.
+
+
+## Transcript acquisition invariants
+
+**Never claim a transcript source we cannot verify.** The confidence model rates
+human-authored captions well above ASR, so mislabelling the source silently
+inflates confidence. The yt-dlp provider makes two passes (manual, then auto)
+specifically because yt-dlp writes both to identically named files. Do not
+collapse it into one pass to save a subprocess spawn.
+
+**A failure reason must distinguish enforcement from absence.** "This video has
+no captions" and "we were blocked" need completely different fixes. Every
+provider returns `blocked: boolean` alongside its reason, and the zero-byte
+HTTP 200 that YouTube returns for a refused caption request must never be
+reported as malformed JSON.
+
+**Speech-to-text is not a workaround for blocking.** It needs the audio, which
+faces the same anti-bot layer at roughly a hundred times the cost. If STT is
+implemented, it is for fidelity - speaker diarization - not availability. Choose
+a provider that offers diarization; a plain Whisper endpoint buys nothing the
+caption track was not already giving.
+
+**Licence is not decoration.** `episodes.license` comes from the Data API and
+drives a real operational decision when mining channels the user does not own.
+Keep it surfaced next to the score, keep it in exports, and do not default it to
+anything optimistic - unknown means unknown.
+
+## Schema changes
+
+`SCHEMA_SQL` uses `CREATE TABLE IF NOT EXISTS`, so adding a column there only
+affects fresh installs. Every new column also needs an entry in
+`applyColumnMigrations` in `db/client.ts`. That function is additive only -
+anything that rewrites or drops data belongs in a real versioned migration.

@@ -6,6 +6,7 @@ import { formatTimecode, youtubeTimestampUrl } from '@/lib/youtube/duration';
 import { Card, Meter, Pill } from '@/components/ui/primitives';
 import { ScoreBadge, TierBadge } from '@/components/tier-badge';
 import { ClipActions } from '@/components/clip-actions';
+import { LicenseBadge } from '@/components/license-badge';
 
 /**
  * PRD Step 8 and Step 10 in one component.
@@ -30,6 +31,7 @@ export function ClipCard({
           <div className="flex flex-wrap items-center gap-2">
             <TierBadge tier={clip.tier} />
             <Pill title="Primary content category">{clip.category}</Pill>
+            <LicenseBadge license={clip.license} />
             <Pill
               title={
                 clip.engine === 'llm'

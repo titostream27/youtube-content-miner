@@ -1,6 +1,7 @@
 import { describeConfig } from '@/lib/config';
 import { getLibraryTotals } from '@/lib/db/repositories/stats';
 import { getQuotaUsed } from '@/lib/youtube/client';
+import { describeProviderChain } from '@/lib/transcript';
 import { ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,7 @@ export function GET() {
       defaultProvider: summary.defaultProvider,
       configuredProviders: summary.configuredProviders.map((provider) => provider.id),
       youtubeQuotaUsedThisProcess: getQuotaUsed(),
+      transcriptProviders: describeProviderChain(),
       library: {
         episodesDiscovered: totals.episodesDiscovered,
         episodesAnalysed: totals.episodesAnalysed,
