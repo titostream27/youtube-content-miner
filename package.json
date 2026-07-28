@@ -1,0 +1,41 @@
+{
+  "name": "youtube-content-miner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Podcast Producer Assistant - a podcast content intelligence platform that finds the best short-form moments across thousands of hours of podcasts.",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:init": "tsx scripts/db-init.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:reset": "tsx scripts/db-reset.ts",
+    "pipeline": "tsx scripts/run-pipeline.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.1",
+    "clsx": "^2.1.1",
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.12",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3"
+  }
+}
