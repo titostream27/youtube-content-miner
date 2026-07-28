@@ -369,6 +369,8 @@ interface FixtureEpisodeSeed {
   commentCount: number;
   /** Extra non-speech runtime: cold open, ads, outro. */
   paddingSec: number;
+  /** Licensed CC BY, so clips are reusable with attribution. */
+  creativeCommons?: boolean;
 }
 
 const EPISODE_SEEDS: FixtureEpisodeSeed[] = [
@@ -379,6 +381,7 @@ const EPISODE_SEEDS: FixtureEpisodeSeed[] = [
     description:
       'A long conversation about what actually changes inside an engineering organisation when code gets cheap.\n\n00:00 Cold open\n02:15 Why "will AI replace programmers" is the wrong question\n14:40 Calibration versus confidence\n28:05 Appendix C and the deployer problem\n41:20 What the best support agent taught us\n52:10 Closing',
     tags: ['ai', 'artificial intelligence', 'engineering', 'technology', 'podcast'],
+    creativeCommons: true,
     topics: ['ai', 'artificial intelligence', 'business', 'leadership'],
     daysAgo: 4,
     viewCount: 412_000,
@@ -449,6 +452,7 @@ const EPISODE_SEEDS: FixtureEpisodeSeed[] = [
     description:
       'What actually moved adherence in our sleep clinic, and the moment a doctor changed his own habits.\n\n00:00 Intro\n07:00 Why the instruction fails\n22:30 Removing the thieves\n38:00 My son asked me a question',
     tags: ['health', 'sleep', 'medicine', 'habits'],
+    creativeCommons: true,
     topics: ['health', 'productivity', 'story'],
     daysAgo: 2,
     viewCount: 143_000,
@@ -463,6 +467,7 @@ const EPISODE_SEEDS: FixtureEpisodeSeed[] = [
     description:
       'Shipping disasters, investor logic, and why focus is an inventory problem.\n\n00:00 Cold open\n04:40 Konstantina\n16:20 The market got bigger\n29:00 Forty open commitments',
     tags: ['startup', 'engineering', 'funny', 'product'],
+    creativeCommons: true,
     topics: ['startup', 'funny', 'productivity', 'business'],
     daysAgo: 9,
     viewCount: 31_400,
@@ -732,6 +737,10 @@ function seedToCandidate(seed: FixtureEpisodeSeed, now: Date): EpisodeCandidate 
     thumbnailUrl: null,
     tags: seed.tags,
     hasCaptions: true,
+    // A minority of the demo catalogue is CC BY, mirroring reality, so the
+    // licence filter has something to actually filter.
+    license: seed.creativeCommons ? 'creativeCommon' : 'youtube',
+    embeddable: true,
     channel,
   };
 }

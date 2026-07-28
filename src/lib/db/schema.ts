@@ -68,6 +68,11 @@ CREATE TABLE IF NOT EXISTS episodes (
   thumbnail_url        TEXT,
   tags                 TEXT NOT NULL DEFAULT '[]',
   has_captions         INTEGER,
+  -- Reuse rights: 'youtube' (standard, needs permission) or 'creativeCommon'
+  -- (CC BY, reusable with attribution). Critical when mining channels you do
+  -- not own. Also added by applyColumnMigrations for pre-existing databases.
+  license              TEXT,
+  embeddable           INTEGER,
   -- Step 2 output
   opportunity_score    REAL,
   opportunity_factors  TEXT,

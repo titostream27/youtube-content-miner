@@ -4,6 +4,7 @@ import type {
   ClipDimensionScores,
   ScoredClip,
   ScoringEngineName,
+  VideoLicense,
 } from '@/lib/domain/types';
 import { fromJson, getDb, nowIso, toJson, transaction } from '../client';
 
@@ -36,6 +37,11 @@ export interface ClipRecord {
   channelTitle: string;
   channelId: string;
   publishedAt: string;
+  /**
+   * Reuse rights inherited from the episode. Surfaced on the clip because that
+   * is where the publish decision is actually made.
+   */
+  license: VideoLicense;
 }
 
 interface ClipRow {
@@ -64,6 +70,7 @@ interface ClipRow {
   channel_title: string | null;
   channel_id: string | null;
   published_at: string | null;
+  license: string | null;
 }
 
 const EMPTY_DIMENSIONS: ClipDimensionScores = {
@@ -106,6 +113,8 @@ function mapClip(row: ClipRow): ClipRecord {
     channelTitle: row.channel_title ?? '(unknown channel)',
     channelId: row.channel_id ?? '',
     publishedAt: row.published_at ?? row.created_at,
+    license:
+      row.license === 'creativeCommon' || row.license === 'youtube' ? row.license : null,
   };
 }
 
@@ -115,7 +124,8 @@ const CLIP_SELECT = `
     e.title         AS episode_title,
     e.channel_title AS channel_title,
     e.channel_id    AS channel_id,
-    e.published_at  AS published_at
+    e.published_at  AS published_at,
+    e.license       AS license
   FROM clips c
   LEFT JOIN episodes e ON e.video_id = c.video_id
 `;
@@ -185,6 +195,8 @@ export interface ClipListFilters {
   videoId?: string;
   channelId?: string;
   runId?: number;
+  /** Filter by reuse rights, e.g. only clips licensed CC BY. */
+  licenses?: VideoLicense[];
   minScore?: number;
   minConfidence?: number;
   search?: string;
@@ -246,6 +258,14 @@ function buildClipWhere(filters: ClipListFilters): {
   if (typeof filters.runId === 'number') {
     conditions.push('c.run_id = @runId');
     params.runId = filters.runId;
+  }
+
+  if (filters.licenses && filters.licenses.length > 0) {
+    const placeholders = filters.licenses.map((_, index) => `@license${index}`);
+    conditions.push(`e.license IN (${placeholders.join(', ')})`);
+    filters.licenses.forEach((license, index) => {
+      params[`license${index}`] = license;
+    });
   }
 
   if (typeof filters.minScore === 'number') {

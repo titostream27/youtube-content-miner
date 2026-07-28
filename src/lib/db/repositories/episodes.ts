@@ -1,5 +1,6 @@
 import type {
   EpisodeCandidate,
+  VideoLicense,
   EpisodeFactorScores,
   EpisodeOpportunity,
   TranscriptSource,
@@ -29,6 +30,8 @@ export interface EpisodeRecord {
   thumbnailUrl: string | null;
   tags: string[];
   hasCaptions: boolean | null;
+  license: VideoLicense;
+  embeddable: boolean | null;
   opportunityScore: number | null;
   opportunityFactors: EpisodeFactorScores | null;
   opportunityReasons: string[];
@@ -57,6 +60,8 @@ interface EpisodeRow {
   thumbnail_url: string | null;
   tags: string;
   has_captions: number | null;
+  license: string | null;
+  embeddable: number | null;
   opportunity_score: number | null;
   opportunity_factors: string | null;
   opportunity_reasons: string;
@@ -86,6 +91,8 @@ function mapEpisode(row: EpisodeRow): EpisodeRecord {
     thumbnailUrl: row.thumbnail_url,
     tags: fromJson<string[]>(row.tags, []),
     hasCaptions: fromSqliteBool(row.has_captions),
+    license: row.license === 'creativeCommon' || row.license === 'youtube' ? row.license : null,
+    embeddable: fromSqliteBool(row.embeddable),
     opportunityScore: row.opportunity_score,
     opportunityFactors: row.opportunity_factors
       ? fromJson<EpisodeFactorScores | null>(row.opportunity_factors, null)
@@ -123,13 +130,13 @@ export function upsertDiscoveredEpisode(params: {
       `INSERT INTO episodes (
          video_id, channel_id, channel_title, title, description, published_at,
          duration_seconds, view_count, like_count, comment_count, thumbnail_url,
-         tags, has_captions, opportunity_score, opportunity_factors,
+         tags, has_captions, license, embeddable, opportunity_score, opportunity_factors,
          opportunity_reasons, analysis_status, skip_reason, topic, last_run_id,
          discovered_at
        ) VALUES (
          @videoId, @channelId, @channelTitle, @title, @description, @publishedAt,
          @durationSeconds, @viewCount, @likeCount, @commentCount, @thumbnailUrl,
-         @tags, @hasCaptions, @opportunityScore, @opportunityFactors,
+         @tags, @hasCaptions, @license, @embeddable, @opportunityScore, @opportunityFactors,
          @opportunityReasons, @analysisStatus, @skipReason, @topic, @runId,
          @discoveredAt
        )
@@ -142,6 +149,8 @@ export function upsertDiscoveredEpisode(params: {
          thumbnail_url       = excluded.thumbnail_url,
          tags                = excluded.tags,
          has_captions        = excluded.has_captions,
+         license             = excluded.license,
+         embeddable          = excluded.embeddable,
          opportunity_score   = excluded.opportunity_score,
          opportunity_factors = excluded.opportunity_factors,
          opportunity_reasons = excluded.opportunity_reasons,
@@ -172,6 +181,8 @@ export function upsertDiscoveredEpisode(params: {
       thumbnailUrl: candidate.thumbnailUrl,
       tags: toJson(candidate.tags),
       hasCaptions: toSqliteBool(candidate.hasCaptions),
+      license: candidate.license,
+      embeddable: toSqliteBool(candidate.embeddable),
       opportunityScore: opportunity.score,
       opportunityFactors: toJson(opportunity.factors),
       opportunityReasons: toJson(opportunity.reasons),
@@ -363,6 +374,8 @@ export function episodeRecordToCandidate(record: EpisodeRecord): EpisodeCandidat
     thumbnailUrl: record.thumbnailUrl,
     tags: record.tags,
     hasCaptions: record.hasCaptions,
+    license: record.license,
+    embeddable: record.embeddable,
     channel: null,
   };
 }
