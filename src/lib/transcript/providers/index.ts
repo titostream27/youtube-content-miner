@@ -1,5 +1,6 @@
 import { config } from '@/lib/config';
 import { isSttConfigured } from '../stt';
+import { describeTranscriptVendor } from '@/lib/settings/transcript-vendor';
 import type {
   TranscriptProvider,
   TranscriptProviderDescriptor,
@@ -19,8 +20,15 @@ const DESCRIPTORS: Record<TranscriptProviderId, TranscriptProviderDescriptor> = 
   hosted: {
     id: 'hosted',
     label: 'Hosted transcript API',
-    unavailableReason: () =>
-      config.transcript.hosted.url ? null : 'TRANSCRIPT_API_URL is not set',
+    unavailableReason: () => {
+      const status = describeTranscriptVendor();
+      if (!status.configured) {
+        return 'no vendor selected - choose one and add an API key in AI Agents settings';
+      }
+      // A vendor with no key is a half-finished setup, not a usable provider.
+      if (!status.hasApiKey) return `${status.vendorLabel ?? 'vendor'} selected but no API key saved`;
+      return null;
+    },
     load: async () => (await import('./hosted')).hostedProvider,
   },
 
