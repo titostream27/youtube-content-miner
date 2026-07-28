@@ -1,0 +1,373 @@
+import type { ClipCategory } from '@/lib/domain/categories';
+import type { PriorityTier } from '@/lib/domain/thresholds';
+import type {
+  ClipDimensionScores,
+  ScoredClip,
+  ScoringEngineName,
+} from '@/lib/domain/types';
+import { fromJson, getDb, nowIso, toJson, transaction } from '../client';
+
+export type ClipStatus = 'new' | 'approved' | 'rejected' | 'published';
+
+/** A clip joined with the episode context the UI always needs alongside it. */
+export interface ClipRecord {
+  id: number;
+  videoId: string;
+  runId: number | null;
+  segmentIndex: number;
+  title: string;
+  startSec: number;
+  endSec: number;
+  durationSec: number;
+  finalScore: number;
+  confidence: number;
+  tier: PriorityTier;
+  category: ClipCategory;
+  dimensions: ClipDimensionScores;
+  whyThisWorks: string[];
+  suggestedHook: string;
+  suggestedCaption: string;
+  editingNotes: string;
+  transcript: string;
+  engine: ScoringEngineName;
+  status: ClipStatus;
+  createdAt: string;
+  episodeTitle: string;
+  channelTitle: string;
+  channelId: string;
+  publishedAt: string;
+}
+
+interface ClipRow {
+  id: number;
+  video_id: string;
+  run_id: number | null;
+  segment_index: number;
+  title: string;
+  start_sec: number;
+  end_sec: number;
+  duration_sec: number;
+  final_score: number;
+  confidence: number;
+  tier: string;
+  category: string;
+  dimensions: string;
+  why_this_works: string;
+  suggested_hook: string;
+  suggested_caption: string;
+  editing_notes: string;
+  transcript: string;
+  engine: string;
+  status: string;
+  created_at: string;
+  episode_title: string | null;
+  channel_title: string | null;
+  channel_id: string | null;
+  published_at: string | null;
+}
+
+const EMPTY_DIMENSIONS: ClipDimensionScores = {
+  hook: 0,
+  curiosity: 0,
+  emotion: 0,
+  storytelling: 0,
+  standalone: 0,
+  shareability: 0,
+  clarity: 0,
+  controversy: 0,
+  teachingValue: 0,
+  entertainment: 0,
+};
+
+function mapClip(row: ClipRow): ClipRecord {
+  return {
+    id: row.id,
+    videoId: row.video_id,
+    runId: row.run_id,
+    segmentIndex: row.segment_index,
+    title: row.title,
+    startSec: row.start_sec,
+    endSec: row.end_sec,
+    durationSec: row.duration_sec,
+    finalScore: row.final_score,
+    confidence: row.confidence,
+    tier: row.tier as PriorityTier,
+    category: row.category as ClipCategory,
+    dimensions: fromJson<ClipDimensionScores>(row.dimensions, EMPTY_DIMENSIONS),
+    whyThisWorks: fromJson<string[]>(row.why_this_works, []),
+    suggestedHook: row.suggested_hook,
+    suggestedCaption: row.suggested_caption,
+    editingNotes: row.editing_notes,
+    transcript: row.transcript,
+    engine: row.engine as ScoringEngineName,
+    status: row.status as ClipStatus,
+    createdAt: row.created_at,
+    episodeTitle: row.episode_title ?? '(unknown episode)',
+    channelTitle: row.channel_title ?? '(unknown channel)',
+    channelId: row.channel_id ?? '',
+    publishedAt: row.published_at ?? row.created_at,
+  };
+}
+
+const CLIP_SELECT = `
+  SELECT
+    c.*,
+    e.title         AS episode_title,
+    e.channel_title AS channel_title,
+    e.channel_id    AS channel_id,
+    e.published_at  AS published_at
+  FROM clips c
+  LEFT JOIN episodes e ON e.video_id = c.video_id
+`;
+
+/**
+ * Replace the clip set for an episode.
+ *
+ * Re-analysing an episode (for example after a scoring model change) should
+ * produce a clean set rather than duplicates, so the delete and the inserts run
+ * in a single transaction.
+ */
+export function replaceClipsForEpisode(
+  videoId: string,
+  clips: readonly ScoredClip[],
+  runId: number | null,
+): void {
+  transaction((db) => {
+    db.prepare('DELETE FROM clips WHERE video_id = ?').run(videoId);
+
+    const insert = db.prepare(
+      `INSERT INTO clips (
+         video_id, run_id, segment_index, title, start_sec, end_sec, duration_sec,
+         final_score, confidence, tier, category, dimensions, why_this_works,
+         suggested_hook, suggested_caption, editing_notes, transcript, engine,
+         status, created_at
+       ) VALUES (
+         @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
+         @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
+         @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
+         'new', @createdAt
+       )`,
+    );
+
+    const createdAt = nowIso();
+    for (const clip of clips) {
+      insert.run({
+        videoId,
+        runId,
+        segmentIndex: clip.segmentIndex,
+        title: clip.title,
+        startSec: clip.startSec,
+        endSec: clip.endSec,
+        durationSec: clip.durationSec,
+        finalScore: clip.finalScore,
+        confidence: clip.confidence,
+        tier: clip.tier,
+        category: clip.category,
+        dimensions: toJson(clip.dimensions),
+        whyThisWorks: toJson(clip.whyThisWorks),
+        suggestedHook: clip.suggestedHook,
+        suggestedCaption: clip.suggestedCaption,
+        editingNotes: clip.editingNotes,
+        transcript: clip.transcript,
+        engine: clip.engine,
+        createdAt,
+      });
+    }
+  });
+}
+
+export type ClipSort = 'score' | 'confidence' | 'recent' | 'duration';
+
+export interface ClipListFilters {
+  tiers?: PriorityTier[];
+  categories?: ClipCategory[];
+  statuses?: ClipStatus[];
+  videoId?: string;
+  channelId?: string;
+  runId?: number;
+  minScore?: number;
+  minConfidence?: number;
+  search?: string;
+  /** ISO timestamp; only clips created at or after this instant. */
+  createdSince?: string;
+  sort?: ClipSort;
+  limit?: number;
+  offset?: number;
+}
+
+const CLIP_SORT_SQL: Record<ClipSort, string> = {
+  score: 'c.final_score DESC, c.confidence DESC',
+  confidence: 'c.confidence DESC, c.final_score DESC',
+  recent: 'c.created_at DESC, c.final_score DESC',
+  duration: 'c.duration_sec ASC',
+};
+
+function buildClipWhere(filters: ClipListFilters): {
+  where: string;
+  params: Record<string, unknown>;
+} {
+  const conditions: string[] = [];
+  const params: Record<string, unknown> = {};
+
+  if (filters.tiers && filters.tiers.length > 0) {
+    const placeholders = filters.tiers.map((_, index) => `@tier${index}`);
+    conditions.push(`c.tier IN (${placeholders.join(', ')})`);
+    filters.tiers.forEach((tier, index) => {
+      params[`tier${index}`] = tier;
+    });
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    const placeholders = filters.categories.map((_, index) => `@category${index}`);
+    conditions.push(`c.category IN (${placeholders.join(', ')})`);
+    filters.categories.forEach((category, index) => {
+      params[`category${index}`] = category;
+    });
+  }
+
+  if (filters.statuses && filters.statuses.length > 0) {
+    const placeholders = filters.statuses.map((_, index) => `@status${index}`);
+    conditions.push(`c.status IN (${placeholders.join(', ')})`);
+    filters.statuses.forEach((status, index) => {
+      params[`status${index}`] = status;
+    });
+  }
+
+  if (filters.videoId) {
+    conditions.push('c.video_id = @videoId');
+    params.videoId = filters.videoId;
+  }
+
+  if (filters.channelId) {
+    conditions.push('e.channel_id = @channelId');
+    params.channelId = filters.channelId;
+  }
+
+  if (typeof filters.runId === 'number') {
+    conditions.push('c.run_id = @runId');
+    params.runId = filters.runId;
+  }
+
+  if (typeof filters.minScore === 'number') {
+    conditions.push('c.final_score >= @minScore');
+    params.minScore = filters.minScore;
+  }
+
+  if (typeof filters.minConfidence === 'number') {
+    conditions.push('c.confidence >= @minConfidence');
+    params.minConfidence = filters.minConfidence;
+  }
+
+  if (filters.createdSince) {
+    conditions.push('c.created_at >= @createdSince');
+    params.createdSince = filters.createdSince;
+  }
+
+  if (filters.search && filters.search.trim().length > 0) {
+    conditions.push(
+      '(c.title LIKE @search OR c.transcript LIKE @search OR e.title LIKE @search)',
+    );
+    params.search = `%${filters.search.trim()}%`;
+  }
+
+  return {
+    where: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
+    params,
+  };
+}
+
+export function listClips(filters: ClipListFilters = {}): ClipRecord[] {
+  const { where, params } = buildClipWhere(filters);
+  const orderBy = CLIP_SORT_SQL[filters.sort ?? 'score'];
+
+  const rows = getDb()
+    .prepare(
+      `${CLIP_SELECT} ${where} ORDER BY ${orderBy} LIMIT @limit OFFSET @offset`,
+    )
+    .all({
+      ...params,
+      limit: filters.limit ?? 100,
+      offset: filters.offset ?? 0,
+    }) as ClipRow[];
+
+  return rows.map(mapClip);
+}
+
+export function countClips(filters: ClipListFilters = {}): number {
+  const { where, params } = buildClipWhere(filters);
+  const row = getDb()
+    .prepare(
+      `SELECT COUNT(*) AS total FROM clips c LEFT JOIN episodes e ON e.video_id = c.video_id ${where}`,
+    )
+    .get(params) as { total: number };
+  return row.total;
+}
+
+export function getClip(id: number): ClipRecord | null {
+  const row = getDb()
+    .prepare(`${CLIP_SELECT} WHERE c.id = ?`)
+    .get(id) as ClipRow | undefined;
+  return row ? mapClip(row) : null;
+}
+
+export function updateClipStatus(id: number, status: ClipStatus): boolean {
+  const result = getDb()
+    .prepare('UPDATE clips SET status = ? WHERE id = ?')
+    .run(status, id);
+  return result.changes > 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* PRD "Long-term AI Learning"                                                */
+/* -------------------------------------------------------------------------- */
+
+export type FeedbackVerdict = 'agree' | 'disagree' | 'published' | 'rejected';
+
+/**
+ * Record an editor's verdict on a clip. This table is the labelled dataset the
+ * PRD identifies as the real moat: over time it lets a re-ranker learn what
+ * this specific creator's audience responds to, independent of the base LLM.
+ */
+export function recordClipFeedback(params: {
+  clipId: number;
+  verdict: FeedbackVerdict;
+  note?: string | null;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO clip_feedback (clip_id, verdict, note, created_at)
+       VALUES (@clipId, @verdict, @note, @createdAt)`,
+    )
+    .run({
+      clipId: params.clipId,
+      verdict: params.verdict,
+      note: params.note ?? null,
+      createdAt: nowIso(),
+    });
+}
+
+export interface CategoryBreakdown {
+  category: ClipCategory;
+  count: number;
+  averageScore: number;
+}
+
+export function clipCategoryBreakdown(filters: ClipListFilters = {}): CategoryBreakdown[] {
+  const { where, params } = buildClipWhere(filters);
+  const rows = getDb()
+    .prepare(
+      `SELECT c.category AS category, COUNT(*) AS count, AVG(c.final_score) AS average_score
+         FROM clips c
+         LEFT JOIN episodes e ON e.video_id = c.video_id
+         ${where}
+         GROUP BY c.category
+         ORDER BY count DESC`,
+    )
+    .all(params) as { category: string; count: number; average_score: number }[];
+
+  return rows.map((row) => ({
+    category: row.category as ClipCategory,
+    count: row.count,
+    averageScore: Math.round(row.average_score ?? 0),
+  }));
+}

@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+/*
+ * The interface is a decision surface, not a dashboard to admire. Dark, dense,
+ * and typographically quiet so the only things that draw the eye are scores,
+ * tiers and the reasons behind them.
+ */
+@theme {
+  --color-surface: oklch(0.16 0.012 260);
+  --color-surface-raised: oklch(0.2 0.014 260);
+  --color-surface-hover: oklch(0.24 0.016 260);
+  --color-line: oklch(0.3 0.016 262);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-slate-200);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular figures keep score columns from shifting as values change. */
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background-color: oklch(0.55 0.15 255 / 0.4);
+}
+
+/* Slim scrollbars inside transcript and filter panes. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-line);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
