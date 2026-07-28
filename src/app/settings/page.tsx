@@ -4,6 +4,9 @@ import { PROVIDER_CATALOG, resolveProviderRuntime } from '@/lib/ai/providers/cat
 import { resolveAgent } from '@/lib/ai/client';
 import { isSttConfigured } from '@/lib/transcript/stt';
 import { describeProviderChain } from '@/lib/transcript';
+import { describeTranscriptVendor } from '@/lib/settings/transcript-vendor';
+import { TRANSCRIPT_VENDORS } from '@/lib/transcript/vendors';
+import { TranscriptVendorSettings } from '@/components/transcript-vendor-settings';
 import { Card, CardHeader, KeyValue, Pill } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils/cn';
 
@@ -27,6 +30,20 @@ export default function SettingsPage() {
 
   const configuredCount = providers.filter((entry) => entry.runtime.configured).length;
   const transcriptChain = describeProviderChain();
+  const vendorStatus = describeTranscriptVendor();
+  const vendorOptions = TRANSCRIPT_VENDORS.map((vendor) => ({
+    id: vendor.id,
+    label: vendor.label,
+    docsUrl: vendor.docsUrl,
+    verified: vendor.verified,
+    freeTierNote: vendor.freeTierNote,
+    notes: vendor.notes,
+    urlTemplate: vendor.request.urlTemplate,
+    authHeader: vendor.request.authHeader,
+    authScheme: vendor.request.authScheme,
+    timeUnit: vendor.response.timeUnit,
+    asynchronous: Boolean(vendor.response.asyncJob),
+  }));
 
   return (
     <div className="space-y-8">
@@ -139,6 +156,10 @@ export default function SettingsPage() {
             })}
           </ul>
         </Card>
+      </section>
+
+      <section>
+        <TranscriptVendorSettings vendors={vendorOptions} status={vendorStatus} />
       </section>
 
       <section>
