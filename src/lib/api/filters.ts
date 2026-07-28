@@ -1,5 +1,6 @@
 import { isClipCategory, type ClipCategory } from '@/lib/domain/categories';
 import { PRIORITY_TIERS, type PriorityTier } from '@/lib/domain/thresholds';
+import type { VideoLicense } from '@/lib/domain/types';
 import type { ClipListFilters, ClipStatus } from '@/lib/db/repositories/clips';
 import type { EpisodeAnalysisStatus, EpisodeListFilters } from '@/lib/db/repositories/episodes';
 import { csvList } from './http';
@@ -25,6 +26,7 @@ export interface ClipQueryInput {
   status?: string | string[];
   videoId?: string;
   channelId?: string;
+  license?: string | string[];
   runId?: number;
   minScore?: number;
   minConfidence?: number;
@@ -48,12 +50,18 @@ export function toClipFilters(query: ClipQueryInput): ClipListFilters {
     (CLIP_STATUSES as readonly string[]).includes(value),
   );
 
+  const licenses = csvList(query.license)?.filter(
+    (value): value is NonNullable<VideoLicense> =>
+      value === 'youtube' || value === 'creativeCommon',
+  );
+
   return {
     tiers: tiers && tiers.length > 0 ? tiers : undefined,
     categories: categories && categories.length > 0 ? categories : undefined,
     statuses: statuses && statuses.length > 0 ? statuses : undefined,
     videoId: query.videoId,
     channelId: query.channelId,
+    licenses: licenses && licenses.length > 0 ? licenses : undefined,
     runId: query.runId,
     minScore: query.minScore,
     minConfidence: query.minConfidence,

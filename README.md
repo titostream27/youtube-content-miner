@@ -22,6 +22,8 @@ Only the last step is craft. This tool deletes the middle three and outputs a ra
 
 ---
 
+**Self-hosting?** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) is a complete homelab runbook: prerequisites, Docker, Cloudflare Access, scheduled discovery, backups, and AelfLab Hub integration.
+
 ## Quick start
 
 ```bash
@@ -48,7 +50,7 @@ topic ──► discovery ──► episode ranking ──► [COST GATE] ──
 |---|---|---|
 | 1 | **Discovery.** A topic is expanded into the queries a researcher would actually run. No YouTube URLs needed. | `lib/youtube/discovery.ts`, `lib/ai/agents/discovery-agent.ts` |
 | 2 | **Episode Opportunity Score.** 8 weighted factors, computed from metadata *before* any transcript is fetched. Below threshold, an episode is never transcribed. | `lib/scoring/episode-opportunity.ts` |
-| 3 | **Transcript extraction.** Cache → caption track → speech-to-text fallback. | `lib/transcript/` |
+| 3 | **Transcript extraction.** Cache → configurable provider chain (hosted vendor → yt-dlp → direct scrape → STT). | `lib/transcript/` |
 | 4 | **Moment detection.** Cues are rebuilt into sentences, then a sliding window enumerates every 15–90s candidate and keeps the best non-overlapping set. | `lib/moments/segmentation.ts` |
 | 5 | **Clip scoring.** 10 dimensions per moment. | `lib/scoring/clip-score.ts` |
 | 6 | **Confidence.** Separate from score — how much to trust the number. | `lib/scoring/confidence.ts` |
@@ -94,6 +96,65 @@ A 96 at 93% goes to the editor. A 96 at 54% needs someone to watch 30 seconds fi
 The heuristic engine's confidence is **capped at 82%**. It detects the *shape* of a good moment via lexical patterns; it does not understand meaning. Capping it keeps "high confidence" honest.
 
 ---
+
+## Transcript acquisition: the hard part
+
+Mining podcasts you do not own means YouTube's anti-bot layer is a first-class engineering constraint, not an edge case. Measured from a datacenter IP:
+
+| Method | Result |
+|---|---|
+| Direct watch-page scrape → `timedtext` | Track list is visible, but the caption download returns **HTTP 200 with a zero-byte body** — a silent refusal |
+| `yt-dlp`, default player clients | Refused: *"a PO token was not provided"* |
+| `yt-dlp --extractor-args youtube:player_client=android` | **Works** — real json3 files, correct cue timing. Rate limits appear under load |
+| Same, on another video | `Sign in to confirm you're not a bot` |
+
+Two things follow from this.
+
+**First, acquisition has to be configurable.** What works depends on where you deploy — a laptop on a home connection behaves nothing like a cloud host. So it is an ordered chain, set by `TRANSCRIPT_PROVIDERS`:
+
+| Provider | When it makes sense |
+|---|---|
+| `hosted` | Cloud deployments. A vendor maintains the proxy pool and tracks token changes for a fraction of a cent per video. **Choose the vendor and paste its key in the app** under *AI Agents → Transcript vendor* |
+| `ytdlp` | Free, subtitle-only (`--skip-download`, never audio). Reliable at volume with a residential proxy or cookies |
+| `captions` | Zero-config fallback. Fine locally, usually refused from a datacenter |
+| `stt` | Last resort. See below |
+
+### Choosing a vendor
+
+Vendor setup is in the app, not the env file: pick a vendor, paste the key, and run the connection test. Presets carry the request contract, the time unit, and whether long videos come back asynchronously — the three details that otherwise produce a transcript that looks fine and is quietly unusable.
+
+The connection test is the point. It checks the things that make a vendor unusable *here*, each of which can return HTTP 200 and still be broken:
+
+| Check | Why it matters |
+|---|---|
+| Per-segment timestamps | Without them there are no clip in/out points at all |
+| Time unit | Milliseconds read as seconds misplaces every timecode. Detected from words-per-second, which needs no second API call |
+| Punctuation | Segmentation cuts on sentence boundaries; low punctuation weakens every downstream score |
+| Segment granularity | One giant blob is unusable; caption-like granularity is ideal |
+| Coverage | A vendor that truncates long videos looks like "this episode had few moments" |
+
+Test against a real two-hour episode, not a short clip — truncation and async handling only appear on long videos.
+
+Keys chosen in the app are stored in the local SQLite database as plaintext and are never returned by any API or rendered on any page. That is appropriate for a single-operator install; for a shared deployment set `TRANSCRIPT_API_URL` in the environment, which takes precedence and locks the UI.
+
+Every provider reports *why* it failed and whether the failure was enforcement or genuine absence — because "this video has no captions" and "we were blocked" need completely different fixes. To see the chain run against a real video:
+
+```bash
+npx tsx scripts/diagnose-transcript.ts dQw4w9WgXcQ
+```
+
+**Second, speech-to-text is not the answer to blocking.** Transcribing needs the audio, and downloading audio faces the same anti-bot layer while costing roughly two orders of magnitude more — dollars per episode instead of fractions of a cent. For a 400-episode archive that is the difference between roughly nothing and several hundred dollars, *and you still need the proxy*.
+
+STT's real value is fidelity, specifically **speaker diarization**, which YouTube's ASR does not provide at all. Knowing whether the host or the guest delivered a line materially improves the `standalone` judgement. If you enable it, pick a provider that offers diarization rather than a plain Whisper endpoint, or the spend buys nothing the caption track was not already giving.
+
+## Reuse rights
+
+When mining channels you do not own, the binding constraint is not technical — it is publishing rights. So the licence is treated as first-class data, pulled from the Data API's `status` part at no extra quota cost and surfaced next to the score:
+
+- **CC BY · reusable** — the owner licensed the video for reuse with attribution
+- **Standard licence** — publishing needs the owner's permission, an official clipping programme, or another basis you have established
+
+Clips can be filtered by licence and it is included in every export, because a copyright strike is the largest operational risk a clipping workflow carries. The tool reports the licence; it does not give legal advice, and the publishing decision stays with the operator.
 
 ## AI provider architecture
 
@@ -202,6 +263,8 @@ npm run pipeline -- --mode archive --channel <id>      # Mode C
 ```
 
 `scripts/run-pipeline.ts` is the entry point for the *Continuous Discovery* milestone — point cron at it and the dashboard fills itself every morning.
+
+`scripts/diagnose-transcript.ts <videoId>` shows which transcript providers ran, what each reported, and whether a failure was enforcement or genuine absence.
 
 `scripts/verify-ai-path.ts` exercises all five agents against a local mock provider, so provider transport, JSON recovery, schema validation, per-role routing, and LLM-tier confidence can be verified without spending a cent.
 

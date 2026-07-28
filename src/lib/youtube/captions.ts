@@ -1,16 +1,30 @@
-import type { Transcript, TranscriptCue, TranscriptSource } from '@/lib/domain/types';
+import type { Transcript, TranscriptSource } from '@/lib/domain/types';
+import {
+  cueStats,
+  json3ToCues,
+  pickCaptionTrack,
+  type CaptionTrack,
+  type Json3Response,
+} from './timedtext';
 
 /**
- * Caption track extraction.
+ * Direct caption extraction from the watch page.
  *
- * YouTube's Data API can tell us a caption track *exists* (`captions.list`) but
+ * The Data API can tell us a caption track *exists* (`captions.list`) but
  * downloading its contents through the API requires OAuth as the video's owner,
  * which we will never have for third-party podcasts. The practical route is the
  * `timedtext` endpoint referenced by the watch page's player response.
  *
- * That is an internal endpoint, so this module treats failure as normal: every
- * error path returns `null` with a reason rather than throwing, and the caller
- * falls back to speech-to-text.
+ * That is an internal endpoint and YouTube actively defends it. Measured
+ * behaviour from a datacenter IP: the track *list* is still present in the
+ * markup, but the caption download returns HTTP 200 with a zero-byte body - a
+ * silent refusal rather than an error status.
+ *
+ * So this provider is best-effort and honest about it. It is useful from
+ * residential IPs and local development; in a hosted deployment the yt-dlp or
+ * vendor provider should sit ahead of it in the chain. Every failure path
+ * returns a specific reason so operators can tell "no captions exist" apart
+ * from "we were blocked".
  */
 
 const USER_AGENT =
@@ -19,21 +33,8 @@ const USER_AGENT =
 export interface CaptionFetchResult {
   transcript: Transcript | null;
   reason: string | null;
-}
-
-interface CaptionTrack {
-  baseUrl: string;
-  languageCode: string;
-  kind?: string;
-  name?: { simpleText?: string };
-}
-
-interface Json3Response {
-  events?: {
-    tStartMs?: number;
-    dDurationMs?: number;
-    segs?: { utf8?: string }[];
-  }[];
+  /** True when the failure looks like anti-bot enforcement rather than absence. */
+  blocked: boolean;
 }
 
 /**
@@ -72,64 +73,14 @@ function extractJsonAfter(html: string, marker: string): string | null {
       depth += 1;
     } else if (char === '}') {
       depth -= 1;
-      if (depth === 0) {
-        return html.slice(start, i + 1);
-      }
+      if (depth === 0) return html.slice(start, i + 1);
     }
   }
 
   return null;
 }
 
-/**
- * Pick the best available track: a human-authored track in a preferred
- * language beats an ASR track, and any preferred-language track beats a
- * foreign one.
- */
-function pickTrack(tracks: CaptionTrack[], preferredLanguages: string[]): CaptionTrack | null {
-  if (tracks.length === 0) return null;
-
-  const normalised = preferredLanguages.map((language) => language.toLowerCase());
-
-  const matchesLanguage = (track: CaptionTrack): boolean => {
-    const code = track.languageCode.toLowerCase();
-    return normalised.some((language) => code === language || code.startsWith(`${language}-`) || language.startsWith(code));
-  };
-
-  const manualPreferred = tracks.find((track) => track.kind !== 'asr' && matchesLanguage(track));
-  if (manualPreferred) return manualPreferred;
-
-  const asrPreferred = tracks.find((track) => track.kind === 'asr' && matchesLanguage(track));
-  if (asrPreferred) return asrPreferred;
-
-  const anyManual = tracks.find((track) => track.kind !== 'asr');
-  return anyManual ?? tracks[0] ?? null;
-}
-
-function json3ToCues(payload: Json3Response): TranscriptCue[] {
-  const cues: TranscriptCue[] = [];
-
-  for (const event of payload.events ?? []) {
-    const text = (event.segs ?? [])
-      .map((segment) => segment.utf8 ?? '')
-      .join('')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (text.length === 0 || text === '\n') continue;
-
-    const startSec = (event.tStartMs ?? 0) / 1000;
-    const durationSec = (event.dDurationMs ?? 0) / 1000;
-
-    cues.push({
-      startSec: Math.round(startSec * 100) / 100,
-      endSec: Math.round((startSec + durationSec) * 100) / 100,
-      text,
-    });
-  }
-
-  return cues;
-}
+const BOT_CHECK = /sign in to confirm|are you a robot|unusual traffic|consent\.youtube/i;
 
 export async function fetchYouTubeCaptions(params: {
   videoId: string;
@@ -150,40 +101,64 @@ export async function fetchYouTubeCaptions(params: {
     });
 
     if (!response.ok) {
-      return { transcript: null, reason: `Watch page returned ${response.status}` };
+      return {
+        transcript: null,
+        reason: `watch page returned ${response.status}`,
+        blocked: response.status === 429 || response.status === 403,
+      };
     }
     html = await response.text();
   } catch (error) {
     return {
       transcript: null,
-      reason: `Watch page fetch failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      reason: `watch page fetch failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      blocked: false,
     };
   }
 
   const raw = extractJsonAfter(html, 'ytInitialPlayerResponse');
   if (!raw) {
-    return { transcript: null, reason: 'Player response not present in watch page markup' };
+    return {
+      transcript: null,
+      reason: BOT_CHECK.test(html)
+        ? 'blocked: watch page served a bot check instead of a player response'
+        : 'player response not present in watch page markup',
+      blocked: BOT_CHECK.test(html),
+    };
   }
 
   let playerResponse: {
     captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: CaptionTrack[] } };
-    videoDetails?: { lengthSeconds?: string };
+    playabilityStatus?: { status?: string; reason?: string };
   };
 
   try {
     playerResponse = JSON.parse(raw);
   } catch {
-    return { transcript: null, reason: 'Player response was not valid JSON' };
+    return { transcript: null, reason: 'player response was not valid JSON', blocked: false };
+  }
+
+  const playability = playerResponse.playabilityStatus;
+  if (playability?.status && playability.status !== 'OK') {
+    return {
+      transcript: null,
+      reason: `playability ${playability.status}: ${playability.reason ?? 'no reason given'}`,
+      blocked: /bot|sign in/i.test(playability.reason ?? ''),
+    };
   }
 
   const tracks = playerResponse.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
-  const track = pickTrack(tracks, preferredLanguages);
+  const track = pickCaptionTrack(tracks, preferredLanguages);
 
   if (!track?.baseUrl) {
-    return { transcript: null, reason: 'No caption track available for this video' };
+    return {
+      transcript: null,
+      reason: 'no caption track available for this video',
+      blocked: false,
+    };
   }
 
-  let payload: Json3Response;
+  let body: string;
   try {
     const captionUrl = new URL(track.baseUrl);
     captionUrl.searchParams.set('fmt', 'json3');
@@ -195,24 +170,55 @@ export async function fetchYouTubeCaptions(params: {
     });
 
     if (!response.ok) {
-      return { transcript: null, reason: `Caption download returned ${response.status}` };
+      return {
+        transcript: null,
+        reason: `caption download returned ${response.status}`,
+        blocked: response.status === 429 || response.status === 403,
+      };
     }
-    payload = (await response.json()) as Json3Response;
+    body = await response.text();
   } catch (error) {
     return {
       transcript: null,
-      reason: `Caption download failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      reason: `caption download failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      blocked: false,
+    };
+  }
+
+  /*
+   * The important diagnostic. A zero-length 200 is YouTube refusing the request
+   * for lack of a proof-of-origin token, which is the normal outcome from a
+   * datacenter IP. Reporting it as malformed JSON would send an operator
+   * hunting for a parser bug that does not exist.
+   */
+  if (body.trim().length === 0) {
+    return {
+      transcript: null,
+      reason:
+        'blocked: caption endpoint returned an empty body (proof-of-origin token required, ' +
+        'or the request came from a datacenter IP)',
+      blocked: true,
+    };
+  }
+
+  let payload: Json3Response;
+  try {
+    payload = JSON.parse(body) as Json3Response;
+  } catch {
+    return {
+      transcript: null,
+      reason: 'caption body was not json3',
+      blocked: BOT_CHECK.test(body),
     };
   }
 
   const cues = json3ToCues(payload);
   if (cues.length === 0) {
-    return { transcript: null, reason: 'Caption track was empty' };
+    return { transcript: null, reason: 'caption track contained no cues', blocked: false };
   }
 
   const source: TranscriptSource = track.kind === 'asr' ? 'youtube_asr' : 'youtube_manual';
-  const lastCue = cues[cues.length - 1]!;
-  const wordCount = cues.reduce((total, cue) => total + cue.text.split(/\s+/).length, 0);
+  const stats = cueStats(cues);
 
   return {
     transcript: {
@@ -220,9 +226,10 @@ export async function fetchYouTubeCaptions(params: {
       source,
       language: track.languageCode,
       cues,
-      durationSec: Math.round(lastCue.endSec),
-      wordCount,
+      durationSec: stats.durationSec,
+      wordCount: stats.wordCount,
     },
     reason: null,
+    blocked: false,
   };
 }
