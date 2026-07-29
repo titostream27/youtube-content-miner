@@ -282,10 +282,34 @@ docker compose start app
 
 ## 7. Operating notes
 
-**Is it using real data?** The header shows a *Demo catalogue* badge whenever
-`YOUTUBE_API_KEY` is unset. Check it after any config change — a missing key
-degrades to synthetic data rather than failing loudly, which is convenient for
-evaluation and misleading in production.
+**Is it using real data?** Three signals, in order of how quickly you will notice:
+
+1. The header shows a *Demo catalogue* badge whenever `YOUTUBE_API_KEY` is unset.
+2. The Hub monitoring row reads `N clips (demo)`.
+3. Clips and episodes show `Demo clip · no video` where the YouTube link would be,
+   because fixture ids are not real video ids.
+
+A missing key degrades to synthetic data rather than failing loudly — convenient
+for evaluation, misleading afterwards.
+
+### Switching from demo data to real podcasts
+
+Demo rows are not upgraded in place; they stay in the database as synthetic
+entries. Clear them and re-run:
+
+```powershell
+# 1. Add the key
+notepad .env          # YOUTUBE_API_KEY=...
+docker compose up -d
+
+# 2. Drop the synthetic catalogue (tracked channels are preserved)
+docker compose exec app npm run db:reset
+
+# 3. Mine something real
+docker compose exec app npm run pipeline -- --topic "artificial intelligence"
+```
+
+Confirm the badge is gone and clips now link to youtube.com.
 
 **YouTube quota.** 10,000 units/day by default. A topic search costs 100 units
 per expanded query, so a topic run is roughly 300. Archive mining walks the

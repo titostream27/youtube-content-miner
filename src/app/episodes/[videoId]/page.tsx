@@ -15,6 +15,7 @@ import { ClipCard } from '@/components/clip-card';
 import { ExportLinks } from '@/components/export-links';
 import { AnalyzeButton } from '@/components/analyze-button';
 import { LicenseBadge } from '@/components/license-badge';
+import { isDemoVideoId } from '@/lib/youtube/video-id';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,14 +68,23 @@ export default async function EpisodePage({
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <LicenseBadge license={episode.license} />
           <span className="text-slate-700">·</span>
-          <a
-            href={`https://www.youtube.com/watch?v=${episode.videoId}`}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="text-xs text-sky-400 hover:underline"
-          >
-            Watch on YouTube
-          </a>
+          {isDemoVideoId(episode.videoId) ? (
+            <span
+              className="text-xs text-slate-600"
+              title="Synthetic demo episode - there is no real video behind it. Set YOUTUBE_API_KEY to mine real podcasts."
+            >
+              Demo episode · no video
+            </span>
+          ) : (
+            <a
+              href={`https://www.youtube.com/watch?v=${episode.videoId}`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-xs text-sky-400 hover:underline"
+            >
+              Watch on YouTube
+            </a>
+          )}
           <span className="text-slate-700">·</span>
           <ExportLinks query={{ videoId: episode.videoId }} />
         </div>
