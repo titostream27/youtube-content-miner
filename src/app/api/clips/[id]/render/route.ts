@@ -14,35 +14,23 @@ interface RouteContext {
  * clamped to it, in ABSOLUTE video coordinates. The render service offsets
  * them to the clip and burns them as captions.
  *
- * Cues that STARTED before the clip window are trimmed: without word-level
- * timing we estimate by proportion (fraction of the cue inside the clip),
- * keeping only the trailing words that were actually spoken inside the clip.
- * Otherwise a half-sentence from the previous scene leaks into the start.
+ * Cues that STARTED before the clip window are dropped entirely: their first
+ * words were spoken before the clip, so they'd appear as dangling fragments
+ * ("going on." without "understand what's"). Without word-level timing we
+ * can't cleanly split a cue, so the first caption starts from the first cue
+ * that begins inside the clip.
  */
 function clipCaptions(videoId: string, startSec: number, endSec: number) {
   const transcript = getTranscript(videoId);
   if (!transcript) return [];
 
   return transcript.cues
-    .filter((cue) => cue.endSec > startSec && cue.startSec < endSec)
-    .map((cue) => {
-      let text = cue.text.trim();
-      let cueStart = cue.startSec;
-
-      if (cue.startSec < startSec) {
-        const insideFrac = (cue.endSec - startSec) / Math.max(cue.endSec - cue.startSec, 0.05);
-        const words = text.split(/\s+/);
-        const keep = Math.max(1, Math.round(words.length * insideFrac));
-        if (keep < words.length) text = words.slice(-keep).join(' ');
-        cueStart = startSec;
-      }
-
-      return {
-        start_sec: Math.max(cueStart, startSec),
-        end_sec: Math.min(cue.endSec, endSec),
-        text,
-      };
-    });
+    .filter((cue) => cue.startSec >= startSec && cue.startSec < endSec)
+    .map((cue) => ({
+      start_sec: Math.max(cue.startSec, startSec),
+      end_sec: Math.min(cue.endSec, endSec),
+      text: cue.text,
+    }));
 }
 
 /**
