@@ -251,8 +251,12 @@ export const config = {
      * the UI must be reachable from the user's browser.
      */
     publicBaseUrl: readString('RENDER_PUBLIC_URL') ?? 'http://localhost:8084',
-    /** Request timeout. Downloading a long source video can take a while. */
-    timeoutMs: readInt('RENDER_SERVICE_TIMEOUT_MS', 300_000),
+    /**
+     * Request timeout. Rendering a clip from a long source video re-encodes
+     * every frame through OpenCV; a 90-minute episode can take ~5 minutes.
+     * Generous so the synchronous render completes in one request.
+     */
+    timeoutMs: readInt('RENDER_SERVICE_TIMEOUT_MS', 900_000),
     /** Optional auth token sent as `x-render-token` if configured. */
     token: readString('RENDER_SERVICE_TOKEN'),
   },

@@ -29,6 +29,12 @@ export async function POST(_request: Request, context: RouteContext) {
     const clip = getClip(clipId);
     if (!clip) return notFound('Clip not found');
 
+    // Guard: a render is already in flight for this clip. Prevents the UI
+    // double-clicking and creating duplicate render jobs for the same video.
+    if (clip.renderStatus === 'rendering') {
+      return badRequest('Clip render already in progress');
+    }
+
     // Mark as rendering before the long call so a concurrent GET sees intent.
     updateClipRender(clipId, { status: 'rendering' });
 
