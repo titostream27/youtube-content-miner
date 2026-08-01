@@ -22,6 +22,7 @@ export const AGENT_ROLES = [
   'moment_detection',
   'clip_scoring',
   'clip_metadata',
+  'clip_seo',
 ] as const;
 
 export type AgentRole = (typeof AGENT_ROLES)[number];
@@ -94,6 +95,17 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     modelEnv: 'AGENT_CLIP_METADATA_MODEL',
     temperature: 0.55,
     maxOutputTokens: 2_000,
+    optional: true,
+  },
+  clip_seo: {
+    role: 'clip_seo',
+    label: 'Clip SEO Agent',
+    purpose:
+      'Generates optimized YouTube/TikTok/Reels titles, descriptions and hashtags for a rendered short.',
+    providerEnv: 'AGENT_CLIP_SEO_PROVIDER',
+    modelEnv: 'AGENT_CLIP_SEO_MODEL',
+    temperature: 0.7,
+    maxOutputTokens: 1_200,
     optional: true,
   },
 };

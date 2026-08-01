@@ -7,6 +7,7 @@ import { Card, Meter, Pill } from '@/components/ui/primitives';
 import { ScoreBadge, TierBadge } from '@/components/tier-badge';
 import { ClipActions } from '@/components/clip-actions';
 import { RenderButton } from '@/components/render-button';
+import { SeoButton } from '@/components/seo-button';
 import { LicenseBadge } from '@/components/license-badge';
 
 /**
@@ -172,6 +173,14 @@ export function ClipCard({
             renderStatus={clip.renderStatus}
             renderPath={clip.renderPath}
             renderError={clip.renderError}
+          />
+          <SeoButton
+            clipId={clip.id}
+            existing={{
+              title: clip.seoTitle,
+              description: clip.seoDescription,
+              tags: clip.seoTags,
+            }}
           />
         </div>
         <span className="numeric text-[11px] text-slate-600">clip #{clip.id}</span>
