@@ -44,8 +44,10 @@ export async function POST(_request: Request, context: RouteContext) {
       return badRequest('Publish already in progress');
     }
 
-    // Render file URL reachable from the poster service (Docker network).
-    const renderBase = config.render.baseUrl.replace(/\/$/, '');
+    // Render file URL reachable from the poster service. The poster service
+    // runs on the HOST (not in Docker), so it must use the host loopback —
+    // host.docker.internal only resolves inside the container network.
+    const renderBase = 'http://127.0.0.1:8084';
     const fileUrl = `${renderBase}/files/${clip.renderPath}`;
 
     // Mark publishing before the long call so a concurrent GET sees intent.
