@@ -230,6 +230,32 @@ export const config = {
     apiKey: readString('STT_API_KEY'),
     model: readString('STT_MODEL') ?? 'whisper-1',
   },
+
+  /**
+   * Hybrid render integration — the external shorts render service.
+   *
+   * The render service is the AI-Youtube-Shorts-Generator fork running as a
+   * separate FastAPI process (port 8084). It only cuts + reframes clips; all
+   * scoring happens here in the miner.
+   */
+  render: {
+    /**
+     * Base URL of the render service. Inside the Docker network the host is
+     * reached via host.docker.internal; `npm run dev` on the same machine can
+     * use 127.0.0.1 directly.
+     */
+    baseUrl: readString('RENDER_SERVICE_URL') ?? 'http://host.docker.internal:8084',
+    /**
+     * URL the browser can reach the render service at. The server-side call
+     * goes through the Docker network (baseUrl), but the file link embedded in
+     * the UI must be reachable from the user's browser.
+     */
+    publicBaseUrl: readString('RENDER_PUBLIC_URL') ?? 'http://localhost:8084',
+    /** Request timeout. Downloading a long source video can take a while. */
+    timeoutMs: readInt('RENDER_SERVICE_TIMEOUT_MS', 300_000),
+    /** Optional auth token sent as `x-render-token` if configured. */
+    token: readString('RENDER_SERVICE_TOKEN'),
+  },
 } as const;
 
 /* -------------------------------------------------------------------------- */

@@ -6,6 +6,7 @@ import { formatTimecode, youtubeTimestampUrl } from '@/lib/youtube/duration';
 import { Card, Meter, Pill } from '@/components/ui/primitives';
 import { ScoreBadge, TierBadge } from '@/components/tier-badge';
 import { ClipActions } from '@/components/clip-actions';
+import { RenderButton } from '@/components/render-button';
 import { LicenseBadge } from '@/components/license-badge';
 
 /**
@@ -163,8 +164,16 @@ export function ClipCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-[var(--color-line)] bg-black/10 px-5 py-2.5">
-        <ClipActions clipId={clip.id} status={clip.status} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-line)] bg-black/10 px-5 py-2.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <ClipActions clipId={clip.id} status={clip.status} />
+          <RenderButton
+            clipId={clip.id}
+            renderStatus={clip.renderStatus}
+            renderPath={clip.renderPath}
+            renderError={clip.renderError}
+          />
+        </div>
         <span className="numeric text-[11px] text-slate-600">clip #{clip.id}</span>
       </div>
     </Card>

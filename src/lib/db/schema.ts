@@ -138,6 +138,12 @@ CREATE TABLE IF NOT EXISTS clips (
   engine            TEXT NOT NULL,
   -- Editor workflow: new | approved | rejected | published
   status            TEXT NOT NULL DEFAULT 'new',
+  -- Hybrid render integration (shorts render service).
+  -- status: none | rendering | done | error
+  render_status     TEXT NOT NULL DEFAULT 'none',
+  render_job_id     TEXT,
+  render_path       TEXT,
+  render_error      TEXT,
   created_at        TEXT NOT NULL,
   UNIQUE (video_id, segment_index)
 );

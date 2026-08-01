@@ -10,6 +10,8 @@ import { fromJson, getDb, nowIso, toJson, transaction } from '../client';
 
 export type ClipStatus = 'new' | 'approved' | 'rejected' | 'published';
 
+export type RenderStatus = 'none' | 'rendering' | 'done' | 'error';
+
 /** A clip joined with the episode context the UI always needs alongside it. */
 export interface ClipRecord {
   id: number;
@@ -32,6 +34,11 @@ export interface ClipRecord {
   transcript: string;
   engine: ScoringEngineName;
   status: ClipStatus;
+  /** Hybrid render integration state. */
+  renderStatus: RenderStatus;
+  renderJobId: string | null;
+  renderPath: string | null;
+  renderError: string | null;
   createdAt: string;
   episodeTitle: string;
   channelTitle: string;
@@ -65,6 +72,10 @@ interface ClipRow {
   transcript: string;
   engine: string;
   status: string;
+  render_status: string;
+  render_job_id: string | null;
+  render_path: string | null;
+  render_error: string | null;
   created_at: string;
   episode_title: string | null;
   channel_title: string | null;
@@ -108,6 +119,10 @@ function mapClip(row: ClipRow): ClipRecord {
     transcript: row.transcript,
     engine: row.engine as ScoringEngineName,
     status: row.status as ClipStatus,
+    renderStatus: (row.render_status ?? 'none') as RenderStatus,
+    renderJobId: row.render_job_id ?? null,
+    renderPath: row.render_path ?? null,
+    renderError: row.render_error ?? null,
     createdAt: row.created_at,
     episodeTitle: row.episode_title ?? '(unknown episode)',
     channelTitle: row.channel_title ?? '(unknown channel)',
@@ -334,6 +349,38 @@ export function updateClipStatus(id: number, status: ClipStatus): boolean {
   const result = getDb()
     .prepare('UPDATE clips SET status = ? WHERE id = ?')
     .run(status, id);
+  return result.changes > 0;
+}
+
+/**
+ * Persist the render state for a clip. Called by the render integration
+ * endpoint before and after the render service runs.
+ */
+export function updateClipRender(
+  id: number,
+  params: {
+    status: RenderStatus;
+    jobId?: string | null;
+    path?: string | null;
+    error?: string | null;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET render_status = @status,
+              render_job_id = @jobId,
+              render_path   = @path,
+              render_error  = @error
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      status: params.status,
+      jobId: params.jobId ?? null,
+      path: params.path ?? null,
+      error: params.error ?? null,
+    });
   return result.changes > 0;
 }
 

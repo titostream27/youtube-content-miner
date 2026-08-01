@@ -71,6 +71,11 @@ function applyColumnMigrations(db: Database.Database): void {
     // attribution, everything else needs the owner's permission.
     { table: 'episodes', column: 'license', definition: 'TEXT' },
     { table: 'episodes', column: 'embeddable', definition: 'INTEGER' },
+    // Hybrid render integration — where the rendered short lives on disk.
+    { table: 'clips', column: 'render_status', definition: "TEXT NOT NULL DEFAULT 'none'" },
+    { table: 'clips', column: 'render_job_id', definition: 'TEXT' },
+    { table: 'clips', column: 'render_path', definition: 'TEXT' },
+    { table: 'clips', column: 'render_error', definition: 'TEXT' },
   ];
 
   for (const { table, column, definition } of columns) {
