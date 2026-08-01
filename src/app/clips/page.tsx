@@ -6,7 +6,7 @@ import { clipQuerySchema } from '@/lib/api/schemas';
 import { toClipFilters } from '@/lib/api/filters';
 import { pluralize } from '@/lib/utils/format';
 import { ClipFilters } from '@/components/clip-filters';
-import { ClipCard } from '@/components/clip-card';
+import { ClipTable } from '@/components/clip-table';
 import { ExportLinks } from '@/components/export-links';
 import { EmptyState, Pill, SectionTitle } from '@/components/ui/primitives';
 
@@ -104,11 +104,7 @@ export default async function ClipsPage({
           }
         />
       ) : (
-        <div className="space-y-4">
-          {clips.map((clip) => (
-            <ClipCard key={clip.id} clip={clip} />
-          ))}
-        </div>
+        <ClipTable clips={clips} />
       )}
 
       {total > PAGE_SIZE ? (
