@@ -49,6 +49,10 @@ export async function POST(_request: Request, context: RouteContext) {
     // host.docker.internal only resolves inside the container network.
     const renderBase = 'http://127.0.0.1:8084';
     const fileUrl = `${renderBase}/files/${clip.renderPath}`;
+    // Phase 7 integration: if the render job also produced a thumbnail, send
+    // it along so YouTube gets a custom thumbnail, not a random frame.
+    const jobId = clip.renderPath?.split('/')[0];
+    const thumbnailUrl = jobId ? `${renderBase}/files/${jobId}/thumbnail.jpg` : '';
 
     // Mark publishing before the long call so a concurrent GET sees intent.
     updateClipPublish(clipId, { status: 'publishing' });
@@ -71,6 +75,7 @@ export async function POST(_request: Request, context: RouteContext) {
           description: clip.seoDescription ?? '',
           tags: clip.seoTags,
           file_url: fileUrl,
+          thumbnail_url: thumbnailUrl,
           privacy: 'private',
         }),
         signal: controller.signal,
