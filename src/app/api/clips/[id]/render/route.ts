@@ -1,11 +1,30 @@
 import { config } from '@/lib/config';
 import { getClip, updateClipRender } from '@/lib/db/repositories/clips';
+import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
+}
+
+/**
+ * Select the transcript cues that overlap the clip's [start, end] window,
+ * clamped to it, in ABSOLUTE video coordinates. The render service offsets
+ * them to the clip and burns them as captions.
+ */
+function clipCaptions(videoId: string, startSec: number, endSec: number) {
+  const transcript = getTranscript(videoId);
+  if (!transcript) return [];
+
+  return transcript.cues
+    .filter((cue) => cue.endSec > startSec && cue.startSec < endSec)
+    .map((cue) => ({
+      start_sec: Math.max(cue.startSec, startSec),
+      end_sec: Math.min(cue.endSec, endSec),
+      text: cue.text,
+    }));
 }
 
 /**
@@ -59,6 +78,7 @@ export async function POST(_request: Request, context: RouteContext) {
               title: clip.title,
               start_sec: clip.startSec,
               end_sec: clip.endSec,
+              captions: clipCaptions(clip.videoId, clip.startSec, clip.endSec),
             },
           ],
         }),
