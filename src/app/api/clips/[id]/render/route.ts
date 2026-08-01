@@ -1,6 +1,7 @@
 import { config } from '@/lib/config';
 import { getClip, updateClipRender } from '@/lib/db/repositories/clips';
 import { getTranscript } from '@/lib/db/repositories/transcripts';
+import { generateClipHook } from '@/lib/ai/agents/clip-hook-agent';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -31,6 +32,23 @@ function clipCaptions(videoId: string, startSec: number, endSec: number) {
       end_sec: Math.min(cue.endSec, endSec),
       text: cue.text,
     }));
+}
+
+/**
+ * Plain text of the transcript cues that fall inside the clip window. Used to
+ * generate the hook line (Phase 5) — the hook needs the actual spoken content,
+ * not the SEO title.
+ */
+function clipTranscript(videoId: string, startSec: number, endSec: number): string {
+  const transcript = getTranscript(videoId);
+  if (!transcript) return '';
+
+  return transcript.cues
+    .filter((cue) => cue.startSec >= startSec && cue.startSec < endSec)
+    .map((cue) => cue.text)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -67,6 +85,24 @@ export async function POST(_request: Request, context: RouteContext) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), config.render.timeoutMs);
 
+    // Phase 5: generate the spoken hook from the clip transcript. Optional —
+    // if the agent fails we still render without an intro.
+    let hook = '';
+    try {
+      const transcriptText = clipTranscript(clip.videoId, clip.startSec, clip.endSec);
+      if (transcriptText.length > 20) {
+        const hookResult = await generateClipHook({
+          transcript: transcriptText,
+          episodeTitle: clip.episodeTitle ?? clip.title,
+          clipTitle: clip.title,
+        });
+        hook = hookResult.hook;
+        console.log(`[render] clip ${clipId} hook: "${hook}"`);
+      }
+    } catch (e) {
+      console.warn(`[render] clip ${clipId} hook generation failed: ${e}`);
+    }
+
     let response: Response;
     try {
       response = await fetch(`${renderBase}/api/render`, {
@@ -85,6 +121,7 @@ export async function POST(_request: Request, context: RouteContext) {
               start_sec: clip.startSec,
               end_sec: clip.endSec,
               captions: clipCaptions(clip.videoId, clip.startSec, clip.endSec),
+              hook,
             },
           ],
         }),

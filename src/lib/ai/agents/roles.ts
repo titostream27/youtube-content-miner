@@ -23,6 +23,7 @@ export const AGENT_ROLES = [
   'clip_scoring',
   'clip_metadata',
   'clip_seo',
+  'clip_hook',
 ] as const;
 
 export type AgentRole = (typeof AGENT_ROLES)[number];
@@ -106,6 +107,17 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     modelEnv: 'AGENT_CLIP_SEO_MODEL',
     temperature: 0.7,
     maxOutputTokens: 1_200,
+    optional: true,
+  },
+  clip_hook: {
+    role: 'clip_hook',
+    label: 'Clip Hook Agent',
+    purpose:
+      'Writes a single attention-grabbing spoken hook line (~2-3 seconds) for the short intro scene.',
+    providerEnv: 'AGENT_CLIP_HOOK_PROVIDER',
+    modelEnv: 'AGENT_CLIP_HOOK_MODEL',
+    temperature: 0.8,
+    maxOutputTokens: 300,
     optional: true,
   },
 };
