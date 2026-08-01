@@ -14,6 +14,7 @@ import { OpportunityScore } from '@/components/tier-badge';
 import { ClipCard } from '@/components/clip-card';
 import { ExportLinks } from '@/components/export-links';
 import { AnalyzeButton } from '@/components/analyze-button';
+import { RenderAllButton } from '@/components/render-all-button';
 import { LicenseBadge } from '@/components/license-badge';
 
 export const dynamic = 'force-dynamic';
@@ -106,9 +107,16 @@ export default async function EpisodePage({
                 <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Publishable moments · {publishable.length}
                 </h2>
-                {episode.analysisStatus === 'analysed' ? (
-                  <AnalyzeButton videoId={episode.videoId} label="Re-analyse" />
-                ) : null}
+                <div className="flex items-center gap-3">
+                  {episode.analysisStatus === 'analysed' ? (
+                    <AnalyzeButton videoId={episode.videoId} label="Re-analyse" />
+                  ) : null}
+                  <RenderAllButton
+                    videoId={episode.videoId}
+                    total={publishable.length}
+                    alreadyDone={publishable.filter((c) => c.renderStatus === 'done').length}
+                  />
+                </div>
               </div>
               {publishable.map((clip) => (
                 <ClipCard key={clip.id} clip={clip} showEpisode={false} />
