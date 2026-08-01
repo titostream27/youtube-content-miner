@@ -95,12 +95,9 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const renderBase = config.render.baseUrl.replace(/\/$/, '');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.render.timeoutMs);
-
   let response: Response;
   try {
-    response = await fetch(`${renderBase}/api/render`, {
+    response = await fetch(`${renderBase}/api/render/async`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -111,54 +108,37 @@ export async function POST(request: Request, context: RouteContext) {
         aspect_ratio: '9:16',
         clips: clipPayloads,
       }),
-      signal: controller.signal,
     });
-  } finally {
-    clearTimeout(timeout);
+  } catch (e) {
+    for (const c of pending) {
+      updateClipRender(c.id, { status: 'error', error: `render service unreachable: ${e}` });
+    }
+    return serverError(e);
   }
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
-    // Reset pending clips to error so the UI doesn't hang in "rendering".
     for (const c of pending) {
       updateClipRender(c.id, { status: 'error', error: `render service ${response.status}` });
     }
     return badRequest('Render service failed', { status: response.status, detail: body.slice(0, 300) });
   }
 
-  const result = (await response.json()) as {
-    job_id?: string;
-    rendered?: {
-      clip_id: number | string;
-      status: string;
-      clip_url?: string;
-      error?: string;
-    }[];
-  };
+  const result = (await response.json()) as { job_id?: string };
 
-  // Store results back per clip.
-  let renderedCount = 0;
-  let failedCount = 0;
-  for (const item of result.rendered ?? []) {
-    const clipId = Number(item.clip_id);
-    const done = item.status === 'ok' && item.clip_url;
-    const exists = pending.some((p) => p.id === clipId);
-    if (!exists) continue;
-    updateClipRender(clipId, {
-      status: done ? 'done' : 'error',
+  // Async: the job runs in the background. Store the job id on each pending
+  // clip; a separate poll endpoint (render-status) updates clips when done.
+  for (const c of pending) {
+    updateClipRender(c.id, {
+      status: 'rendering',
       jobId: result.job_id ?? null,
-      path: done ? item.clip_url : null,
-      error: done ? null : (item.error ?? 'render service returned no clip'),
     });
-    if (done) renderedCount += 1;
-    else failedCount += 1;
   }
 
   return ok({
     jobId: result.job_id ?? null,
-    total: pending.length,
-    rendered: renderedCount,
-    failed: failedCount,
+    queued: pending.length,
     skipped: clips.length - pending.length,
+    message: `Queued ${pending.length} clip(s) for rendering`,
   });
 }
