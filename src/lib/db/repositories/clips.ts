@@ -12,6 +12,8 @@ export type ClipStatus = 'new' | 'approved' | 'rejected' | 'published';
 
 export type RenderStatus = 'none' | 'rendering' | 'done' | 'error';
 
+export type PublishStatus = 'none' | 'publishing' | 'published' | 'error';
+
 /** A clip joined with the episode context the UI always needs alongside it. */
 export interface ClipRecord {
   id: number;
@@ -44,6 +46,11 @@ export interface ClipRecord {
   seoDescription: string | null;
   seoTags: string[];
   seoGeneratedAt: string | null;
+  /** Phase 3: publish integration state. */
+  publishStatus: PublishStatus;
+  publishUrl: string | null;
+  publishError: string | null;
+  publishDate: string | null;
   createdAt: string;
   episodeTitle: string;
   channelTitle: string;
@@ -85,6 +92,9 @@ interface ClipRow {
   seo_description: string | null;
   seo_tags: string | null;
   seo_generated_at: string | null;
+  publish_status: string | null;
+  publish_url: string | null;
+  publish_error: string | null;
   created_at: string;
   episode_title: string | null;
   channel_title: string | null;
@@ -136,6 +146,10 @@ function mapClip(row: ClipRow): ClipRecord {
     seoDescription: row.seo_description ?? null,
     seoTags: fromJson<string[]>(row.seo_tags ?? '[]', []),
     seoGeneratedAt: row.seo_generated_at ?? null,
+    publishStatus: (row.publish_status ?? 'none') as PublishStatus,
+    publishUrl: row.publish_url ?? null,
+    publishError: row.publish_error ?? null,
+    publishDate: row.published_at ?? null,
     createdAt: row.created_at,
     episodeTitle: row.episode_title ?? '(unknown episode)',
     channelTitle: row.channel_title ?? '(unknown channel)',
@@ -423,6 +437,36 @@ export function updateClipSeo(
       description: params.description,
       tags: toJson(params.tags),
       generatedAt: nowIso(),
+    });
+  return result.changes > 0;
+}
+
+/**
+ * Persist publish state for a clip (Phase 3 auto-post integration).
+ */
+export function updateClipPublish(
+  id: number,
+  params: {
+    status: PublishStatus;
+    url?: string | null;
+    error?: string | null;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET publish_status = @status,
+              publish_url    = @url,
+              publish_error  = @error,
+              published_at   = CASE WHEN @status = 'published' THEN @now ELSE published_at END
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      status: params.status,
+      url: params.url ?? null,
+      error: params.error ?? null,
+      now: nowIso(),
     });
   return result.changes > 0;
 }

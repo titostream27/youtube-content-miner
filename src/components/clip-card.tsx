@@ -8,6 +8,7 @@ import { ScoreBadge, TierBadge } from '@/components/tier-badge';
 import { ClipActions } from '@/components/clip-actions';
 import { RenderButton } from '@/components/render-button';
 import { SeoButton } from '@/components/seo-button';
+import { PublishButton } from '@/components/publish-button';
 import { LicenseBadge } from '@/components/license-badge';
 
 /**
@@ -181,6 +182,14 @@ export function ClipCard({
               description: clip.seoDescription,
               tags: clip.seoTags,
             }}
+          />
+          <PublishButton
+            clipId={clip.id}
+            publishStatus={clip.publishStatus}
+            publishUrl={clip.publishUrl}
+            publishError={clip.publishError}
+            renderStatus={clip.renderStatus}
+            hasSeo={Boolean(clip.seoTitle)}
           />
         </div>
         <span className="numeric text-[11px] text-slate-600">clip #{clip.id}</span>

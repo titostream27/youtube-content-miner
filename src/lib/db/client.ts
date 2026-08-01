@@ -81,6 +81,11 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'seo_description', definition: 'TEXT' },
     { table: 'clips', column: 'seo_tags', definition: "TEXT NOT NULL DEFAULT '[]'" },
     { table: 'clips', column: 'seo_generated_at', definition: 'TEXT' },
+    // Phase 3: publish integration.
+    { table: 'clips', column: 'publish_status', definition: "TEXT NOT NULL DEFAULT 'none'" },
+    { table: 'clips', column: 'publish_url', definition: 'TEXT' },
+    { table: 'clips', column: 'publish_error', definition: 'TEXT' },
+    { table: 'clips', column: 'published_at', definition: 'TEXT' },
   ];
 
   for (const { table, column, definition } of columns) {

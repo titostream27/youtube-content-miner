@@ -260,6 +260,17 @@ export const config = {
     /** Optional auth token sent as `x-render-token` if configured. */
     token: readString('RENDER_SERVICE_TOKEN'),
   },
+  /**
+   * Phase 3 — publish integration.
+   *
+   * The poster service uploads rendered shorts to YouTube/TikTok/Reels using
+   * platform OAuth. Same Docker-network pattern as the render service.
+   */
+  publish: {
+    baseUrl: readString('POSTER_SERVICE_URL') ?? 'http://host.docker.internal:8085',
+    timeoutMs: readInt('POSTER_SERVICE_TIMEOUT_MS', 900_000),
+    token: readString('POSTER_SERVICE_TOKEN'),
+  },
 } as const;
 
 /* -------------------------------------------------------------------------- */

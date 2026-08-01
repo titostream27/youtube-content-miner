@@ -149,6 +149,12 @@ CREATE TABLE IF NOT EXISTS clips (
   seo_description   TEXT,
   seo_tags          TEXT NOT NULL DEFAULT '[]',
   seo_generated_at  TEXT,
+  -- Phase 3: publish integration (auto-post to YouTube/TikTok/Reels).
+  -- status: none | publishing | published | error
+  publish_status    TEXT NOT NULL DEFAULT 'none',
+  publish_url       TEXT,
+  publish_error     TEXT,
+  published_at      TEXT,
   created_at        TEXT NOT NULL,
   UNIQUE (video_id, segment_index)
 );
