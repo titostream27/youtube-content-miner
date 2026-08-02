@@ -52,6 +52,19 @@ export async function POST(request: Request) {
       overrides: data.agents as AgentOverrides | undefined,
     });
 
+    // Optional Phase 8+ flow: automatically push every qualifying clip
+    // (non-archive tier from analysed episodes) through render → SEO →
+    // publish. Fire-and-forget so the run response returns immediately;
+    // progress is visible in the UI via the per-clip render/SEO/publish
+    // status fields.
+    if (data.autoProcess) {
+      const { autoProcessRun } = await import('@/lib/pipeline/auto-process');
+      void autoProcessRun(summary.runId).catch((err) => {
+        console.error('[auto-process] background job failed:', err);
+      });
+      console.log(`[api] auto-process triggered for run ${summary.runId}`);
+    }
+
     return ok(summary, { status: 201 });
   } catch (error) {
     return serverError(error);

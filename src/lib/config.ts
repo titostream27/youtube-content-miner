@@ -35,6 +35,13 @@ function readInt(name: string, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function readFloat(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number.parseFloat(raw);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 function readBool(name: string, fallback = false): boolean {
   const raw = process.env[name]?.trim().toLowerCase();
   if (!raw) return fallback;
@@ -158,9 +165,24 @@ export const config = {
     episodeScoreThreshold: readInt('EPISODE_SCORE_THRESHOLD', DEFAULT_EPISODE_SCORE_THRESHOLD),
     clipScoreThreshold: readInt('CLIP_SCORE_THRESHOLD', LIBRARY_MIN_SCORE),
     segment: {
-      minDurationSec: readInt('SEGMENT_MIN_SEC', 15),
-      maxDurationSec: readInt('SEGMENT_MAX_SEC', 90),
-      targetDurationSec: readInt('SEGMENT_TARGET_SEC', 45),
+      minDurationSec: readInt('SEGMENT_MIN_SEC', 18),
+      maxDurationSec: readInt('SEGMENT_MAX_SEC', 60),
+      targetDurationSec: readInt('SEGMENT_TARGET_SEC', 38),
+    },
+    // Phase 1 (Correctness) — two-pass highlight selection + topic boundary.
+    highlight: {
+      preferredMinSec: readInt('HIGHLIGHT_PREFERRED_MIN_S', 25),
+      preferredMaxSec: readInt('HIGHLIGHT_PREFERRED_MAX_S', 50),
+      hardMaxSec: readInt('HIGHLIGHT_HARD_MAX_S', 60),
+      allowShortCompleteClip: readInt('HIGHLIGHT_ALLOW_SHORT_COMPLETE_CLIP', 1) === 1,
+      minCompleteDurationSec: readInt('HIGHLIGHT_MIN_COMPLETE_DURATION_S', 14),
+      nextTopicLookaheadSec: readInt('HIGHLIGHT_NEXT_TOPIC_LOOKAHEAD_S', 12),
+      topicChangeThreshold: readFloat('HIGHLIGHT_TOPIC_CHANGE_THRESHOLD', 0.58),
+      endGuardSec: readFloat('HIGHLIGHT_END_GUARD_S', 0.2),
+      minEndingConfidence: readFloat('HIGHLIGHT_MIN_ENDING_CONFIDENCE', 0.82),
+      maxNextTopicContamination: readFloat('HIGHLIGHT_MAX_NEXT_TOPIC_CONTAMINATION', 0.18),
+      contextBeforeSec: readInt('HIGHLIGHT_CONTEXT_BEFORE_S', 15),
+      contextAfterSec: readInt('HIGHLIGHT_CONTEXT_AFTER_S', 20),
     },
   },
 

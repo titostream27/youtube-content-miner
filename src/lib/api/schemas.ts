@@ -39,6 +39,7 @@ export const runRequestSchema = z
     clipScoreThreshold: z.number().int().min(0).max(100).optional(),
     publishedWithinDays: z.number().int().min(1).max(3650).optional(),
     force: z.boolean().optional(),
+    autoProcess: z.boolean().optional(),
     agents: agentOverridesSchema,
   })
   .refine((value) => value.mode !== 'topic' || Boolean(value.topic), {

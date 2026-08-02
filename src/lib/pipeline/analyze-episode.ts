@@ -10,10 +10,10 @@ import type {
 import { computeClipScore } from '@/lib/scoring/clip-score';
 import { computeConfidence } from '@/lib/scoring/confidence';
 import { detectMoments } from '@/lib/moments/segmentation';
+import { twoPassHighlightSelection } from '@/lib/moments/two-pass';
 import {
   judgeSegmentHeuristically,
   refineClipMetadata,
-  refineMoments,
   scoreSegmentsWithAgent,
   UsageLedger,
   type AgentOverrides,
@@ -138,17 +138,24 @@ export async function analyzeEpisode(
     };
   }
 
-  // Step 4b - semantic refinement: drop sponsor reads, tighten boundaries.
-  const refinement = await refineMoments({
-    segments: detection.segments,
-    episodeTitle: candidate.title,
-    minDurationSec: config.pipeline.segment.minDurationSec,
-    overrides,
-    ledger,
-    signal,
-  });
-  warnings.push(...refinement.warnings);
-  const segments = refinement.segments;
+  // Step 4b - two-pass highlight selection: Pass 2 (boundary refinement) with
+  // deterministic topic-boundary guards (Phase 1 Correctness).
+  const twoPass = await twoPassHighlightSelection(
+    transcript,
+    detection.segments,
+    candidate.title,
+    {
+      minDurationSec: config.pipeline.segment.minDurationSec,
+      maxDurationSec: config.pipeline.segment.maxDurationSec,
+      targetDurationSec: config.pipeline.segment.targetDurationSec,
+      maxSegments: config.pipeline.maxScoredSegmentsPerEpisode,
+      overrides,
+      ledger,
+      signal,
+    },
+  );
+  warnings.push(...twoPass.warnings);
+  const segments = twoPass.segments;
 
   // Step 5 - clip scoring. The agent handles what it can; every segment it
   // misses or fails on falls through to the deterministic engine, so a partial

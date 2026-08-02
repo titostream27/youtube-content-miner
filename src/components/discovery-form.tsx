@@ -80,6 +80,7 @@ export function DiscoveryForm({
   const [episodeThreshold, setEpisodeThreshold] = useState(defaults.episodeThreshold);
   const [clipThreshold, setClipThreshold] = useState(defaults.clipThreshold);
   const [force, setForce] = useState(false);
+  const [autoProcess, setAutoProcess] = useState(false);
   const [showAgents, setShowAgents] = useState(false);
   const [overrides, setOverrides] = useState<Record<string, string>>({});
 
@@ -127,6 +128,7 @@ export function DiscoveryForm({
           episodeScoreThreshold: episodeThreshold,
           clipScoreThreshold: clipThreshold,
           force,
+          autoProcess,
           agents: buildAgentOverrides(),
         }),
       });
@@ -305,6 +307,16 @@ export function DiscoveryForm({
               className="size-3.5 rounded border-slate-600 bg-black/30"
             />
             Re-analyse episodes that already have clips
+          </label>
+
+          <label className="flex items-center gap-2 text-xs text-slate-400">
+            <input
+              type="checkbox"
+              checked={autoProcess}
+              onChange={(event) => setAutoProcess(event.target.checked)}
+              className="size-3.5 rounded border-slate-600 bg-black/30"
+            />
+            Auto-process: render → SEO → publish every qualifying clip
           </label>
 
           {/* Per-agent provider routing */}

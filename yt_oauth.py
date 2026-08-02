@@ -13,7 +13,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-SCOPES = "https://www.googleapis.com/auth/youtube.upload"
+SCOPES = "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.force-ssl"
 
 def load_env(path=".env"):
     env = {}
