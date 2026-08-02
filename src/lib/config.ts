@@ -270,6 +270,8 @@ export const config = {
     baseUrl: readString('POSTER_SERVICE_URL') ?? 'http://host.docker.internal:8085',
     timeoutMs: readInt('POSTER_SERVICE_TIMEOUT_MS', 900_000),
     token: readString('POSTER_SERVICE_TOKEN'),
+    /** Default privacy for published videos: 'public' | 'private' | 'unlisted' */
+    privacy: (readString('PUBLISH_PRIVACY') ?? 'public') as 'public' | 'private' | 'unlisted',
   },
 } as const;
 

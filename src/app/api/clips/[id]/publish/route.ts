@@ -76,7 +76,7 @@ export async function POST(_request: Request, context: RouteContext) {
           tags: clip.seoTags,
           file_url: fileUrl,
           thumbnail_url: thumbnailUrl,
-          privacy: 'private',
+          privacy: config.publish.privacy,
         }),
         signal: controller.signal,
       });
