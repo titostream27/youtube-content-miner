@@ -2,6 +2,7 @@ import { config } from '@/lib/config';
 import { getClip, updateClipRender } from '@/lib/db/repositories/clips';
 import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { generateClipHook } from '@/lib/ai/agents/clip-hook-agent';
+import { upsertRenderJob } from '@/lib/db/repositories/render-jobs';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -54,13 +55,12 @@ function clipTranscript(videoId: string, startSec: number, endSec: number): stri
 /**
  * POST /api/clips/:id/render
  *
- * Hybrid render integration: hand the clip's [start, end] window to the
- * external shorts render service, which downloads the source video once and
- * cuts a vertical (9:16) short. No scoring happens here — the miner already
- * ranked this clip; the render service only produces the file.
+ * Hybrid render integration (Phase 2, brief §18-19): queue an ASYNC final
+ * render on the render service and return immediately. The caller polls
+ * GET /api/render-jobs/:id or /api/episodes/:videoId/render-status.
  *
- * Response body mirrors the render service:
- *   { jobId, sourceVideo, rendered: [{ clipId, status, durationSec, clipPath?, error? }] }
+ * (Was a blocking synchronous call to /api/render that timed out on long
+ * clips and left the clip stuck in "rendering".)
  */
 export async function POST(_request: Request, context: RouteContext) {
   const { id } = await context.params;
@@ -81,10 +81,6 @@ export async function POST(_request: Request, context: RouteContext) {
     // Mark as rendering before the long call so a concurrent GET sees intent.
     updateClipRender(clipId, { status: 'rendering' });
 
-    const renderBase = config.render.baseUrl.replace(/\/$/, '');
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), config.render.timeoutMs);
-
     // Phase 5: generate the spoken hook from the clip transcript. Optional —
     // if the agent fails we still render without an intro.
     let hook = '';
@@ -103,24 +99,38 @@ export async function POST(_request: Request, context: RouteContext) {
       console.warn(`[render] clip ${clipId} hook generation failed: ${e}`);
     }
 
+    const renderBase = config.render.baseUrl.replace(/\/$/, '');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), config.render.timeoutMs);
+
     let response: Response;
     try {
-      response = await fetch(`${renderBase}/api/render`, {
+      response = await fetch(`${renderBase}/api/render/async`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(config.render.token ? { 'x-render-token': config.render.token } : {}),
         },
         body: JSON.stringify({
+          contract_version: '2.0',
+          request_id: `render:${clip.videoId}:${clipId}:final`,
+          episode_id: clip.videoId,
           video_url: `https://www.youtube.com/watch?v=${clip.videoId}`,
-          aspect_ratio: '9:16',
+          mode: 'final',
           clips: [
             {
               clip_id: clip.id,
-              title: clip.title,
               start_sec: clip.startSec,
               end_sec: clip.endSec,
-              captions: clipCaptions(clip.videoId, clip.startSec, clip.endSec),
+              narrative: { main_topic: clip.mainTopic ?? '' },
+              caption_plan: {
+                language: 'en',
+                cues: clipCaptions(clip.videoId, clip.startSec, clip.endSec).map((c) => ({
+                  start_sec: c.start_sec,
+                  end_sec: c.end_sec,
+                  text: c.text,
+                })),
+              },
               hook,
             },
           ],
@@ -142,47 +152,33 @@ export async function POST(_request: Request, context: RouteContext) {
 
     const result = (await response.json()) as {
       job_id?: string;
-      source_video?: string;
-      rendered?: {
-        clip_id: number | string;
-        status: string;
-        clip_path?: string;
-        clip_url?: string;
-        error?: string;
-      }[];
     };
+    const jobId = result.job_id ?? null;
 
-    const mine = result.rendered?.find((r) => Number(r.clip_id) === clip.id);
-    const done = mine?.status === 'ok' && mine.clip_url;
+    // Persist job + link it to the clip so render-status polling finds it.
+    if (jobId) {
+      upsertRenderJob({
+        jobId,
+        episodeId: clip.videoId,
+        mode: 'final',
+        status: 'running',
+      });
+      updateClipRender(clipId, { status: 'rendering', jobId });
+    }
 
-    // Store the render-relative URL (<job>/<file>); the UI builds the public
-    // link from config.render.publicBaseUrl so it works from any browser.
-    updateClipRender(clipId, {
-      status: done ? 'done' : 'error',
-      jobId: result.job_id ?? null,
-      path: done ? mine.clip_url : null,
-      error: done ? null : (mine?.error ?? 'render service returned no clip'),
-    });
-
-    const publicBase = config.render.publicBaseUrl.replace(/\/$/, '');
-    const refreshed = getClip(clipId);
     return ok({
-      jobId: result.job_id ?? null,
-      sourceVideo: result.source_video ?? null,
-      clip: refreshed,
-      publicUrl:
-        refreshed?.renderStatus === 'done' && refreshed.renderPath
-          ? `${publicBase}/files/${refreshed.renderPath}`
-          : null,
+      jobId,
+      mode: 'final',
+      message: 'Final render queued. Poll GET /api/render-jobs/:id or /api/episodes/:videoId/render-status',
     });
   } catch (error) {
     // Fetch aborted by timeout — surface it as a render error, not a 500.
     if (error instanceof Error && error.name === 'AbortError') {
       updateClipRender(clipId, {
         status: 'error',
-        error: `render timed out after ${config.render.timeoutMs}ms`,
+        error: `render queue timed out after ${config.render.timeoutMs}ms`,
       });
-      return badRequest('Render timed out', { timeoutMs: config.render.timeoutMs });
+      return badRequest('Render queue timed out', { timeoutMs: config.render.timeoutMs });
     }
     return serverError(error);
   }
