@@ -313,4 +313,31 @@ CREATE TABLE IF NOT EXISTS portfolio_suggestions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_portfolio_suggestions_week ON portfolio_suggestions (week);
+
+-- Phase 3 (Master Task Brief §29): market fit scores per clip.
+CREATE TABLE IF NOT EXISTS market_fit_scores (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id            INTEGER NOT NULL,
+  market             TEXT NOT NULL,
+  score              REAL NOT NULL,
+  recommended_market TEXT NOT NULL,
+  reasons            TEXT,           -- JSON array
+  computed_at        TEXT NOT NULL,
+  UNIQUE (clip_id, market)
+);
+
+CREATE INDEX IF NOT EXISTS idx_market_fit_clip ON market_fit_scores (clip_id);
+
+-- Phase 3 (Master Task Brief §31): comment mining signals.
+CREATE TABLE IF NOT EXISTS comment_signals (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  video_id     TEXT NOT NULL,
+  clip_id      INTEGER,
+  kind         TEXT NOT NULL,   -- timestamp_mention|repeated_question|controversial_claim|audience_language|objection|follow_up_topic|quoted_statement
+  payload      TEXT NOT NULL,   -- JSON (e.g. {time_sec, text, count})
+  confidence   REAL NOT NULL DEFAULT 0.5,
+  created_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_comment_signals_video ON comment_signals (video_id, kind);
 `;
