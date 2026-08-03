@@ -83,6 +83,12 @@ export interface ClipRecord {
   /** Phase 3 (§24-25): publish gates + rights workflow. */
   rightsStatus: string;
   rightsNotes: string | null;
+  rightsEvidence: string | null;
+  rightsAttributionTemplate: string | null;
+  rightsAllowedPlatforms: string[];
+  rightsAllowedRegions: string[];
+  rightsExpiration: string | null;
+  rightsReviewedBy: string | null;
   qcStatus: string;
   qcScore: number | null;
   qcReport: string | null;
@@ -146,6 +152,12 @@ interface ClipRow {
   topic_after: string | null;
   rights_status: string | null;
   rights_notes: string | null;
+  rights_evidence: string | null;
+  rights_attribution_template: string | null;
+  rights_allowed_platforms: string | null;
+  rights_allowed_regions: string | null;
+  rights_expiration: string | null;
+  rights_reviewed_by: string | null;
   qc_status: string | null;
   qc_score: number | null;
   qc_report: string | null;
@@ -225,6 +237,12 @@ function mapClip(row: ClipRow): ClipRecord {
     topicAfter: row.topic_after ?? null,
     rightsStatus: row.rights_status ?? 'unknown',
     rightsNotes: row.rights_notes ?? null,
+    rightsEvidence: row.rights_evidence ?? null,
+    rightsAttributionTemplate: row.rights_attribution_template ?? null,
+    rightsAllowedPlatforms: fromJson<string[]>(row.rights_allowed_platforms, []),
+    rightsAllowedRegions: fromJson<string[]>(row.rights_allowed_regions, []),
+    rightsExpiration: row.rights_expiration ?? null,
+    rightsReviewedBy: row.rights_reviewed_by ?? null,
     qcStatus: row.qc_status ?? 'pending',
     qcScore: row.qc_score ?? null,
     qcReport: row.qc_report ?? null,
@@ -320,6 +338,13 @@ export function replaceClipsForEpisode(
         topicBefore: clip.topicBefore ?? null,
         topicAfter: clip.topicAfter ?? null,
         rightsStatus: 'unknown',
+        rightsNotes: null,
+        rightsEvidence: null,
+        rightsAttributionTemplate: null,
+        rightsAllowedPlatforms: [],
+        rightsAllowedRegions: [],
+        rightsExpiration: null,
+        rightsReviewedBy: null,
         qcStatus: 'pending',
         qcScore: null,
       });
@@ -570,25 +595,45 @@ export function updateClipPublish(
   return result.changes > 0;
 }
 
-/** Phase 3 (Master Task Brief §25): set reuse rights on a clip. */
+/** Phase 3 (Master Task Brief §25): set reuse rights + full metadata. */
 export function updateClipRights(
   id: number,
   params: {
     status: string;
     notes?: string | null;
+    evidence?: string | null;
+    attributionTemplate?: string | null;
+    allowedPlatforms?: string[];
+    allowedRegions?: string[];
+    expiration?: string | null;
+    reviewedBy?: string | null;
   },
 ): boolean {
   const result = getDb()
     .prepare(
       `UPDATE clips
           SET rights_status = @status,
-              rights_notes  = @notes
+              rights_notes  = @notes,
+              rights_evidence = @evidence,
+              rights_attribution_template = @attributionTemplate,
+              rights_allowed_platforms = @allowedPlatforms,
+              rights_allowed_regions = @allowedRegions,
+              rights_expiration = @expiration,
+              rights_reviewed_by = @reviewedBy,
+              rights_reviewed_at = @now
         WHERE id = @id`,
     )
     .run({
       id,
       status: params.status,
       notes: params.notes ?? null,
+      evidence: params.evidence ?? null,
+      attributionTemplate: params.attributionTemplate ?? null,
+      allowedPlatforms: toJson(params.allowedPlatforms ?? []),
+      allowedRegions: toJson(params.allowedRegions ?? []),
+      expiration: params.expiration ?? null,
+      reviewedBy: params.reviewedBy ?? null,
+      now: nowIso(),
     });
   return result.changes > 0;
 }
@@ -615,6 +660,29 @@ export function updateClipQc(
       status: params.status,
       score: params.score ?? null,
       note: params.note ?? null,
+    });
+  return result.changes > 0;
+}
+
+/** Phase 3 (Master Task Brief §35): store scheduling info on the clip. */
+export function updateClipSchedule(
+  id: number,
+  params: {
+    scheduledAt: string;
+    targetMarket: string;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET scheduled_at = @scheduledAt,
+              target_market = @targetMarket
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      scheduledAt: params.scheduledAt,
+      targetMarket: params.targetMarket,
     });
   return result.changes > 0;
 }

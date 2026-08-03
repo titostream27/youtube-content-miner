@@ -214,4 +214,103 @@ CREATE TABLE IF NOT EXISTS render_jobs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_render_jobs_episode ON render_jobs (episode_id);
+
+-- Phase 3 (Master Task Brief §26): analytics snapshots.
+-- Time-series rows per clip+platform+window; old snapshots are NEVER
+-- overwritten (append-only, so trend computation stays honest).
+CREATE TABLE IF NOT EXISTS analytics_snapshots (
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id               INTEGER NOT NULL,
+  platform              TEXT NOT NULL DEFAULT 'youtube',
+  snapshot_window_hours INTEGER NOT NULL,   -- 24 | 72 | 168 | 672
+  captured_at           TEXT NOT NULL,
+  views                 INTEGER NOT NULL DEFAULT 0,
+  viewed_rate           REAL,               -- viewed vs swiped away
+  avg_view_duration_sec REAL,
+  avg_percentage_viewed REAL,
+  retention_1s          REAL,
+  retention_3s          REAL,
+  retention_5s          REAL,
+  retention_10s         REAL,
+  likes                 INTEGER NOT NULL DEFAULT 0,
+  comments              INTEGER NOT NULL DEFAULT 0,
+  shares                INTEGER NOT NULL DEFAULT 0,
+  subscriber_gain       INTEGER NOT NULL DEFAULT 0,
+  traffic_source        TEXT,
+  top_country           TEXT,
+  created_at            TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_snapshots_clip ON analytics_snapshots (clip_id, snapshot_window_hours, captured_at);
+
+-- Phase 3 (Master Task Brief §30): episode metric snapshots for trend/evergreen/
+-- breakout scoring. Append-only, per capture.
+CREATE TABLE IF NOT EXISTS episode_metric_snapshots (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  video_id      TEXT NOT NULL,
+  view_count    INTEGER,
+  like_count    INTEGER,
+  comment_count INTEGER,
+  captured_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_episode_metric_snapshots_video ON episode_metric_snapshots (video_id, captured_at);
+
+-- Phase 3 (Master Task Brief §28): per-destination-channel scoring profiles.
+CREATE TABLE IF NOT EXISTS channel_profiles (
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  profile_id            TEXT NOT NULL UNIQUE,
+  name                  TEXT,
+  preferred_duration_sec TEXT,     -- JSON array, e.g. "[28,42]"
+  strong_categories     TEXT,      -- JSON array
+  weak_categories       TEXT,      -- JSON array
+  preferred_hook_types  TEXT,      -- JSON array
+  target_markets        TEXT,      -- JSON array
+  active                INTEGER NOT NULL DEFAULT 1,
+  created_at            TEXT NOT NULL,
+  updated_at            TEXT NOT NULL
+);
+
+-- Phase 3 (Master Task Brief §32): semantic embeddings for dedup.
+-- vector is stored as JSON float array (SQLite has no native vector type).
+CREATE TABLE IF NOT EXISTS content_embeddings (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id      INTEGER NOT NULL UNIQUE,
+  kind         TEXT NOT NULL DEFAULT 'clip',  -- clip|core_claim|hook|payoff
+  text         TEXT,
+  vector       TEXT,                          -- JSON float[]
+  model        TEXT,
+  created_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_content_embeddings_clip ON content_embeddings (clip_id);
+
+-- Phase 3 (Master Task Brief §35): content calendar entries (scheduled posts).
+CREATE TABLE IF NOT EXISTS content_calendar (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id      INTEGER NOT NULL,
+  scheduled_at TEXT NOT NULL,      -- ISO with explicit timezone offset
+  target_market TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'scheduled',  -- scheduled|paused|published|cancelled
+  slot_label   TEXT,               -- e.g. "Monday"
+  reason       TEXT,
+  created_at   TEXT NOT NULL,
+  updated_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_content_calendar_clip ON content_calendar (clip_id);
+CREATE INDEX IF NOT EXISTS idx_content_calendar_at ON content_calendar (scheduled_at);
+
+-- Phase 3 (Master Task Brief §33): portfolio planning suggestions.
+CREATE TABLE IF NOT EXISTS portfolio_suggestions (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  week         TEXT NOT NULL,      -- "2026-W32"
+  clip_id      INTEGER NOT NULL,
+  slot         TEXT,               -- "Monday"
+  reason       TEXT,
+  status       TEXT NOT NULL DEFAULT 'suggested',  -- suggested|approved|rejected
+  created_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_portfolio_suggestions_week ON portfolio_suggestions (week);
 `;

@@ -106,6 +106,14 @@ function applyColumnMigrations(db: Database.Database): void {
     // Rights workflow (brief §25).
     { table: 'clips', column: 'rights_status', definition: "TEXT NOT NULL DEFAULT 'unknown'" },
     { table: 'clips', column: 'rights_notes', definition: 'TEXT' },
+    // Phase 3 (Master Task Brief §25): full rights metadata.
+    { table: 'clips', column: 'rights_evidence', definition: 'TEXT' },
+    { table: 'clips', column: 'rights_attribution_template', definition: 'TEXT' },
+    { table: 'clips', column: 'rights_allowed_platforms', definition: "TEXT NOT NULL DEFAULT '[]'" },
+    { table: 'clips', column: 'rights_allowed_regions', definition: "TEXT NOT NULL DEFAULT '[]'" },
+    { table: 'clips', column: 'rights_expiration', definition: 'TEXT' },
+    { table: 'clips', column: 'rights_reviewed_by', definition: 'TEXT' },
+    { table: 'clips', column: 'rights_reviewed_at', definition: 'TEXT' },
     // Render QC (brief §23/§24 publish gates).
     { table: 'clips', column: 'qc_status', definition: "TEXT NOT NULL DEFAULT 'pending'" },
     { table: 'clips', column: 'qc_score', definition: 'REAL' },
