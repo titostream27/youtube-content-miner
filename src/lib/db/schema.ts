@@ -197,4 +197,21 @@ CREATE TABLE IF NOT EXISTS clip_performance (
 );
 
 CREATE INDEX IF NOT EXISTS idx_clip_performance_clip ON clip_performance (clip_id);
+
+-- Phase 2 (Master Task Brief §19): asynchronous render jobs.
+-- Job state lives in the DB so a service restart does not lose it.
+CREATE TABLE IF NOT EXISTS render_jobs (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_id      TEXT NOT NULL UNIQUE,
+  episode_id  TEXT,
+  mode        TEXT NOT NULL DEFAULT 'final',
+  status      TEXT NOT NULL DEFAULT 'queued',
+  request     TEXT,
+  response    TEXT,
+  error       TEXT,
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_render_jobs_episode ON render_jobs (episode_id);
 `;

@@ -3,6 +3,8 @@ import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { getEpisode } from '@/lib/db/repositories/episodes';
 import { listClips, updateClipRender } from '@/lib/db/repositories/clips';
 import { generateClipHook } from '@/lib/ai/agents/clip-hook-agent';
+import { upsertRenderJob } from '@/lib/db/repositories/render-jobs';
+import { buildRenderContract } from '@/lib/render/contract';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -24,32 +26,24 @@ function clipTranscript(videoId: string, startSec: number, endSec: number): stri
     .trim();
 }
 
-/** ASR cues inside the clip window (for caption burning). */
-function clipCaptions(videoId: string, startSec: number, endSec: number) {
-  const transcript = getTranscript(videoId);
-  if (!transcript) return [];
-
-  return transcript.cues
-    .filter((cue) => cue.startSec >= startSec && cue.startSec < endSec)
-    .map((cue) => ({
-      start_sec: Math.max(cue.startSec, startSec),
-      end_sec: Math.min(cue.endSec, endSec),
-      text: cue.text,
-    }));
-}
-
 /**
  * POST /api/episodes/:videoId/render-all
  *
- * Phase 8 — batch pipeline: render EVERY clip of an episode in one render
- * service call (the source video is downloaded once and each clip is cut
- * from it). Hooks are generated per clip first. Already-done clips are
- * skipped unless `?force=1` is passed.
+ * Phase 2 (Master Task Brief §18) — episode batch rendering: render ALL clips
+ * of an episode in ONE render service call using the versioned v2 contract
+ * (the source video is downloaded once and each clip is cut from it).
+ *
+ * Query params:
+ *   ?force=1       re-render clips already done
+ *   ?mode=preview  render a cheap preview (540x960) instead of final
+ *
+ * Already-done clips are skipped unless `force=1` is passed.
  */
 export async function POST(request: Request, context: RouteContext) {
   const { videoId } = await context.params;
   const url = new URL(request.url);
   const force = url.searchParams.get('force') === '1';
+  const mode = url.searchParams.get('mode') === 'preview' ? 'preview' : 'final';
 
   const episode = getEpisode(videoId);
   if (!episode) return notFound('Episode not found');
@@ -67,8 +61,8 @@ export async function POST(request: Request, context: RouteContext) {
     updateClipRender(c.id, { status: 'rendering' });
   }
 
-  // Generate hooks (DeepSeek) for clips that don't have SEO text as fallback.
-  const clipPayloads = [];
+  // Generate hooks (DeepSeek) for clips.
+  const clipWithHooks: (typeof pending[number] & { hook: string })[] = [];
   for (const c of pending) {
     let hook = '';
     try {
@@ -84,15 +78,19 @@ export async function POST(request: Request, context: RouteContext) {
     } catch (e) {
       console.warn(`[render-all] hook failed for clip ${c.id}: ${e}`);
     }
-    clipPayloads.push({
-      clip_id: c.id,
-      title: c.title,
-      start_sec: c.startSec,
-      end_sec: c.endSec,
-      captions: clipCaptions(videoId, c.startSec, c.endSec),
-      hook,
-    });
+    clipWithHooks.push({ ...c, hook });
   }
+
+  // Phase 2 (brief §16): build the versioned v2 contract.
+  const contract = buildRenderContract(videoId, clipWithHooks, {
+    mode,
+    mainTopic: pending[0]?.mainTopic ?? null,
+    endingType: pending[0]?.endingType ?? null,
+  });
+  const payload = {
+    ...contract,
+    clips: contract.clips.map((cc, i) => ({ ...cc, hook: clipWithHooks[i]?.hook ?? '' })),
+  };
 
   const renderBase = config.render.baseUrl.replace(/\/$/, '');
   let response: Response;
@@ -103,11 +101,7 @@ export async function POST(request: Request, context: RouteContext) {
         'Content-Type': 'application/json',
         ...(config.render.token ? { 'x-render-token': config.render.token } : {}),
       },
-      body: JSON.stringify({
-        video_url: `https://www.youtube.com/watch?v=${videoId}`,
-        aspect_ratio: '9:16',
-        clips: clipPayloads,
-      }),
+      body: JSON.stringify(payload),
     });
   } catch (e) {
     for (const c of pending) {
@@ -125,20 +119,37 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const result = (await response.json()) as { job_id?: string };
+  const jobId = result.job_id ?? null;
+
+  // Phase 2 (brief §19): persist the job so restart does not lose it.
+  if (jobId) {
+    try {
+      upsertRenderJob({
+        jobId,
+        episodeId: videoId,
+        mode,
+        status: 'queued',
+        request: JSON.stringify(payload),
+      });
+    } catch (e) {
+      console.warn(`[render-all] job persist failed: ${e}`);
+    }
+  }
 
   // Async: the job runs in the background. Store the job id on each pending
   // clip; a separate poll endpoint (render-status) updates clips when done.
   for (const c of pending) {
     updateClipRender(c.id, {
       status: 'rendering',
-      jobId: result.job_id ?? null,
+      jobId,
     });
   }
 
   return ok({
-    jobId: result.job_id ?? null,
+    jobId,
+    mode,
     queued: pending.length,
     skipped: clips.length - pending.length,
-    message: `Queued ${pending.length} clip(s) for rendering`,
+    message: `Queued ${pending.length} clip(s) for ${mode} rendering`,
   });
 }

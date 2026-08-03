@@ -77,8 +77,12 @@ export interface ClipRecord {
   mainTopic: string | null;
   topicBefore: string | null;
   topicAfter: string | null;
+  /** Phase 1 (brief §14): ending completeness persisted from the boundary
+   * quality report. */
+  endingComplete: boolean | null;
   /** Phase 3 (§24-25): publish gates + rights workflow. */
   rightsStatus: string;
+  rightsNotes: string | null;
   qcStatus: string;
   qcScore: number | null;
   scheduledAt: string | null;
@@ -132,6 +136,7 @@ interface ClipRow {
   boundary_status: string | null;
   boundary_confidence: number | null;
   start_complete: number | null;
+  ending_complete: number | null;
   repair_reason: string | null;
   rough_start_sec: number | null;
   rough_end_sec: number | null;
@@ -139,6 +144,7 @@ interface ClipRow {
   topic_before: string | null;
   topic_after: string | null;
   rights_status: string | null;
+  rights_notes: string | null;
   qc_status: string | null;
   qc_score: number | null;
   scheduled_at: string | null;
@@ -208,6 +214,7 @@ function mapClip(row: ClipRow): ClipRecord {
     boundaryStatus: row.boundary_status ?? 'unrefined',
     boundaryConfidence: row.boundary_confidence ?? null,
     startComplete: (row.start_complete ?? 1) === 1,
+    endingComplete: row.ending_complete === null ? null : row.ending_complete === 1,
     repairReason: row.repair_reason ?? null,
     roughStartSec: row.rough_start_sec ?? null,
     roughEndSec: row.rough_end_sec ?? null,
@@ -215,6 +222,7 @@ function mapClip(row: ClipRow): ClipRecord {
     topicBefore: row.topic_before ?? null,
     topicAfter: row.topic_after ?? null,
     rightsStatus: row.rights_status ?? 'unknown',
+    rightsNotes: row.rights_notes ?? null,
     qcStatus: row.qc_status ?? 'pending',
     qcScore: row.qc_score ?? null,
     scheduledAt: row.scheduled_at ?? null,
@@ -555,6 +563,55 @@ export function updateClipPublish(
       url: params.url ?? null,
       error: params.error ?? null,
       now: nowIso(),
+    });
+  return result.changes > 0;
+}
+
+/** Phase 3 (Master Task Brief §25): set reuse rights on a clip. */
+export function updateClipRights(
+  id: number,
+  params: {
+    status: string;
+    notes?: string | null;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET rights_status = @status,
+              rights_notes  = @notes
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      status: params.status,
+      notes: params.notes ?? null,
+    });
+  return result.changes > 0;
+}
+
+/** Phase 2 (brief §23/§24): persist renderer QC result on a clip. */
+export function updateClipQc(
+  id: number,
+  params: {
+    status: string;
+    score?: number | null;
+    note?: string | null;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET qc_status = @status,
+              qc_score  = @score,
+              qc_report = @note
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      status: params.status,
+      score: params.score ?? null,
+      note: params.note ?? null,
     });
   return result.changes > 0;
 }

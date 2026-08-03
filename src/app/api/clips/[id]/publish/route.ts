@@ -14,9 +14,22 @@ interface RouteContext {
  * Phase 3 — publish a rendered short to YouTube (and later TikTok/Reels).
  *
  * Uses the SEO metadata already generated for the clip: the first generated
- * title becomes the upload title, plus description and tags. Requires:
- *   - render_status = 'done'   (a rendered short exists)
- *   - seo_title present        (SEO was generated)
+ * title becomes the upload title, plus description and tags.
+ *
+ * Phase 2 publish gates (Master Task Brief §24): publish is BLOCKED when:
+ *   - render not completed            (renderStatus !== 'done')
+ *   - QC failed                       (qc_status !== 'passed')
+ *   - boundary not refined            (boundary_status === 'unrefined')
+ *   - ending incomplete               (ending_complete = 0)
+ *   - next-topic contamination too high
+ *   - rights not approved             (rights_status === 'unknown'/'blocked')
+ *   - SEO metadata absent             (no seo_title)
+ *   - publish already in progress
+ *
+ * Env toggles (brief §38):
+ *   PUBLISH_REQUIRE_QC_PASS=true
+ *   PUBLISH_REQUIRE_BOUNDARY_PASS=true
+ *   PUBLISH_REQUIRE_RIGHTS_APPROVAL=true
  *
  * The actual upload is delegated to the poster service, which owns the
  * platform OAuth credentials.
@@ -33,15 +46,53 @@ export async function POST(_request: Request, context: RouteContext) {
     const clip = getClip(clipId);
     if (!clip) return notFound('Clip not found');
 
-    // Guards: nothing to upload without a render, and no metadata to post.
+    // ── Phase 2 publish gates (brief §24) ──
+    // Render completed?
     if (clip.renderStatus !== 'done' || !clip.renderPath) {
       return badRequest('Clip must be rendered before publishing');
     }
+    // Publish already in progress?
+    if (clip.publishStatus === 'publishing') {
+      return badRequest('Publish already in progress');
+    }
+    // SEO metadata present?
     if (!clip.seoTitle) {
       return badRequest('Generate SEO metadata before publishing (POST /api/clips/:id/seo)');
     }
-    if (clip.publishStatus === 'publishing') {
-      return badRequest('Publish already in progress');
+
+    const gates = {
+      qc: config.publish.requireQcPass !== false,
+      boundary: config.publish.requireBoundaryPass !== false,
+      rights: config.publish.requireRightsApproval !== false,
+    };
+
+    // QC gate: renderer QC must have passed (qc_status === 'passed').
+    if (gates.qc && clip.qcStatus !== 'passed') {
+      const state = clip.qcStatus ?? 'pending';
+      const score = clip.qcScore != null ? ` (${Math.round(clip.qcScore)})` : '';
+      return badRequest(`Publish blocked: QC ${state}${score}. Run render again or override QC (POST /api/clips/:id/qc/override).`);
+    }
+
+    // Boundary gate: clips must have refined boundaries and complete endings.
+    if (gates.boundary) {
+      if (clip.boundaryStatus === 'unrefined' || clip.boundaryStatus == null) {
+        return badRequest('Publish blocked: boundary not refined. Re-run analyze (POST /api/episodes/:videoId/analyze).');
+      }
+      if (clip.endingComplete === false) {
+        return badRequest('Publish blocked: ending incomplete.');
+      }
+      const maxContamination = 0.18;
+      if (clip.nextTopicContamination != null && clip.nextTopicContamination > maxContamination) {
+        return badRequest(`Publish blocked: next-topic contamination ${clip.nextTopicContamination.toFixed(2)} > ${maxContamination}.`);
+      }
+    }
+
+    // Rights gate: only clips with approved rights may be published.
+    if (gates.rights) {
+      const blockedRights = new Set(['unknown', 'blocked', 'editorial_review_required']);
+      if (!clip.rightsStatus || blockedRights.has(clip.rightsStatus)) {
+        return badRequest(`Publish blocked: rights status '${clip.rightsStatus ?? 'unknown'}'. Approve rights first (POST /api/clips/:id/rights).`);
+      }
     }
 
     // Render file URL reachable from the poster service. The poster service

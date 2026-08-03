@@ -1,9 +1,10 @@
 import { config } from '@/lib/config';
-import { listClips, updateClipRender, updateClipSeo, updateClipPublish } from '@/lib/db/repositories/clips';
+import { listClips, updateClipRender, updateClipSeo, updateClipPublish, updateClipQc } from '@/lib/db/repositories/clips';
 import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { getEpisode } from '@/lib/db/repositories/episodes';
 import { generateClipSeo } from '@/lib/ai/agents/clip-seo-agent';
 import type { ClipRecord } from '@/lib/db/repositories/clips';
+import { buildRenderContract } from '@/lib/render/contract';
 
 /**
  * Auto-process pipeline: after a discovery run finishes, every clip that
@@ -17,20 +18,6 @@ import type { ClipRecord } from '@/lib/db/repositories/clips';
  */
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/** ASR cues inside the clip window (for caption burning). */
-function clipCaptions(videoId: string, startSec: number, endSec: number) {
-  const transcript = getTranscript(videoId);
-  if (!transcript) return [];
-
-  return transcript.cues
-    .filter((cue) => cue.startSec >= startSec && cue.startSec < endSec)
-    .map((cue) => ({
-      start_sec: Math.max(cue.startSec, startSec),
-      end_sec: Math.min(cue.endSec, endSec),
-      text: cue.text,
-    }));
-}
 
 /** Plain transcript text for a clip window (for hook generation). */
 function clipTranscript(videoId: string, startSec: number, endSec: number): string {
@@ -49,18 +36,14 @@ function clipTranscript(videoId: string, startSec: number, endSec: number): stri
 async function renderEpisodeAll(
   videoId: string,
   clips: ClipRecord[],
+  mode: 'preview' | 'final' = 'final',
 ): Promise<{ ok: boolean; jobId?: string; error?: string }> {
   // Generate hooks (DeepSeek) per clip — same as the render-all route.
-  const clipPayloads: {
-    clip_id: number;
-    title: string;
-    start_sec: number;
-    end_sec: number;
-    captions: { start_sec: number; end_sec: number; text: string }[];
-    hook: string;
-  }[] = [];
-
   const episode = getEpisode(videoId);
+
+  // Phase 2 (brief §16-18): build the versioned v2 contract once for the
+  // whole episode so the renderer downloads the source a single time.
+  const clipWithHooks: (ClipRecord & { hook: string })[] = [];
   for (const c of clips) {
     let hook = '';
     try {
@@ -72,15 +55,20 @@ async function renderEpisodeAll(
     } catch (e) {
       console.warn(`[auto-process] hook failed for clip ${c.id}: ${e}`);
     }
-    clipPayloads.push({
-      clip_id: c.id,
-      title: c.title,
-      start_sec: c.startSec,
-      end_sec: c.endSec,
-      captions: clipCaptions(videoId, c.startSec, c.endSec),
-      hook,
-    });
+    clipWithHooks.push({ ...c, hook });
   }
+
+  const contract = buildRenderContract(videoId, clipWithHooks, {
+    mode,
+    mainTopic: clips[0]?.mainTopic ?? null,
+    endingType: clips[0]?.endingType ?? null,
+  });
+  // Attach hooks into the contract clips (buildRenderContract doesn't know
+  // about the hook field — it is legacy v1; add as extra passthrough).
+  const payload = {
+    ...contract,
+    clips: contract.clips.map((cc, i) => ({ ...cc, hook: clipWithHooks[i]?.hook ?? '' })),
+  };
 
   const renderBase = config.render.baseUrl.replace(/\/$/, '');
   try {
@@ -90,11 +78,7 @@ async function renderEpisodeAll(
         'Content-Type': 'application/json',
         ...(config.render.token ? { 'x-render-token': config.render.token } : {}),
       },
-      body: JSON.stringify({
-        video_url: `https://www.youtube.com/watch?v=${videoId}`,
-        aspect_ratio: '9:16',
-        clips: clipPayloads,
-      }),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) {
       const body = await response.text().catch(() => '');
@@ -144,7 +128,13 @@ async function pollRenderUntilDone(
       const body = (await response.json()) as {
         state: string;
         error?: string | null;
-        rendered?: { clip_id: number | string; status: string; clip_url?: string; error?: string }[];
+        rendered?: {
+          clip_id: number | string;
+          status: string;
+          clip_url?: string;
+          error?: string;
+          quality?: { status?: string; score?: number };
+        }[];
       };
 
       if (body.state === 'done' && body.rendered) {
@@ -157,6 +147,15 @@ async function pollRenderUntilDone(
             path: done ? item.clip_url : null,
             error: done ? null : (item.error ?? 'render service returned no clip'),
           });
+          // Phase 2 (brief §23-24): persist QC result so the publish gate
+          // can enforce QC pass.
+          if (item.quality?.status) {
+            updateClipQc(clipId, {
+              status: item.quality.status === 'pass' ? 'passed' : item.quality.status,
+              score: item.quality.score ?? null,
+              note: JSON.stringify(item.quality),
+            });
+          }
         }
         return;
       }

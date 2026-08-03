@@ -296,6 +296,10 @@ export const config = {
     token: readString('POSTER_SERVICE_TOKEN'),
     /** Default privacy for published videos: 'public' | 'private' | 'unlisted' */
     privacy: (readString('PUBLISH_PRIVACY') ?? 'public') as 'public' | 'private' | 'unlisted',
+    // Phase 2 publish gates (brief §24/§38).
+    requireQcPass: readString('PUBLISH_REQUIRE_QC_PASS') !== 'false',
+    requireBoundaryPass: readString('PUBLISH_REQUIRE_BOUNDARY_PASS') !== 'false',
+    requireRightsApproval: readString('PUBLISH_REQUIRE_RIGHTS_APPROVAL') !== 'false',
   },
 } as const;
 
