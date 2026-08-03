@@ -175,11 +175,19 @@ export async function analyzeEpisode(
   const allClips = segments.map((segment) => {
     const judgement = agentResult.judgements.get(segment.index);
     if (judgement) llmScored += 1;
-    return buildClip({
-      segment,
-      judgement: judgement ?? judgeSegmentHeuristically(segment),
-      transcriptSource: transcript.source,
-    });
+    const ending = twoPass.endingById.get(segment.index);
+    return {
+      ...buildClip({
+        segment,
+        judgement: judgement ?? judgeSegmentHeuristically(segment),
+        transcriptSource: transcript.source,
+      }),
+      endingType: ending?.endingType,
+      endingConfidence: ending?.endingConfidence ?? null,
+      nextTopicRemoved: ending?.nextTopicRemoved ?? false,
+      nextTopicStartSec: ending?.nextTopicStartSec ?? null,
+      nextTopicContamination: ending?.nextTopicContamination ?? null,
+    };
   });
 
   // Step 7 - threshold filtering.

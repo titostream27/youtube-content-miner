@@ -197,6 +197,12 @@ export interface ScoredClip {
   suggestedCaption: string;
   editingNotes: string;
   engine: ScoringEngineName;
+  /** Phase 1 (Correctness): highlight debug report fields (brief §52). */
+  endingType?: string;
+  endingConfidence?: number | null;
+  nextTopicRemoved?: boolean;
+  nextTopicStartSec?: number | null;
+  nextTopicContamination?: number | null;
 }
 
 /* -------------------------------------------------------------------------- */

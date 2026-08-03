@@ -33,6 +33,8 @@ export interface TwoPassResult {
   segments: MomentSegment[];
   utterances: Utterance[];
   warnings: string[];
+  /** Phase 1 debug report per kept segment index (brief §52). */
+  endingById: Map<number, { endingType: string; endingConfidence: number; nextTopicRemoved: boolean; nextTopicStartSec: number | null; nextTopicContamination: number }>;
 }
 
 interface BoundaryInfo {
@@ -194,9 +196,10 @@ export async function twoPassHighlightSelection(
 ): Promise<TwoPassResult> {
   const warnings: string[] = [];
   const utterances = cuesToUtterances(transcript.cues);
+  const endingById = new Map<number, TwoPassResult['endingById'] extends Map<number, infer V> ? V : never>();
 
   if (roughSegments.length === 0) {
-    return { segments: [], utterances, warnings };
+    return { segments: [], utterances, warnings, endingById };
   }
 
   // Pass 2 — LLM boundary refinement with context around each rough window.
@@ -287,6 +290,13 @@ export async function twoPassHighlightSelection(
     }
 
     const duration = finalEnd - finalStart;
+    endingById.set(rough.index, {
+      endingType: ending.endingType,
+      endingConfidence: round(ending.endingConfidence, 2),
+      nextTopicRemoved: boundary.nextTopicDetected,
+      nextTopicStartSec: boundary.nextTopicStart !== null ? round(boundary.nextTopicStart, 2) : null,
+      nextTopicContamination: round(boundary.contamination, 2),
+    });
     segments.push({
       index: rough.index,
       startSec: round(finalStart, 2),
@@ -303,5 +313,5 @@ export async function twoPassHighlightSelection(
     `[two-pass] episode "${episodeTitle}": ${roughSegments.length} rough -> ${segments.length} kept, ${rejectedCount} rejected`,
   );
 
-  return { segments, utterances, warnings };
+  return { segments, utterances, warnings, endingById };
 }

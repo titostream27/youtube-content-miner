@@ -61,6 +61,12 @@ export interface ClipRecord {
    * is where the publish decision is actually made.
    */
   license: VideoLicense;
+  /** Phase 1 (Correctness): highlight debug report (brief §52). */
+  endingType: string;
+  endingConfidence: number | null;
+  nextTopicRemoved: boolean;
+  nextTopicStartSec: number | null;
+  nextTopicContamination: number | null;
 }
 
 interface ClipRow {
@@ -101,6 +107,11 @@ interface ClipRow {
   channel_id: string | null;
   published_at: string | null;
   license: string | null;
+  ending_type: string | null;
+  ending_confidence: number | null;
+  next_topic_removed: number | null;
+  next_topic_start_sec: number | null;
+  next_topic_contamination: number | null;
 }
 
 const EMPTY_DIMENSIONS: ClipDimensionScores = {
@@ -157,6 +168,11 @@ function mapClip(row: ClipRow): ClipRecord {
     publishedAt: row.published_at ?? row.created_at,
     license:
       row.license === 'creativeCommon' || row.license === 'youtube' ? row.license : null,
+    endingType: row.ending_type ?? '',
+    endingConfidence: row.ending_confidence ?? null,
+    nextTopicRemoved: (row.next_topic_removed ?? 0) === 1,
+    nextTopicStartSec: row.next_topic_start_sec ?? null,
+    nextTopicContamination: row.next_topic_contamination ?? null,
   };
 }
 
@@ -189,16 +205,18 @@ export function replaceClipsForEpisode(
 
     const insert = db.prepare(
       `INSERT INTO clips (
-         video_id, run_id, segment_index, title, start_sec, end_sec, duration_sec,
-         final_score, confidence, tier, category, dimensions, why_this_works,
-         suggested_hook, suggested_caption, editing_notes, transcript, engine,
-         status, created_at
-       ) VALUES (
-         @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
-         @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
-         @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
-         'new', @createdAt
-       )`,
+        video_id, run_id, segment_index, title, start_sec, end_sec, duration_sec,
+        final_score, confidence, tier, category, dimensions, why_this_works,
+        suggested_hook, suggested_caption, editing_notes, transcript, engine,
+        status, created_at,
+        ending_type, ending_confidence, next_topic_removed, next_topic_start_sec, next_topic_contamination
+      ) VALUES (
+        @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
+        @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
+        @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
+        'new', @createdAt,
+        @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination
+      )`,
     );
 
     const createdAt = nowIso();
@@ -223,6 +241,11 @@ export function replaceClipsForEpisode(
         transcript: clip.transcript,
         engine: clip.engine,
         createdAt,
+        endingType: clip.endingType ?? '',
+        endingConfidence: clip.endingConfidence ?? null,
+        nextTopicRemoved: clip.nextTopicRemoved ? 1 : 0,
+        nextTopicStartSec: clip.nextTopicStartSec ?? null,
+        nextTopicContamination: clip.nextTopicContamination ?? null,
       });
     }
   });
