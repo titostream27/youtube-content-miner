@@ -85,6 +85,7 @@ export interface ClipRecord {
   rightsNotes: string | null;
   qcStatus: string;
   qcScore: number | null;
+  qcReport: string | null;
   scheduledAt: string | null;
   targetMarket: string | null;
   idempotencyKey: string | null;
@@ -147,6 +148,7 @@ interface ClipRow {
   rights_notes: string | null;
   qc_status: string | null;
   qc_score: number | null;
+  qc_report: string | null;
   scheduled_at: string | null;
   target_market: string | null;
   idempotency_key: string | null;
@@ -225,6 +227,7 @@ function mapClip(row: ClipRow): ClipRecord {
     rightsNotes: row.rights_notes ?? null,
     qcStatus: row.qc_status ?? 'pending',
     qcScore: row.qc_score ?? null,
+    qcReport: row.qc_report ?? null,
     scheduledAt: row.scheduled_at ?? null,
     targetMarket: row.target_market ?? null,
     idempotencyKey: row.idempotency_key ?? null,
