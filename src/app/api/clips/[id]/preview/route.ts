@@ -2,6 +2,7 @@ import { config } from '@/lib/config';
 import { getClip, updateClipRender, updateClipQc } from '@/lib/db/repositories/clips';
 import { buildRenderContract } from '@/lib/render/contract';
 import { upsertRenderJob } from '@/lib/db/repositories/render-jobs';
+import { probeRenderJob } from '@/lib/render/job-probe';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,18 @@ export async function POST(_request: Request, context: RouteContext) {
     const clip = getClip(clipId);
     if (!clip) return notFound('Clip not found');
     if (clip.renderStatus === 'rendering') {
-      return badRequest('Clip render already in progress');
+      // Self-heal: if the render service was restarted mid-job, the stored
+      // job id no longer exists and the clip would stay 'rendering' forever,
+      // blocking re-renders. Probe the job; if gone, clear stale state.
+      const probe = await probeRenderJob(clip.renderJobId);
+      if (probe.ok) {
+        return badRequest('Clip render already in progress');
+      }
+      if (probe.gone) {
+        updateClipRender(clipId, { status: 'none', jobId: null, error: null });
+      } else {
+        return badRequest('Clip render already in progress (job open)');
+      }
     }
 
     // Mark as rendering (preview is also a render_status state).

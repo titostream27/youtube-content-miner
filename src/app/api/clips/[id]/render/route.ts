@@ -3,6 +3,7 @@ import { getClip, updateClipRender } from '@/lib/db/repositories/clips';
 import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { generateClipHook } from '@/lib/ai/agents/clip-hook-agent';
 import { upsertRenderJob } from '@/lib/db/repositories/render-jobs';
+import { probeRenderJob } from '@/lib/render/job-probe';
 import { badRequest, notFound, ok, serverError } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
@@ -73,10 +74,24 @@ export async function POST(_request: Request, context: RouteContext) {
     if (!clip) return notFound('Clip not found');
 
     // Guard: a render is already in flight for this clip. Prevents the UI
-    // double-clicking and creating duplicate render jobs for the same video.
-    if (clip.renderStatus === 'rendering') {
-      return badRequest('Clip render already in progress');
-    }
+        // double-clicking and creating duplicate render jobs for the same video.
+        if (clip.renderStatus === 'rendering') {
+          // Self-heal: if the render service was restarted mid-job, the job id
+          // stored on the clip no longer exists, and the clip would be frozen in
+          // 'rendering' forever, blocking all re-renders. Probe the job; if it's
+          // gone, clear the stale state and allow a fresh render.
+          const probe = await probeRenderJob(clip.renderJobId);
+          if (probe.ok) {
+            return badRequest('Clip render already in progress');
+          }
+          if (probe.gone) {
+            updateClipRender(clipId, { status: 'none', jobId: null, error: null });
+          } else {
+            // Render service unreachable/timed out — do not clear a job we cannot
+            // confirm is stale; keep the guard so we don't double-submit.
+            return badRequest('Clip render already in progress (job open)');
+          }
+        }
 
     // Mark as rendering before the long call so a concurrent GET sees intent.
     updateClipRender(clipId, { status: 'rendering' });

@@ -36,9 +36,17 @@ export async function GET(_request: Request, context: RouteContext) {
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
-      // Job gone (service restarted?) — leave clips in rendering; the UI will
-      // show them as in-progress until the user re-runs.
-      return ok({ state: 'running', jobId });
+      // Job gone (service restarted?) — self-heal instead of leaving clips
+      // frozen in 'rendering' forever (which blocks re-renders with "already
+      // in progress"). Mark them error so a human/UI can re-run cleanly.
+      for (const c of rendering) {
+        updateClipRender(c.id, {
+          status: 'error',
+          jobId: null,
+          error: `render job ${jobId} not found (render service restarted?) — re-run render`,
+        });
+      }
+      return ok({ state: 'error', jobId, note: 'self-healed: stale jobs cleared' });
     }
     const body = (await response.json()) as {
       state: string;
