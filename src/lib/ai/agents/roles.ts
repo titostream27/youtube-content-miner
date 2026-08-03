@@ -24,6 +24,7 @@ export const AGENT_ROLES = [
   'clip_metadata',
   'clip_seo',
   'clip_hook',
+  'clip_variants',
 ] as const;
 
 export type AgentRole = (typeof AGENT_ROLES)[number];
@@ -118,6 +119,17 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     modelEnv: 'AGENT_CLIP_HOOK_MODEL',
     temperature: 0.8,
     maxOutputTokens: 300,
+    optional: true,
+  },
+  clip_variants: {
+    role: 'clip_variants',
+    label: 'Clip Variant Agent',
+    purpose:
+      'Proposes up to three metadata variants (outcome-first, question, controversial) for A/B testing high-quality clips.',
+    providerEnv: 'AGENT_CLIP_VARIANTS_PROVIDER',
+    modelEnv: 'AGENT_CLIP_VARIANTS_MODEL',
+    temperature: 0.7,
+    maxOutputTokens: 1_500,
     optional: true,
   },
 };

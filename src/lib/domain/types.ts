@@ -108,6 +108,12 @@ export interface TranscriptCue {
   startSec: number;
   endSec: number;
   text: string;
+  /** Phase 4 (brief §34): speaker id when the transcript was diarized. */
+  speakerId?: string | null;
+  /** Phase 4 (brief §34): role of the speaker. */
+  speakerRole?: 'host' | 'guest' | 'unknown' | null;
+  /** Phase 4 (brief §34): resolved speaker display name, when known. */
+  speakerName?: string | null;
 }
 
 export interface Transcript {

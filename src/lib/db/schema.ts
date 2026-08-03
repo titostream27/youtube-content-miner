@@ -340,4 +340,43 @@ CREATE TABLE IF NOT EXISTS comment_signals (
 );
 
 CREATE INDEX IF NOT EXISTS idx_comment_signals_video ON comment_signals (video_id, kind);
+
+-- Phase 4 (Master Task Brief §36): clip metadata/preview variants.
+CREATE TABLE IF NOT EXISTS clip_variants (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id      INTEGER NOT NULL,
+  variant_key  TEXT NOT NULL,   -- hook_a|hook_b|hook_c
+  hook         TEXT,
+  title        TEXT,
+  caption_emphasis TEXT,
+  layout_preference TEXT,
+  duration_delta_sec REAL,
+  status       TEXT NOT NULL DEFAULT 'generated',  -- generated|previewed|selected|published|rejected
+  preview_job_id TEXT,
+  preview_url  TEXT,
+  created_at   TEXT NOT NULL,
+  updated_at   TEXT NOT NULL,
+  UNIQUE (clip_id, variant_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_clip_variants_clip ON clip_variants (clip_id);
+
+-- Phase 4 (Master Task Brief §37): cost ledger.
+-- cost_type distinguishes estimate vs actual (brief: never mix without the
+-- field that separates them).
+CREATE TABLE IF NOT EXISTS cost_ledger (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id       INTEGER,
+  clip_id      INTEGER,
+  category     TEXT NOT NULL,   -- llm|youtube_quota|transcript_vendor|render|storage|publish_api|gpu_estimate
+  cost_type    TEXT NOT NULL DEFAULT 'estimate',  -- estimate|actual
+  amount_usd   REAL NOT NULL,
+  units        TEXT,            -- e.g. "tokens", "requests", "minutes", "MB"
+  quantity     REAL,
+  note         TEXT,
+  created_at   TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_cost_ledger_run ON cost_ledger (run_id);
+CREATE INDEX IF NOT EXISTS idx_cost_ledger_clip ON cost_ledger (clip_id);
 `;

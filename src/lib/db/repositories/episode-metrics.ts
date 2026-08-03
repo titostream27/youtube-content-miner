@@ -57,6 +57,20 @@ export interface TrendScore {
   acceleration: number;
 }
 
+export function listEpisodeMetricSnapshots(videoId: string): EpisodeMetricSnapshot[] {
+  const rows = getDb()
+    .prepare('SELECT * FROM episode_metric_snapshots WHERE video_id = ? ORDER BY captured_at ASC')
+    .all(videoId) as Row[];
+  return rows.map((r) => ({
+    id: r.id,
+    videoId: r.video_id,
+    viewCount: r.view_count,
+    likeCount: r.like_count ?? undefined,
+    commentCount: r.comment_count ?? undefined,
+    capturedAt: r.captured_at,
+  }));
+}
+
 /**
  * Compute trend/evergreen/breakout from two snapshots (oldest -> newest).
  * - viewsPerHour: growth rate over the interval.
