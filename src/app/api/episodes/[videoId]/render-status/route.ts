@@ -1,6 +1,6 @@
 import { config } from '@/lib/config';
 import { listClips, updateClipRender } from '@/lib/db/repositories/clips';
-import { ok, serverError } from '@/lib/api/http';
+import { ok } from '@/lib/api/http';
 
 export const dynamic = 'force-dynamic';
 

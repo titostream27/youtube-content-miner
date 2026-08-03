@@ -86,6 +86,34 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'publish_url', definition: 'TEXT' },
     { table: 'clips', column: 'publish_error', definition: 'TEXT' },
     { table: 'clips', column: 'published_at', definition: 'TEXT' },
+    // ── Phase 1 (Master Task Brief §14): clip boundary intelligence ──
+    // Rough (Pass 1) boundaries — kept so the debug report can show the
+    // refinement delta. Additive only; old rows get NULLs.
+    { table: 'clips', column: 'rough_start_sec', definition: 'REAL' },
+    { table: 'clips', column: 'rough_end_sec', definition: 'REAL' },
+    // Boundary workflow state (brief §12).
+    { table: 'clips', column: 'boundary_status', definition: "TEXT NOT NULL DEFAULT 'unrefined'" },
+    { table: 'clips', column: 'boundary_confidence', definition: 'REAL' },
+    { table: 'clips', column: 'start_complete', definition: 'INTEGER NOT NULL DEFAULT 1' },
+    { table: 'clips', column: 'ending_complete', definition: 'INTEGER NOT NULL DEFAULT 0' },
+    { table: 'clips', column: 'previous_topic_contamination', definition: 'REAL NOT NULL DEFAULT 0' },
+    { table: 'clips', column: 'next_topic_contamination', definition: 'REAL NOT NULL DEFAULT 0' },
+    // Topic narrative (brief §13 debug report).
+    { table: 'clips', column: 'main_topic', definition: 'TEXT' },
+    { table: 'clips', column: 'topic_before', definition: 'TEXT' },
+    { table: 'clips', column: 'topic_after', definition: 'TEXT' },
+    { table: 'clips', column: 'repair_reason', definition: 'TEXT' },
+    // Rights workflow (brief §25).
+    { table: 'clips', column: 'rights_status', definition: "TEXT NOT NULL DEFAULT 'unknown'" },
+    { table: 'clips', column: 'rights_notes', definition: 'TEXT' },
+    // Render QC (brief §23/§24 publish gates).
+    { table: 'clips', column: 'qc_status', definition: "TEXT NOT NULL DEFAULT 'pending'" },
+    { table: 'clips', column: 'qc_score', definition: 'REAL' },
+    { table: 'clips', column: 'qc_report', definition: 'TEXT' },
+    // Render scheduling (brief §35).
+    { table: 'clips', column: 'scheduled_at', definition: 'TEXT' },
+    { table: 'clips', column: 'target_market', definition: 'TEXT' },
+    { table: 'clips', column: 'idempotency_key', definition: 'TEXT' },
   ];
 
   for (const { table, column, definition } of columns) {

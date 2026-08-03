@@ -21,9 +21,6 @@ import { isAgentActive, runJsonAgent, type AgentOverrides, type UsageLedger } fr
  *   - reject candidates with no complete ending
  */
 
-const MAX_CONTEXT_BEFORE_SEC = 15;
-const MAX_CONTEXT_AFTER_SEC = 20;
-
 const BoundarySchema = z.object({
   segments: z
     .array(

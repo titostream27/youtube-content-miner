@@ -187,6 +187,16 @@ export async function analyzeEpisode(
       nextTopicRemoved: ending?.nextTopicRemoved ?? false,
       nextTopicStartSec: ending?.nextTopicStartSec ?? null,
       nextTopicContamination: ending?.nextTopicContamination ?? null,
+      // Phase 1 (Master Task Brief §12-14): boundary workflow + debug report.
+      boundaryStatus: ending?.boundaryStatus ?? 'unrefined',
+      boundaryConfidence: ending?.boundaryConfidence ?? null,
+      startComplete: ending?.startComplete ?? true,
+      repairReason: ending?.repairReason ?? null,
+      roughStartSec: ending?.roughStartSec ?? null,
+      roughEndSec: ending?.roughEndSec ?? null,
+      mainTopic: ending?.mainTopic ?? null,
+      topicBefore: ending?.topicBefore ?? null,
+      topicAfter: ending?.topicAfter ?? null,
     };
   });
 

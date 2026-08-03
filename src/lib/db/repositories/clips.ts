@@ -67,6 +67,23 @@ export interface ClipRecord {
   nextTopicRemoved: boolean;
   nextTopicStartSec: number | null;
   nextTopicContamination: number | null;
+  /** Phase 1 (Master Task Brief §12-14): boundary workflow + debug report. */
+  boundaryStatus: string;
+  boundaryConfidence: number | null;
+  startComplete: boolean;
+  repairReason: string | null;
+  roughStartSec: number | null;
+  roughEndSec: number | null;
+  mainTopic: string | null;
+  topicBefore: string | null;
+  topicAfter: string | null;
+  /** Phase 3 (§24-25): publish gates + rights workflow. */
+  rightsStatus: string;
+  qcStatus: string;
+  qcScore: number | null;
+  scheduledAt: string | null;
+  targetMarket: string | null;
+  idempotencyKey: string | null;
 }
 
 interface ClipRow {
@@ -112,6 +129,21 @@ interface ClipRow {
   next_topic_removed: number | null;
   next_topic_start_sec: number | null;
   next_topic_contamination: number | null;
+  boundary_status: string | null;
+  boundary_confidence: number | null;
+  start_complete: number | null;
+  repair_reason: string | null;
+  rough_start_sec: number | null;
+  rough_end_sec: number | null;
+  main_topic: string | null;
+  topic_before: string | null;
+  topic_after: string | null;
+  rights_status: string | null;
+  qc_status: string | null;
+  qc_score: number | null;
+  scheduled_at: string | null;
+  target_market: string | null;
+  idempotency_key: string | null;
 }
 
 const EMPTY_DIMENSIONS: ClipDimensionScores = {
@@ -173,6 +205,21 @@ function mapClip(row: ClipRow): ClipRecord {
     nextTopicRemoved: (row.next_topic_removed ?? 0) === 1,
     nextTopicStartSec: row.next_topic_start_sec ?? null,
     nextTopicContamination: row.next_topic_contamination ?? null,
+    boundaryStatus: row.boundary_status ?? 'unrefined',
+    boundaryConfidence: row.boundary_confidence ?? null,
+    startComplete: (row.start_complete ?? 1) === 1,
+    repairReason: row.repair_reason ?? null,
+    roughStartSec: row.rough_start_sec ?? null,
+    roughEndSec: row.rough_end_sec ?? null,
+    mainTopic: row.main_topic ?? null,
+    topicBefore: row.topic_before ?? null,
+    topicAfter: row.topic_after ?? null,
+    rightsStatus: row.rights_status ?? 'unknown',
+    qcStatus: row.qc_status ?? 'pending',
+    qcScore: row.qc_score ?? null,
+    scheduledAt: row.scheduled_at ?? null,
+    targetMarket: row.target_market ?? null,
+    idempotencyKey: row.idempotency_key ?? null,
   };
 }
 
@@ -209,13 +256,19 @@ export function replaceClipsForEpisode(
         final_score, confidence, tier, category, dimensions, why_this_works,
         suggested_hook, suggested_caption, editing_notes, transcript, engine,
         status, created_at,
-        ending_type, ending_confidence, next_topic_removed, next_topic_start_sec, next_topic_contamination
+        ending_type, ending_confidence, next_topic_removed, next_topic_start_sec, next_topic_contamination,
+        boundary_status, boundary_confidence, start_complete, repair_reason,
+        rough_start_sec, rough_end_sec, main_topic, topic_before, topic_after,
+        rights_status, qc_status, qc_score
       ) VALUES (
         @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
         @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
         @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
         'new', @createdAt,
-        @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination
+        @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination,
+        @boundaryStatus, @boundaryConfidence, @startComplete, @repairReason,
+        @roughStartSec, @roughEndSec, @mainTopic, @topicBefore, @topicAfter,
+        @rightsStatus, @qcStatus, @qcScore
       )`,
     );
 
@@ -246,6 +299,18 @@ export function replaceClipsForEpisode(
         nextTopicRemoved: clip.nextTopicRemoved ? 1 : 0,
         nextTopicStartSec: clip.nextTopicStartSec ?? null,
         nextTopicContamination: clip.nextTopicContamination ?? null,
+        boundaryStatus: clip.boundaryStatus ?? 'unrefined',
+        boundaryConfidence: clip.boundaryConfidence ?? null,
+        startComplete: clip.startComplete === false ? 0 : 1,
+        repairReason: clip.repairReason ?? null,
+        roughStartSec: clip.roughStartSec ?? null,
+        roughEndSec: clip.roughEndSec ?? null,
+        mainTopic: clip.mainTopic ?? null,
+        topicBefore: clip.topicBefore ?? null,
+        topicAfter: clip.topicAfter ?? null,
+        rightsStatus: 'unknown',
+        qcStatus: 'pending',
+        qcScore: null,
       });
     }
   });

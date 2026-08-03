@@ -1,49 +1,68 @@
 import type { TranscriptCue } from '@/lib/domain/types';
 
 /**
- * Phase 1 (Correctness) — Utterance/Sentence segmentation.
+ * Phase 1 (Correctness) — Enriched sentence model (brief §5).
  *
- * The brief requires every clip boundary to land on a real utterance, not on
- * a display-timing caption cue. A caption cue is 3-8 words cut on when YouTube
- * decided to repaint the screen — cutting on it produces clips that start or
- * end mid-sentence.
+ * Rebuilds transcript cues into enriched sentence/utterance units. A caption
+ * cue is 3-8 words cut on when the platform decided to repaint the screen —
+ * cutting on it produces clips that start or end mid-sentence. This module
+ * rebuilds cues into real utterances carrying the metadata the two-pass
+ * highlight selector and TopicBoundaryDetector need.
  *
- * This module rebuilds transcript cues into utterance units that carry the
- * metadata the two-pass highlight selector needs:
- *
- *   start, end, speaker (when the source is diarized), text,
- *   is_complete_sentence, pause_before, pause_after
- *
- * Sentence completion is detected from punctuation, and pauses are measured
- * from cue gaps. Auto-generated tracks often contain no punctuation, so we
- * also break on long pauses and an upper word bound — identical fallbacks to
- * the existing `cuesToSentences`, but now with pause metadata so boundary
- * refinement can snap to real silences instead of guessing.
+ * PUNCTUATION POLICY (brief §5):
+ *   Do NOT split primarily on punctuation, a 45-word cap, or a long audio gap.
+ *   Those are FALLBACKS only. The primary unit is a complete idea: we keep
+ *   accumulating until there is positive evidence of completion (sentence
+ *   punctuation, a paragraph-length pause, or a speaker change), and only then
+ *   use the fallbacks (gap / word cap) to bound runaway units on transcripts
+ *   that have no punctuation at all.
  */
 
-export interface Utterance {
+export interface EnrichedSentence {
+  id: string;
   startSec: number;
   endSec: number;
-  /** Speaker label if the transcript was diarized (speaker_0, ...), else null. */
-  speaker: string | null;
   text: string;
-  words: number;
-  /** True when the utterance ends with sentence punctuation. */
+  wordCount: number;
+
+  speakerId: string | null;
+
+  pauseBeforeSec: number;
+  pauseAfterSec: number;
+
   isCompleteSentence: boolean;
-  /** Silence (seconds) before this utterance. 0 for the first cue. */
-  pauseBefore: number;
-  /** Silence (seconds) after this utterance. 0 at the end. */
-  pauseAfter: number;
+  startsWithTransition: boolean;
+  startsWithQuestion: boolean;
+  endsWithQuestion: boolean;
+
+  semanticTopicId: string | null;
+  semanticEmbedding?: number[];
+
+  sourceCueStartIndex: number;
+  sourceCueEndIndex: number;
 }
+
+/** Backward-compatible alias used by earlier modules. */
+export type Utterance = EnrichedSentence;
 
 /** A pause long enough to imply a topic change rather than a breath. */
 const TOPIC_GAP_SEC = 2.5;
 /** A pause long enough to count as a paragraph boundary even mid-sentence. */
 const PARAGRAPH_GAP_SEC = 0.75;
+/** Upper word bound — fallback only, for punctuation-free tracks. */
+const MAX_WORDS = 45;
 
 const SENTENCE_END_RE = /[.!?…]["')\]]?\s*$/;
+/** Question ENDING: how/what/why/…, "?", or inverted intonation markers. */
+const QUESTION_END_RE = /\?\s*$/;
+/** Question STARTERS (Indonesian + English). */
+const QUESTION_START_RE =
+  /\b(how|what|why|when|where|who|do you|did you|can you|could you|would you|are you|is it|have you|berapa|bagaimana|kenapa|mengapa|apa|siapa|kapan|di mana|apakah|bisa|bisakah)\b/i;
+/** Transition phrases (brief §7). These are weak signals, never proof alone. */
+const TRANSITION_START_RE =
+  /\b(by the way|moving on|another question|speaking of|ngomong-ngomong|omong-omong|selanjutnya|sekarang soal|gue mau nanya|ada topik lain|ada hal lain|balik lagi ke|pertanyaan berikutnya|next up|so next|anyway)\b/i;
 /** Cues that look like a speaker label, e.g. "[SPEAKER_00]" or "(speaker_1)". */
-const SPEAKER_TAG_RE = /^[\s[(]*[a-z_]*speaker[_\s-]?\d+[)\]»:]*$/i;
+const SPEAKER_TAG_RE = /^\s*[\[(]*\s*SPEAKER[\s_-]?\d+\s*[)\]]\s*$/i;
 
 function extractSpeaker(cue: TranscriptCue): string | null {
   const match = cue.text.match(SPEAKER_TAG_RE);
@@ -55,71 +74,98 @@ function countWords(text: string): number {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
+function sentenceId(seq: number): string {
+  return `s-${seq.toString().padStart(4, '0')}`;
+}
+
 /**
- * Rebuild utterance units from caption cues.
+ * Rebuild enriched sentence units from caption cues.
  *
- * Strategy:
- *  - A long pause (> TOPIC_GAP_SEC) always flushes the buffer — the speaker
- *    stopped talking long enough that the next unit is a new utterance.
- *  - Sentence punctuation flushes when the current unit is long enough to be
- *    real speech (>= 2 words), so "okay." doesn't spawn a 0.4s utterance.
- *  - Auto-generated tracks without punctuation break on PARAGRAPH_GAP_SEC
- *    (a real silence, not a breath) or a ~45-word upper bound.
+ * Completion evidence (in priority order):
+ *   1. Speaker change — a new speaker starts a new utterance.
+ *   2. Sentence punctuation — the unit ends with .!?…
+ *   3. Paragraph pause (>= 0.75s) — real silence after a complete thought.
+ *   4. Topic pause (>= 2.5s) — always breaks.
+ * Fallback only when none of the above ever fires (punctuation-free track):
+ *   5. Word cap (45) — bounds runaway units.
  */
-export function cuesToUtterances(cues: readonly TranscriptCue[]): Utterance[] {
-  const utterances: Utterance[] = [];
+export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSentence[] {
+  const utterances: EnrichedSentence[] = [];
 
   let buffer: string[] = [];
   let startSec: number | null = null;
   let endSec = 0;
   let words = 0;
+  let cueStartIndex = -1;
+  let cueEndIndex = -1;
   let lastEndSec = 0;
+  let currentSpeaker: string | null = null;
+  let seq = 0;
 
   const flush = (): void => {
     if (buffer.length === 0 || startSec === null) return;
     const text = buffer.join(' ').replace(/\s+/g, ' ').trim();
     if (text.length > 0) {
       utterances.push({
+        id: sentenceId(seq),
         startSec,
         endSec,
-        speaker: null, // assigned below from the first cue that carries a tag
         text,
-        words,
+        wordCount: words,
+        speakerId: currentSpeaker,
+        pauseBeforeSec: utterances.length === 0 ? 0 : Math.max(0, startSec - lastEndSec),
+        pauseAfterSec: 0,
         isCompleteSentence: SENTENCE_END_RE.test(text),
-        pauseBefore: utterances.length === 0 ? 0 : startSec - lastEndSec,
-        pauseAfter: 0,
+        startsWithTransition: TRANSITION_START_RE.test(text),
+        startsWithQuestion: QUESTION_START_RE.test(text),
+        endsWithQuestion: QUESTION_END_RE.test(text),
+        semanticTopicId: null,
+        sourceCueStartIndex: cueStartIndex,
+        sourceCueEndIndex: cueEndIndex,
       });
+      seq += 1;
     }
     buffer = [];
     startSec = null;
     words = 0;
+    cueStartIndex = -1;
+    cueEndIndex = -1;
   };
 
   for (let i = 0; i < cues.length; i += 1) {
     const cue = cues[i]!;
     const previous = i > 0 ? cues[i - 1] : undefined;
-
     const gap = previous ? cue.startSec - previous.endSec : 0;
+
+    // Speaker label cues ("[SPEAKER_00]") are metadata, not content — they
+    // set the speaker for the following content and mark a speaker change.
+    const speaker = extractSpeaker(cue);
+    if (speaker) {
+      if (currentSpeaker !== null && currentSpeaker !== speaker) {
+        // Speaker change: flush the previous unit immediately.
+        flush();
+      }
+      currentSpeaker = speaker;
+      continue;
+    }
 
     // A topic-length pause always breaks the utterance.
     if (previous && gap >= TOPIC_GAP_SEC) {
       flush();
     }
 
-    if (startSec === null) startSec = cue.startSec;
+    if (startSec === null) {
+      startSec = cue.startSec;
+      cueStartIndex = i;
+    }
+    cueEndIndex = i;
 
-    // Speaker label cues ("[SPEAKER_00]") are metadata, not content — keep the
-    // timestamp but don't put the label into the utterance text.
-    const speaker = extractSpeaker(cue);
-    if (speaker) {
-      // Track speaker on the unit: tag the current buffer with this label.
-      if (utterances.length > 0 && utterances[utterances.length - 1]!.endSec === startSec) {
-        // Cue starts exactly where the previous utterance ended — likely a
-        // label inserted at the boundary. Attach to the previous utterance.
-        utterances[utterances.length - 1]!.speaker = speaker;
-        utterances[utterances.length - 1]!.pauseAfter = 0;
-      }
-      continue;
+    // Word-cap fallback: if the buffer is ALREADY at the bound, flush BEFORE
+    // adding this cue so the split lands between cues, not mid-cue.
+    if (words >= MAX_WORDS) {
+      flush();
+      if (startSec === null) startSec = cue.startSec;
+      cueStartIndex = i;
     }
 
     buffer.push(cue.text);
@@ -128,8 +174,10 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): Utterance[] {
 
     const punctuated = SENTENCE_END_RE.test(cue.text);
     const longPause = previous && gap >= PARAGRAPH_GAP_SEC;
-    const runOn = words >= 45;
+    const runOn = words >= MAX_WORDS;
 
+    // Completion evidence: punctuation / paragraph pause are primary; the
+    // word cap is the fallback for punctuation-free tracks.
     if (punctuated || longPause || runOn) {
       flush();
     }
@@ -138,10 +186,10 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): Utterance[] {
 
   flush();
 
-  // Fill pauseAfter from the next unit's pauseBefore.
+  // Fill pauseAfterSec from the next unit's pauseBeforeSec.
   for (let i = 0; i < utterances.length; i += 1) {
     if (i + 1 < utterances.length) {
-      utterances[i]!.pauseAfter = Math.max(0, utterances[i + 1]!.startSec - utterances[i]!.endSec);
+      utterances[i]!.pauseAfterSec = Math.max(0, utterances[i + 1]!.startSec - utterances[i]!.endSec);
     }
   }
 

@@ -7,8 +7,9 @@ import {
   type EndingAnalysis,
   type TopicBoundary,
 } from '@/lib/moments/topic-boundary';
+import { repairBoundary } from '@/lib/moments/boundary-repair';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
-import { round, clamp } from '@/lib/scoring/normalize';
+import { round } from '@/lib/scoring/normalize';
 import type { AgentOverrides, UsageLedger } from '@/lib/ai';
 
 /**
@@ -20,21 +21,38 @@ import type { AgentOverrides, UsageLedger } from '@/lib/ai';
  *
  * After the agent returns final boundaries, deterministic guards enforce the
  * brief's hard rules (§7 Next-Topic Guard, §8 no forced duration, §9 ending
- * confidence, §10 start validation):
+ * confidence, §10 start validation, §11 quality gates, §12 repair):
  *
  *   - final_end = min(selected_end, next_topic_start - end_guard)
- *   - reject when no complete ending found
- *   - reject when next-topic contamination is too high
+ *   - repair when no complete ending found (snap to last conclusion)
+ *   - reject when no complete idea exists even after repair
  *   - allow short complete clips down to minCompleteDurationSec
  *   - never exceed hardMaxSec
  */
+
+export interface BoundaryDebugInfo {
+  endingType: string;
+  endingConfidence: number;
+  nextTopicRemoved: boolean;
+  nextTopicStartSec: number | null;
+  nextTopicContamination: number;
+  boundaryStatus?: string;
+  repairReason?: string;
+  roughStartSec?: number;
+  roughEndSec?: number;
+  boundaryConfidence?: number;
+  startComplete?: boolean;
+  mainTopic?: string;
+  topicBefore?: string;
+  topicAfter?: string;
+}
 
 export interface TwoPassResult {
   segments: MomentSegment[];
   utterances: Utterance[];
   warnings: string[];
-  /** Phase 1 debug report per kept segment index (brief §52). */
-  endingById: Map<number, { endingType: string; endingConfidence: number; nextTopicRemoved: boolean; nextTopicStartSec: number | null; nextTopicContamination: number }>;
+  /** Phase 1 debug report per kept segment index (brief §13). */
+  endingById: Map<number, BoundaryDebugInfo>;
 }
 
 interface BoundaryInfo {
@@ -196,16 +214,13 @@ export async function twoPassHighlightSelection(
 ): Promise<TwoPassResult> {
   const warnings: string[] = [];
   const utterances = cuesToUtterances(transcript.cues);
-  const endingById = new Map<number, TwoPassResult['endingById'] extends Map<number, infer V> ? V : never>();
+  const endingById = new Map<number, BoundaryDebugInfo>();
 
   if (roughSegments.length === 0) {
     return { segments: [], utterances, warnings, endingById };
   }
 
   // Pass 2 — LLM boundary refinement with context around each rough window.
-  const contextBefore = config.pipeline.highlight.contextBeforeSec;
-  const contextAfter = config.pipeline.highlight.contextAfterSec;
-
   const refinement = await refineBoundaries({
     candidates: roughSegments.map((s) => ({
       index: s.index,
@@ -278,6 +293,53 @@ export async function twoPassHighlightSelection(
 
     const validation = validateBoundary(finalStart, finalEnd, ending, boundary);
     if (!validation.ok) {
+      // ── Phase 1 (brief §12): boundary repair before rejecting ──
+      const repair = repairBoundary(
+        utterances,
+        { roughStartSec: rough.startSec, roughEndSec: rough.endSec },
+        boundary.nextTopicStart !== null
+          ? boundary.nextTopicStart - config.pipeline.highlight.endGuardSec
+          : rough.endSec,
+      );
+      if (repair.boundaryStatus === 'repaired' || repair.boundaryStatus === 'refined') {
+        const repEndIdx = utteranceAtOrBefore(utterances, repair.finalEndSec);
+        const repEnd = repEndIdx >= 0 ? utterances[repEndIdx]! : null;
+        const repNext = repEndIdx >= 0 && repEndIdx + 1 < utterances.length ? utterances[repEndIdx + 1]! : null;
+        const repFollowing = repEndIdx >= 0 ? utterances.slice(repEndIdx + 1, repEndIdx + 4) : [];
+        const repEnding = repEnd
+          ? classifyEnding(repEnd, repNext, repFollowing)
+          : { endingType: 'UNKNOWN' as const, endingConfidence: 0.3, endingComplete: false };
+        const repBoundary = repEnd
+          ? detectTopicBoundary(repEnd, repNext, repFollowing, config.pipeline.highlight.nextTopicLookaheadSec)
+          : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
+
+        endingById.set(rough.index, {
+          endingType: repEnding.endingType,
+          endingConfidence: round(repEnding.endingConfidence, 2),
+          nextTopicRemoved: repBoundary.nextTopicDetected,
+          nextTopicStartSec: repBoundary.nextTopicStart !== null ? round(repBoundary.nextTopicStart, 2) : null,
+          nextTopicContamination: round(repBoundary.contamination, 2),
+          boundaryStatus: repair.boundaryStatus,
+          repairReason: repair.repairReason,
+          roughStartSec: repair.originalStartSec,
+          roughEndSec: repair.originalEndSec,
+          boundaryConfidence: round(Math.max(repEnding.endingConfidence, 0.7), 2),
+          startComplete: true,
+        });
+        segments.push({
+          index: rough.index,
+          startSec: round(repair.finalStartSec, 2),
+          endSec: round(repair.finalEndSec, 2),
+          durationSec: round(repair.finalEndSec - repair.finalStartSec, 2),
+          text: rough.text,
+          wordCount: rough.wordCount,
+          wordsPerSecond: round(rough.wordCount / Math.max(1, repair.finalEndSec - repair.finalStartSec), 2),
+          salience: rough.salience,
+        });
+        warnings.push(`highlight ${rough.index}: ${repair.boundaryStatus} — ${repair.repairReason}`);
+        console.warn(`[two-pass] repair idx=${rough.index}: ${repair.repairReason}`);
+        continue;
+      }
       rejectedCount += 1;
       warnings.push(`highlight ${rough.index}: rejected — ${validation.reason}`);
       console.warn(
@@ -296,6 +358,12 @@ export async function twoPassHighlightSelection(
       nextTopicRemoved: boundary.nextTopicDetected,
       nextTopicStartSec: boundary.nextTopicStart !== null ? round(boundary.nextTopicStart, 2) : null,
       nextTopicContamination: round(boundary.contamination, 2),
+      boundaryStatus: 'refined',
+      repairReason: undefined,
+      roughStartSec: rough.startSec,
+      roughEndSec: rough.endSec,
+      boundaryConfidence: round(ending.endingConfidence, 2),
+      startComplete: true,
     });
     segments.push({
       index: rough.index,

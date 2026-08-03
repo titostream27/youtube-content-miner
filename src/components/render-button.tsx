@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils/cn';
 export function RenderButton({
   clipId,
   renderStatus,
-  renderPath,
+  renderPath: _renderPath,
   renderError,
 }: {
   clipId: number;
@@ -25,10 +25,9 @@ export function RenderButton({
   renderError: string | null;
 }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [_pending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<RenderStatus>(renderStatus);
-  const [path, setPath] = useState<string | null>(renderPath);
   const [error, setError] = useState<string | null>(renderError);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
 
@@ -50,7 +49,6 @@ export function RenderButton({
       };
 
       setStatus(result.clip.renderStatus);
-      setPath(result.clip.renderPath);
       setError(result.clip.renderError);
       setPublicUrl(result.publicUrl);
       startTransition(() => router.refresh());

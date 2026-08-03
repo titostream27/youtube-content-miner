@@ -29,7 +29,7 @@ export function PublishButton({
   hasSeo: boolean;
 }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [_pending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<PublishStatus>(publishStatus);
   const [url, setUrl] = useState<string | null>(publishUrl);

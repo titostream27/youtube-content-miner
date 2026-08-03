@@ -203,6 +203,16 @@ export interface ScoredClip {
   nextTopicRemoved?: boolean;
   nextTopicStartSec?: number | null;
   nextTopicContamination?: number | null;
+  /** Phase 1 (Master Task Brief §12-14): boundary workflow + debug report. */
+  boundaryStatus?: string;
+  boundaryConfidence?: number | null;
+  startComplete?: boolean;
+  repairReason?: string | null;
+  roughStartSec?: number | null;
+  roughEndSec?: number | null;
+  mainTopic?: string | null;
+  topicBefore?: string | null;
+  topicAfter?: string | null;
 }
 
 /* -------------------------------------------------------------------------- */

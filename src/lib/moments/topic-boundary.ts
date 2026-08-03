@@ -23,7 +23,8 @@ export type EndingType =
   | 'TOPIC_TRANSITION'
   | 'QUESTION_START'
   | 'INCOMPLETE_SENTENCE'
-  | 'FILLER';
+  | 'FILLER'
+  | 'UNKNOWN';
 
 export interface TopicBoundary {
   /** True if a topic change was detected around this point. */
@@ -100,7 +101,11 @@ function hasTransitionPhrase(text: string): boolean {
 }
 
 function isQuestionStart(text: string): boolean {
-  return QUESTION_STARTERS.some((re) => re.test(text));
+  // Question starters must appear at the START of the utterance (first or
+  // second word). A "why" buried mid-sentence ("so that is why it failed")
+  // is narrative, not a question.
+  const head = text.trim().split(/\s+/).slice(0, 2).join(' ');
+  return QUESTION_STARTERS.some((re) => re.test(head));
 }
 
 function isIncomplete(text: string): boolean {
@@ -119,6 +124,36 @@ function isFiller(text: string): boolean {
 
 const SENTENCE_END_RE = /[.!?…]["')\]]?\s*$/;
 
+/** Named-entity approximation: capitalized tokens (English names/places) or
+ * proper nouns in Indonesian (also capitalized at sentence start, so this is
+ * a weak signal combined with others, never proof alone). */
+function namedEntities(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const m of text.matchAll(/\b([A-Z][a-z]{2,})\b/g)) {
+    out.add(m[1]!.toLowerCase());
+  }
+  return out;
+}
+
+/** Subject approximation: first-person pronouns vs. third-person vs. "you"
+ * vs. impersonal — a shift suggests a new focus (brief §7). */
+function subjectClass(text: string): string {
+  const t = text.toLowerCase();
+  if (/\b(i|we|my|our|saya|kami|kita|gue|gw)\b/.test(t)) return 'first';
+  if (/\b(you|your|kamu|anda|lu|lo)\b/.test(t)) return 'second';
+  if (/\b(he|she|they|his|her|their|dia|mereka)\b/.test(t)) return 'third';
+  return 'impersonal';
+}
+
+/** Intent approximation: question words, imperatives, opinion markers. */
+function intentClass(text: string): string {
+  const t = text.toLowerCase();
+  if (isQuestionStart(t)) return 'question';
+  if (/\b(remember|imagine|look|wait|so|jadi|ingat|bayangkan|tunggu)\b/.test(t)) return 'engage';
+  if (/\b(i think|i believe|in my opinion|menurut saya|menurut gue|sebenarnya|faktanya)\b/.test(t)) return 'opinion';
+  return 'statement';
+}
+
 /**
  * Classify the ending at `endUtterance` (the utterance whose end is the
  * candidate clip end).
@@ -130,7 +165,7 @@ const SENTENCE_END_RE = /[.!?…]["')\]]?\s*$/;
 export function classifyEnding(
   endUtterance: Utterance,
   nextUtterance: Utterance | null,
-  following: Utterance[] = [],
+  _following: Utterance[] = [],
 ): EndingAnalysis {
   const text = endUtterance.text.trim();
   const nextText = nextUtterance?.text.trim() ?? '';
@@ -153,7 +188,7 @@ export function classifyEnding(
   // ends with clear sentence punctuation, treat it as a complete ending even
   // when the next speaker changes subject.
   if (nextUtterance && (isQuestionStart(nextText) || hasTransitionPhrase(nextText))) {
-    const currentEndsClean = SENTENCE_END_RE.test(text) || endUtterance.pauseAfter >= 0.45;
+    const currentEndsClean = SENTENCE_END_RE.test(text) || endUtterance.pauseAfterSec >= 0.45;
     if (currentEndsClean) {
       if (/^(so|and so|therefore|in the end|at the end of the day|that's why|itulah|jadi|kesimpulannya)\b/i.test(text)) {
         return { endingType: 'CONCLUSION', endingConfidence: 0.88, endingComplete: true };
@@ -163,26 +198,35 @@ export function classifyEnding(
     return { endingType: 'TOPIC_TRANSITION', endingConfidence: 0.6, endingComplete: false };
   }
 
+  // A question STARTING the utterance is a bad ending regardless of the final
+  // punctuation — "What do you think about that?" is a question, not a
+  // punchline. Check BEFORE the punctuation branch.
+  if (isQuestionStart(text)) {
+    return { endingType: 'QUESTION_START', endingConfidence: 0.5, endingComplete: false };
+  }
+
   // Pause-after matters: a long silence after a complete sentence is a clean end.
-  const longPause = nextUtterance !== null && endUtterance.pauseAfter >= 0.5;
+  const longPause = nextUtterance !== null && endUtterance.pauseAfterSec >= 0.5;
 
   if (SENTENCE_END_RE.test(text)) {
     // PUNCHLINE: short, punchy, possibly exclamation.
-    if (/[!?…]$/.test(text.trim()) && endUtterance.words <= 14) {
+    if (/[!?…]$/.test(text.trim()) && endUtterance.wordCount <= 14) {
       return { endingType: 'PUNCHLINE', endingConfidence: 0.82 + (longPause ? 0.08 : 0), endingComplete: true };
     }
     // ANSWER_COMPLETE: ends with a period and reads like a direct answer.
-    if (nextUtterance && endUtterance.pauseAfter >= 0.3) {
+    if (nextUtterance && endUtterance.pauseAfterSec >= 0.3) {
       return { endingType: 'ANSWER_COMPLETE', endingConfidence: 0.8, endingComplete: true };
     }
     return { endingType: 'CONCLUSION', endingConfidence: 0.78, endingComplete: true };
   }
 
-  if (isQuestionStart(text)) {
-    return { endingType: 'QUESTION_START', endingConfidence: 0.5, endingComplete: false };
+  // Punctuation-free transcript: a short unit with a long pause reads as a
+  // complete answer even without a period.
+  if (endUtterance.pauseAfterSec >= 0.5 && endUtterance.wordCount >= 2) {
+    return { endingType: 'ANSWER_COMPLETE', endingConfidence: 0.72, endingComplete: true };
   }
 
-  return { endingType: 'CONCLUSION', endingConfidence: 0.6, endingComplete: true };
+  return { endingType: 'UNKNOWN', endingConfidence: 0.45, endingComplete: false };
 }
 
 /**
@@ -206,10 +250,15 @@ export function detectTopicBoundary(
   const similarity = lexicalSimilarity(endUtterance.text, nextUtterance.text);
   const transition = hasTransitionPhrase(nextUtterance.text);
   const question = isQuestionStart(nextUtterance.text);
-  const speakerChanged = nextUtterance.speaker !== null && endUtterance.speaker !== null &&
-    nextUtterance.speaker !== endUtterance.speaker;
-  const longPause = nextUtterance.pauseBefore >= 0.6;
+  const speakerChanged = nextUtterance.speakerId !== null && endUtterance.speakerId !== null &&
+    nextUtterance.speakerId !== endUtterance.speakerId;
+  const longPause = nextUtterance.pauseBeforeSec >= 0.6;
   const nextIncomplete = isIncomplete(nextUtterance.text);
+  // Entity / subject / intent change (brief §7).
+  const entityDiff = namedEntities(nextUtterance.text).size > 0 &&
+    [...namedEntities(nextUtterance.text)].every((e) => !namedEntities(endUtterance.text).has(e));
+  const subjectChanged = subjectClass(nextUtterance.text) !== subjectClass(endUtterance.text);
+  const intentChanged = intentClass(nextUtterance.text) !== intentClass(endUtterance.text);
 
   let boundaryScore = 0;
 
@@ -222,6 +271,9 @@ export function detectTopicBoundary(
   if (speakerChanged) boundaryScore += 0.35;
   if (longPause) boundaryScore += 0.4;
   if (nextIncomplete) boundaryScore += 0.3;
+  if (entityDiff) boundaryScore += 0.3;
+  if (subjectChanged) boundaryScore += 0.2;
+  if (intentChanged) boundaryScore += 0.2;
 
   const detected = boundaryScore >= TOPIC_CHANGE_THRESHOLD;
 
