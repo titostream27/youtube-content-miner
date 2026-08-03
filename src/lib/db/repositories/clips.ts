@@ -95,6 +95,10 @@ export interface ClipRecord {
   scheduledAt: string | null;
   targetMarket: string | null;
   idempotencyKey: string | null;
+  /** Phase 4 (§15): split workflow status fields. */
+  editorialStatus: string;
+  scheduleStatus: string;
+  analyticsStatus: string;
 }
 
 interface ClipRow {
@@ -164,6 +168,9 @@ interface ClipRow {
   scheduled_at: string | null;
   target_market: string | null;
   idempotency_key: string | null;
+  editorial_status: string | null;
+  schedule_status: string | null;
+  analytics_status: string | null;
 }
 
 const EMPTY_DIMENSIONS: ClipDimensionScores = {
@@ -249,6 +256,9 @@ function mapClip(row: ClipRow): ClipRecord {
     scheduledAt: row.scheduled_at ?? null,
     targetMarket: row.target_market ?? null,
     idempotencyKey: row.idempotency_key ?? null,
+    editorialStatus: row.editorial_status ?? 'new',
+    scheduleStatus: row.schedule_status ?? 'unscheduled',
+    analyticsStatus: row.analytics_status ?? 'not_tracked',
   };
 }
 
@@ -347,6 +357,9 @@ export function replaceClipsForEpisode(
         rightsReviewedBy: null,
         qcStatus: 'pending',
         qcScore: null,
+        editorialStatus: 'new',
+        scheduleStatus: 'unscheduled',
+        analyticsStatus: 'not_tracked',
       });
     }
   });
@@ -683,6 +696,64 @@ export function updateClipSchedule(
       id,
       scheduledAt: params.scheduledAt,
       targetMarket: params.targetMarket,
+    });
+  return result.changes > 0;
+}
+
+/** Phase 2 (Master Task Brief §22): manual boundary correction. */
+export function updateClipBoundary(
+  id: number,
+  params: {
+    startSec: number;
+    endSec: number;
+    durationSec: number;
+    boundaryStatus?: string;
+    repairReason?: string | null;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET start_sec = @startSec,
+              end_sec = @endSec,
+              duration_sec = @durationSec,
+              boundary_status = @boundaryStatus,
+              repair_reason = @repairReason
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      startSec: params.startSec,
+      endSec: params.endSec,
+      durationSec: params.durationSec,
+      boundaryStatus: params.boundaryStatus ?? 'repaired',
+      repairReason: params.repairReason ?? null,
+    });
+  return result.changes > 0;
+}
+
+/** Phase 4 (Master Task Brief §15): update split workflow status fields. */
+export function updateClipWorkflowStatus(
+  id: number,
+  params: {
+    editorialStatus?: string;
+    scheduleStatus?: string;
+    analyticsStatus?: string;
+  },
+): boolean {
+  const result = getDb()
+    .prepare(
+      `UPDATE clips
+          SET editorial_status = COALESCE(@editorialStatus, editorial_status),
+              schedule_status = COALESCE(@scheduleStatus, schedule_status),
+              analytics_status = COALESCE(@analyticsStatus, analytics_status)
+        WHERE id = @id`,
+    )
+    .run({
+      id,
+      editorialStatus: params.editorialStatus ?? null,
+      scheduleStatus: params.scheduleStatus ?? null,
+      analyticsStatus: params.analyticsStatus ?? null,
     });
   return result.changes > 0;
 }

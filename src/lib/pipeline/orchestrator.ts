@@ -376,6 +376,23 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
 
     const usage = ledger.summary();
 
+    // Phase 4 (Master Task Brief §37): auto-record LLM cost for this run.
+    try {
+      const { addCostEntry, estimateLlmCost } = await import('@/lib/db/repositories/cost-ledger');
+      const amountUsd = estimateLlmCost(usage.inputTokens, usage.outputTokens);
+      addCostEntry({
+        runId,
+        category: 'llm',
+        costType: 'estimate',
+        amountUsd,
+        units: 'tokens',
+        quantity: usage.inputTokens + usage.outputTokens,
+        note: `${usage.calls} agent calls (${usage.inputTokens} in / ${usage.outputTokens} out)`,
+      });
+    } catch (e) {
+      console.warn(`[orchestrator] cost ledger write failed: ${e}`);
+    }
+
     return {
       runId,
       mode: options.mode,

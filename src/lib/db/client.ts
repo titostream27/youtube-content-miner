@@ -122,6 +122,13 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'scheduled_at', definition: 'TEXT' },
     { table: 'clips', column: 'target_market', definition: 'TEXT' },
     { table: 'clips', column: 'idempotency_key', definition: 'TEXT' },
+    // Phase 4 (Master Task Brief §15): split workflow status fields.
+    // Editorial: new | boundary_refined | approved | rejected
+    { table: 'clips', column: 'editorial_status', definition: "TEXT NOT NULL DEFAULT 'new'" },
+    // Schedule: unscheduled | scheduled | paused
+    { table: 'clips', column: 'schedule_status', definition: "TEXT NOT NULL DEFAULT 'unscheduled'" },
+    // Analytics: not_tracked | tracking | ready
+    { table: 'clips', column: 'analytics_status', definition: "TEXT NOT NULL DEFAULT 'not_tracked'" },
   ];
 
   for (const { table, column, definition } of columns) {

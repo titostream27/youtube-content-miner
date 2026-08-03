@@ -33,6 +33,13 @@ function ClipIdentity({ clip }: { clip: ClipRecord }) {
         </Link>
         <span className="mx-1 text-slate-600">·</span>
         <span className="numeric">{formatTimecode(clip.startSec)}</span>
+        <span className="mx-1 text-slate-600">·</span>
+        <Link
+          href={`/clips/${clip.id}`}
+          className="text-sky-400 hover:underline"
+        >
+          edit
+        </Link>
       </p>
     </div>
   );

@@ -177,7 +177,22 @@ CREATE TABLE IF NOT EXISTS clip_feedback (
   created_at  TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_clip_feedback_clip ON clip_feedback (clip_id);
+-- Phase 2 (Master Task Brief §22): boundary-adjustment feedback details.
+-- Stored as JSON: { original_start_sec, original_end_sec, new_start_sec,
+--   new_end_sec, reason } so every manual correction is auditable.
+CREATE TABLE IF NOT EXISTS clip_feedback_boundary (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  clip_id     INTEGER NOT NULL,
+  feedback_id INTEGER,
+  original_start_sec REAL,
+  original_end_sec REAL,
+  new_start_sec REAL,
+  new_end_sec REAL,
+  reason      TEXT,
+  created_at  TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_clip_feedback_boundary_clip ON clip_feedback_boundary (clip_id);
 
 -- Published performance, pulled from connected analytics. The supervision
 -- signal for the future ranking model.
