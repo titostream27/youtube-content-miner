@@ -72,11 +72,19 @@ export async function GET(_request: Request, context: RouteContext) {
       return ok({ state: 'done', jobId, rendered: doneCount, failed: failedCount });
     }
 
-    if (body.state === 'error') {
+    if (body.state === 'error' || body.state === 'orphaned') {
+      // 'orphaned' = the render service found a queued/running job in its
+      // persisted store after a restart; the worker is gone and it will never
+      // finish. Treat it like a failure so the clip leaves 'rendering' and a
+      // re-run is possible, instead of freezing forever.
       for (const c of rendering) {
-        updateClipRender(c.id, { status: 'error', error: body.error ?? 'render job failed' });
+        updateClipRender(c.id, {
+          status: 'error',
+          jobId: null,
+          error: body.error ?? `render job ${body.state}`,
+        });
       }
-      return ok({ state: 'error', jobId, error: body.error });
+      return ok({ state: body.state, jobId, error: body.error });
     }
 
     return ok({ state: 'running', jobId });
