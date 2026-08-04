@@ -37,7 +37,16 @@ export async function probeRenderJob(jobId: string | null | undefined): Promise<
       return { ok: false, gone: false, reason: `render service ${res.status}` };
     }
     const body = (await res.json()) as { state?: string };
-    return { ok: true, state: body.state ?? 'unknown' };
+    const state = body.state ?? 'unknown';
+    // Terminal-dead states mean the job will never produce output: 'orphaned'
+    // is set by the render service when it finds a queued/running job in its
+    // persisted store after a restart (the worker thread is gone). 'failed'
+    // and 'cancelled' are likewise dead. Treat all of them as gone so the
+    // caller's self-heal clears renderStatus and allows a fresh render.
+    if (state === 'orphaned' || state === 'failed' || state === 'cancelled') {
+      return { ok: false, gone: true, reason: `job ${jobId} is ${state}` };
+    }
+    return { ok: true, state };
   } catch (e) {
     return {
       ok: false,
