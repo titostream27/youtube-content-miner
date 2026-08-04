@@ -105,6 +105,12 @@ export async function POST(_request: Request, context: RouteContext) {
     const jobId = clip.renderPath?.split('/')[0];
     const thumbnailUrl = jobId ? `${renderBase}/files/${jobId}/thumbnail.jpg` : '';
 
+    // Phase 8 (prime-time): when this clip was scheduled by the trending E2E
+    // run it carries a target market + slot. Forward the slot to the poster
+    // service so YouTube schedules the upload (private until the prime hour,
+    // then public automatically). Non-scheduled manual publishes stay direct.
+    const scheduledAt = clip.scheduledAt ?? null;
+
     // Mark publishing before the long call so a concurrent GET sees intent.
     updateClipPublish(clipId, { status: 'publishing' });
 
@@ -128,6 +134,7 @@ export async function POST(_request: Request, context: RouteContext) {
           file_url: fileUrl,
           thumbnail_url: thumbnailUrl,
           privacy: config.publish.privacy,
+          ...(scheduledAt ? { publish_at: scheduledAt } : {}),
         }),
         signal: controller.signal,
       });

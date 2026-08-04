@@ -12,7 +12,7 @@ export type ClipStatus = 'new' | 'approved' | 'rejected' | 'published';
 
 export type RenderStatus = 'none' | 'rendering' | 'done' | 'error';
 
-export type PublishStatus = 'none' | 'publishing' | 'published' | 'error';
+export type PublishStatus = 'none' | 'publishing' | 'published' | 'error' | 'awaiting_approval';
 
 /** A clip joined with the episode context the UI always needs alongside it. */
 export interface ClipRecord {

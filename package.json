@@ -16,6 +16,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:reset": "tsx scripts/db-reset.ts",
     "pipeline": "tsx scripts/run-pipeline.ts",
+    "scheduled": "tsx scripts/scheduled-run.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

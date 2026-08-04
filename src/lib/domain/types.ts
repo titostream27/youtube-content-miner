@@ -5,8 +5,8 @@ import type { PriorityTier } from './thresholds';
 /* Discovery                                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** PRD "AI Discovery" - the three ways a run can be started. */
-export type DiscoveryMode = 'topic' | 'tracked_channels' | 'archive';
+/** PRD "AI Discovery" - the ways a run can be started. */
+export type DiscoveryMode = 'topic' | 'tracked_channels' | 'archive' | 'trending';
 
 export interface ChannelSummary {
   channelId: string;

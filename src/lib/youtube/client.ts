@@ -324,3 +324,22 @@ export async function searchChannels(query: string, maxResults = 5): Promise<Sea
   });
   return response.items ?? [];
 }
+
+/** Fetch videos from the trending chart for a region.
+ * Uses `videos.list` with `chart=mostPopular`, quota cost is only 1 unit (same as other list calls). 
+ */
+export async function listTrendingVideos(params: {
+  regionCode?: string;
+  videoCategoryId?: string;
+  maxResults?: number;
+}): Promise<VideoItem[]> {
+  const response = await request<ListResponse<VideoItem>>('videos', {
+    part: 'snippet,contentDetails,statistics,status',
+    chart: 'mostPopular',
+    regionCode: params.regionCode ?? 'ID',
+    videoCategoryId: params.videoCategoryId,
+    maxResults: Math.min(50, params.maxResults ?? 25),
+  });
+
+  return response.items ?? [];
+}

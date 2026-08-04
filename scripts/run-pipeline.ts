@@ -8,6 +8,7 @@
  *   npm run pipeline -- --topic "artificial intelligence"
  *   npm run pipeline -- --mode tracked_channels
  *   npm run pipeline -- --mode archive --channel demo-chan-signal
+ *   npm run pipeline -- --mode trending   # picks today's mostPopular topic
  */
 import { config, describeConfig } from '../src/lib/config';
 import { tierLabel, type PriorityTier } from '../src/lib/domain/thresholds';
@@ -38,7 +39,12 @@ function parseArgs(argv: string[]): CliArgs {
 
     switch (flag) {
       case '--mode':
-        if (value === 'topic' || value === 'tracked_channels' || value === 'archive') {
+        if (
+          value === 'topic' ||
+          value === 'tracked_channels' ||
+          value === 'archive' ||
+          value === 'trending'
+        ) {
           args.mode = value;
         }
         i += 1;
@@ -85,7 +91,7 @@ async function main(): Promise<void> {
 
   const result = await runPipeline({
     mode: args.mode,
-    topic: args.topic ?? undefined,
+    topic: args.mode === 'trending' ? undefined : (args.topic ?? undefined),
     channelIds: args.channelIds.length > 0 ? args.channelIds : undefined,
     maxEpisodes: args.maxEpisodes,
     force: args.force,

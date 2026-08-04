@@ -149,7 +149,13 @@ export class AgentResponseError extends Error {
 export function extractJson(text: string): unknown {
   const trimmed = text.trim();
 
-  const withoutFence = trimmed
+  // Strip a markdown code fence wherever it appears. The 9router `deepseek`
+  // combo can route to different backends (DeepSeek returns bare JSON, Claude
+  // wraps it in ```json … ```), sometimes with a line of prose before the
+  // fence, so anchoring to the start/end of the string is not enough. Prefer
+  // the content *inside* the first fenced block when one exists.
+  const fenced = /```(?:json)?\s*([\s\S]*?)\s*```/i.exec(trimmed);
+  const withoutFence = (fenced?.[1] ?? trimmed)
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/, '')
     .trim();

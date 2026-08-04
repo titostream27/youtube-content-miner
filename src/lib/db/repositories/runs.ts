@@ -139,6 +139,11 @@ export function failRun(runId: number, error: string, durationMs: number): void 
     .run(error, nowIso(), durationMs, runId);
 }
 
+/** Record the topic for a run once discovery resolves it (e.g. trending mode). */
+export function updateRunTopic(runId: number, topic: string | null): void {
+  getDb().prepare('UPDATE runs SET topic = ? WHERE id = ?').run(topic, runId);
+}
+
 export function getRun(runId: number): RunRecord | null {
   const row = getDb().prepare('SELECT * FROM runs WHERE id = ?').get(runId) as RunRow | undefined;
   return row ? mapRun(row) : null;

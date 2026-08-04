@@ -1,3 +1,4 @@
+import { config } from '@/lib/config';
 import { fetchYouTubeCaptions } from '@/lib/youtube/captions';
 import {
   attemptFailed,
@@ -25,10 +26,16 @@ export const youtubeCaptionsProvider: TranscriptProvider = {
       return attemptFailed('captions', 'video reports no caption track');
     }
 
+    // A hung watch-page fetch must not stall a whole run. The provider chain is
+    // called with an optional external signal that may never fire, so combine it
+    // with a hard ceiling here.
+    const timeout = AbortSignal.timeout(config.transcript.captions.timeoutMs);
+    const combined = input.signal ? AbortSignal.any([input.signal, timeout]) : timeout;
+
     const result = await fetchYouTubeCaptions({
       videoId: input.candidate.videoId,
       preferredLanguages: input.preferredLanguages,
-      signal: input.signal,
+      signal: combined,
     });
 
     return result.transcript

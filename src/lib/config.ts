@@ -142,6 +142,8 @@ export const config = {
     batchSize: readInt('AI_BATCH_SIZE', 6),
     /** Concurrent in-flight requests per episode. */
     concurrency: readInt('AI_CONCURRENCY', 3),
+    /** Episodes of a run analysed in parallel (was serial; big speedup). */
+    episodeConcurrency: readInt('AI_EPISODE_CONCURRENCY', 2),
     requestTimeoutMs: readInt('AI_TIMEOUT_MS', 90_000),
     maxRetries: readInt('AI_MAX_RETRIES', 2),
     /**
@@ -244,7 +246,14 @@ export const config = {
         .split(' ')
         .map((arg) => arg.trim())
         .filter(Boolean),
-      timeoutMs: readInt('YTDLP_TIMEOUT_MS', 60_000),
+      // Subtitle-only fetch with --skip-download is normally fast (<10s); 30s
+      // per pass caps the worst case at 60s for the two-pass manual/auto run.
+      timeoutMs: readInt('YTDLP_TIMEOUT_MS', 30_000),
+    },
+
+    captions: {
+      /** Watch-page scrape ceiling; without this a hung fetch could stall a run. */
+      timeoutMs: readInt('CAPTIONS_TIMEOUT_MS', 30_000),
     },
   },
 
@@ -300,6 +309,56 @@ export const config = {
     requireQcPass: readString('PUBLISH_REQUIRE_QC_PASS') !== 'false',
     requireBoundaryPass: readString('PUBLISH_REQUIRE_BOUNDARY_PASS') !== 'false',
     requireRightsApproval: readString('PUBLISH_REQUIRE_RIGHTS_APPROVAL') !== 'false',
+  },
+
+  /** Trending discovery mode - minimal configuration. */
+  trending: {
+    regionCode: readString('TRENDING_REGION') ?? 'ID',
+    maxVideos: readInt('TRENDING_MAX_VIDEOS', 25),
+    maxTopics: readInt('TRENDING_MAX_TOPICS', 3),
+    autoApproval: readBool('TRENDING_AUTO_APPROVAL', false),
+    /**
+     * Daily clip target for the multi-topic scheduled loop. The scheduler
+     * mines trending topics ranked by popularity and processes them one by
+     * one until the number of clips that clear every gate (rendered, QC'd,
+     * SEO'd and published) reaches this target, then stops. Because the last
+     * topic that crosses the threshold contributes all of its qualifying
+     * clips, the day's total can slightly exceed this number.
+     */
+    dailyClipTarget: readInt('TRENDING_DAILY_CLIP_TARGET', 15),
+    /**
+     * How many popularity-ranked topics the loop may fan out across in a
+     * single scheduled run before giving up on hitting the daily target.
+     * Higher than `maxTopics` (which caps a single planTrendingTopics call)
+     * because reaching 15 clips usually needs more than 3 topics.
+     */
+    maxLoopTopics: readInt('TRENDING_MAX_LOOP_TOPICS', 10),
+  },
+
+  /**
+   * Prime-time publish: which market each scheduled clip targets, the local
+   * wall-clock slot, and the rotation weights. Env format:
+   *   PRIME_US_TZ=America/New_York  PRIME_US_HOUR=8  PRIME_US_MINUTE=0
+   *   PRIME_AU_TZ=Australia/Sydney  PRIME_AU_HOUR=19
+   *   PRIME_CH_TZ=Europe/Zurich     PRIME_CH_HOUR=7
+   *   PRIME_ALLOCATION=us:60,au:25,ch:15
+   */
+  primeTime: {
+    us: {
+      timeZone: readString('PRIME_US_TZ') ?? 'America/New_York',
+      hour: readInt('PRIME_US_HOUR', 8),
+      minute: readInt('PRIME_US_MINUTE', 0),
+    },
+    au: {
+      timeZone: readString('PRIME_AU_TZ') ?? 'Australia/Sydney',
+      hour: readInt('PRIME_AU_HOUR', 19),
+      minute: readInt('PRIME_AU_MINUTE', 0),
+    },
+    ch: {
+      timeZone: readString('PRIME_CH_TZ') ?? 'Europe/Zurich',
+      hour: readInt('PRIME_CH_HOUR', 7),
+      minute: readInt('PRIME_CH_MINUTE', 0),
+    },
   },
 } as const;
 

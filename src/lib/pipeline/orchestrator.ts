@@ -8,12 +8,19 @@ import type {
   ScoringEngineName,
 } from '@/lib/domain/types';
 import { scoreEpisodeOpportunity } from '@/lib/scoring/episode-opportunity';
-import { planDiscovery, triageEpisodes, UsageLedger, type AgentOverrides } from '@/lib/ai';
+import {
+  planDiscovery,
+  planTrendingTopics,
+  triageEpisodes,
+  UsageLedger,
+  type AgentOverrides,
+} from '@/lib/ai';
 import {
   discoverByTopic,
   discoverFromChannels,
   mineChannelArchive,
 } from '@/lib/youtube/discovery';
+import { listTrendingVideos } from '@/lib/youtube/client';
 import { upsertChannel } from '@/lib/db/repositories/channels';
 import {
   listTrackedChannels,
@@ -27,8 +34,9 @@ import {
   upsertDiscoveredEpisode,
 } from '@/lib/db/repositories/episodes';
 import { replaceClipsForEpisode } from '@/lib/db/repositories/clips';
-import { completeRun, createRun, failRun } from '@/lib/db/repositories/runs';
+import { completeRun, createRun, failRun, updateRunTopic } from '@/lib/db/repositories/runs';
 import { analyzeEpisode } from './analyze-episode';
+import { mapWithConcurrency } from '@/lib/utils/concurrency';
 
 /**
  * The run orchestrator - the PRD's complete workflow, in order:
@@ -83,6 +91,8 @@ function dedupeCandidates(candidates: EpisodeCandidate[]): EpisodeCandidate[] {
 interface DiscoveryPhase {
   candidates: EpisodeCandidate[];
   searchQueries: string[];
+  /** Resolved topic (for 'trending' this is chosen by the trending agent). */
+  topic: string | null;
   source: 'live' | 'demo';
   warnings: string[];
 }
@@ -101,7 +111,13 @@ async function runDiscovery(
   if (options.mode === 'topic') {
     const topic = options.topic?.trim();
     if (!topic) {
-      return { candidates: [], searchQueries: [], source: 'demo', warnings: ['No topic supplied.'] };
+      return {
+        candidates: [],
+        searchQueries: [],
+        topic: null,
+        source: 'demo',
+        warnings: ['No topic supplied.'],
+      };
     }
 
     const plan = await planDiscovery({
@@ -133,6 +149,70 @@ async function runDiscovery(
     return {
       candidates: dedupeCandidates(candidates).slice(0, maxEpisodes),
       searchQueries: queries,
+      topic,
+      source,
+      warnings: Array.from(new Set(warnings)),
+    };
+  }
+
+  if (options.mode === 'trending') {
+    // No user-supplied topic. Pull today's mostPopular videos, let the
+    // trending agent pick the topic worth mining, then expand it via the
+    // normal Mode A path so the seed is a topic, not a single video.
+    const trendingVideos = await listTrendingVideos({
+      regionCode: config.trending.regionCode,
+      maxResults: config.trending.maxVideos,
+    });
+
+    const mined = await planTrendingTopics({
+      videos: trendingVideos,
+      maxTopics: config.trending.maxTopics,
+      overrides: options.overrides,
+      ledger,
+      signal: options.signal,
+    });
+    warnings.push(...mined.warnings);
+
+    const topic = mined.plan.topics[0]?.trim();
+    if (!topic) {
+      return {
+        candidates: [],
+        searchQueries: [],
+        topic: null,
+        source: 'live',
+        warnings: [...warnings, 'Trending topic agent returned no usable topic.'],
+      };
+    }
+
+    const plan = await planDiscovery({
+      topic,
+      overrides: options.overrides,
+      ledger,
+      signal: options.signal,
+    });
+    warnings.push(...plan.warnings);
+
+    const queries = plan.plan.searchQueries;
+    const perQuery = Math.max(4, Math.ceil(maxEpisodes / Math.max(1, queries.length)));
+
+    const candidates: EpisodeCandidate[] = [];
+    let source: 'live' | 'demo' = 'demo';
+
+    for (const query of queries) {
+      const outcome = await discoverByTopic({
+        topic: query,
+        maxResults: perQuery,
+        publishedWithinDays: options.publishedWithinDays,
+      });
+      candidates.push(...outcome.candidates);
+      if (outcome.source === 'live') source = 'live';
+      warnings.push(...outcome.warnings);
+    }
+
+    return {
+      candidates: dedupeCandidates(candidates).slice(0, maxEpisodes),
+      searchQueries: queries,
+      topic,
       source,
       warnings: Array.from(new Set(warnings)),
     };
@@ -157,6 +237,7 @@ async function runDiscovery(
     return {
       candidates: dedupeCandidates(outcome.candidates).slice(0, maxEpisodes),
       searchQueries: [],
+      topic: null,
       source: outcome.source,
       warnings: [...warnings, ...outcome.warnings],
     };
@@ -168,6 +249,7 @@ async function runDiscovery(
     return {
       candidates: [],
       searchQueries: [],
+      topic: null,
       source: 'demo',
       warnings: ['Archive mining requires a channel.'],
     };
@@ -177,6 +259,7 @@ async function runDiscovery(
   return {
     candidates: dedupeCandidates(outcome.candidates).slice(0, maxEpisodes),
     searchQueries: [],
+    topic: null,
     source: outcome.source,
     warnings: [...warnings, ...outcome.warnings],
   };
@@ -186,14 +269,14 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
   const startedAt = new Date();
   const ledger = new UsageLedger();
 
-  const topic = options.mode === 'topic' ? (options.topic?.trim() ?? null) : null;
+  const initialTopic = options.mode === 'topic' ? (options.topic?.trim() ?? null) : null;
   const episodeThreshold =
     options.episodeScoreThreshold ?? config.pipeline.episodeScoreThreshold;
   const clipThreshold = options.clipScoreThreshold ?? config.pipeline.clipScoreThreshold;
 
   const runId = createRun({
     mode: options.mode,
-    topic,
+    topic: initialTopic,
     channelIds: options.channelIds ?? [],
     engine: config.ai.agents.clip_scoring.providerId ? 'llm' : 'heuristic',
     episodeThreshold,
@@ -211,6 +294,13 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
     /* ---------------------------------------------------------------- */
     const discovery = await runDiscovery(options, ledger);
     warnings.push(...discovery.warnings);
+
+    // For 'trending' the topic is only known after the trending agent picks
+    // it. Resolve it here so ranking, triage and the run record all agree.
+    const topic = discovery.topic ?? initialTopic;
+    if (options.mode === 'trending' && discovery.topic) {
+      updateRunTopic(runId, discovery.topic);
+    }
 
     // Persist channel statistics so they are available to the UI and to future
     // opportunity scores without re-fetching.
@@ -301,32 +391,66 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
     /* ---------------------------------------------------------------- */
     let clipsFound = 0;
 
-    for (const entry of queue) {
-      const { candidate } = entry;
+    // Episodes are analysed in parallel (bounded), not serially. Each episode
+    // spends most of its wall-clock time on network I/O (transcript fetch +
+    // provider calls), so serial execution serialises all that latency and a
+    // single slow episode holds the whole run hostage. Parallelism is bounded
+    // by config.ai.episodeConcurrency to avoid hammering providers and rate
+    // limits. The DB write (better-sqlite3, single synchronous connection) and
+    // modify-in-place collections (results, warnings, tierCounts, ledger) all
+    // run on the single JS thread, so there is no data race.
+    const analysedResults = await mapWithConcurrency(
+      queue,
+      config.ai.episodeConcurrency,
+      async (entry) => {
+        const { candidate } = entry;
 
-      try {
-        const analysis = await analyzeEpisode({
-          candidate,
-          topic,
-          clipScoreThreshold: clipThreshold,
-          overrides: options.overrides,
-          ledger,
-          signal: options.signal,
-        });
+        try {
+          const analysis = await analyzeEpisode({
+            candidate,
+            topic,
+            clipScoreThreshold: clipThreshold,
+            overrides: options.overrides,
+            ledger,
+            signal: options.signal,
+          });
 
+          // Archive-tier clips are persisted too: they are the labelled dataset
+          // the PRD identifies as the long-term moat.
+          replaceClipsForEpisode(candidate.videoId, analysis.allClips, runId);
+
+          markEpisodeAnalysed({
+            videoId: candidate.videoId,
+            transcriptSource: analysis.transcript.source,
+            segmentCount: analysis.segments.length,
+            clipCount: analysis.clips.length,
+          });
+
+          return {
+            entry,
+            ok: true as const,
+            analysis,
+            error: null as string | null,
+          };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown analysis error';
+          markEpisodeFailed(candidate.videoId, message);
+          return {
+            entry,
+            ok: false as const,
+            analysis: null,
+            error: message,
+          };
+        }
+      },
+    );
+
+    for (const result of analysedResults) {
+      const { entry } = result;
+      if (result.ok && result.analysis) {
+        const analysis = result.analysis;
         warnings.push(...analysis.warnings);
         if (analysis.engine === 'llm') engine = 'llm';
-
-        // Archive-tier clips are persisted too: they are the labelled dataset
-        // the PRD identifies as the long-term moat.
-        replaceClipsForEpisode(candidate.videoId, analysis.allClips, runId);
-
-        markEpisodeAnalysed({
-          videoId: candidate.videoId,
-          transcriptSource: analysis.transcript.source,
-          segmentCount: analysis.segments.length,
-          clipCount: analysis.clips.length,
-        });
 
         for (const clip of analysis.clips) {
           tierCounts[clip.tier] += 1;
@@ -334,7 +458,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
         clipsFound += analysis.clips.length;
 
         results.push({
-          episode: candidate,
+          episode: entry.candidate,
           opportunity: entry.opportunity,
           analysed: true,
           skipReason: null,
@@ -342,16 +466,13 @@ export async function runPipeline(options: RunPipelineOptions): Promise<RunSumma
           segmentCount: analysis.segments.length,
           clips: analysis.clips,
         });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown analysis error';
-        markEpisodeFailed(candidate.videoId, message);
-        warnings.push(`${candidate.title}: ${message}`);
-
+      } else {
+        warnings.push(`${entry.candidate.title}: ${result.error}`);
         results.push({
-          episode: candidate,
+          episode: entry.candidate,
           opportunity: entry.opportunity,
           analysed: false,
-          skipReason: message,
+          skipReason: result.error,
           transcriptSource: null,
           segmentCount: 0,
           clips: [],

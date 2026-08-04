@@ -5,6 +5,7 @@ import {
   bestThumbnail,
   listChannelUploads,
   listChannels,
+  listTrendingVideos,
   listVideos,
   searchChannels,
   searchVideos,
@@ -222,6 +223,99 @@ export async function discoverFromChannels(params: {
     );
     return { candidates, warnings: [...warnings, describeApiFailure(error)], source: 'demo' };
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mode T - trending discovery (recent mostPopular videos)                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Turn today mostPopular YouTube videos into episode candidates. Unlike the
+ * other modes these are not necessarily long-form interviews, so short clips
+ * and non-embeddable videos are dropped before they reach scoring.
+ */
+export async function discoverFromTrending(params: {
+  regionCode?: string;
+  maxResults?: number;
+}): Promise<DiscoveryOutcome> {
+  const maxResults = params.maxResults ?? 25;
+
+  if (config.youtube.demoMode) {
+    const topic = 'trending';
+    return {
+      candidates: searchFixtureEpisodes({ topic, maxResults }),
+      warnings: ['Demo catalogue in use - set YOUTUBE_API_KEY for live discovery.'],
+      source: 'demo',
+    };
+  }
+
+  try {
+    const items = await listTrendingVideos({
+      regionCode: params.regionCode,
+      maxResults,
+    });
+
+    // mostPopular contains Shorts, music videos and trailers. Keep only
+    // embeddable videos at least a minute long so the episode opportunity
+    // score has real long-form material to judge.
+    const candidates = items
+      .filter((item) => item.status?.embeddable !== false)
+      .filter((item) => parseIsoDuration(item.contentDetails?.duration) >= 60);
+
+    if (candidates.length === 0) {
+      return { candidates: [], warnings: ['No long-form trending videos found.'], source: 'live' };
+    }
+
+    const channelIds = Array.from(new Set(candidates.map((video) => video.snippet.channelId)));
+    const channelItems = await listChannels(channelIds);
+    const channelMap = new Map<string, ChannelSummary>(
+      channelItems.map((item) => [item.id, channelItemToSummary(item)]),
+    );
+
+    return {
+      candidates: candidates.map((video) => videoVideoItemToCandidate(video, channelMap)),
+      warnings: [],
+      source: 'live',
+    };
+  } catch (error) {
+    return {
+      candidates: searchFixtureEpisodes({ topic: 'trending', maxResults }),
+      warnings: [describeApiFailure(error)],
+      source: 'demo',
+    };
+  }
+}
+
+/** Convert a fully-hydrated VideoItem (from trending) into an EpisodeCandidate. */
+function videoVideoItemToCandidate(
+  item: VideoItem,
+  channels: Map<string, ChannelSummary>,
+): EpisodeCandidate {
+  return {
+    videoId: item.id,
+    title: item.snippet.title,
+    description: item.snippet.description ?? '',
+    channelId: item.snippet.channelId,
+    channelTitle: item.snippet.channelTitle,
+    publishedAt: item.snippet.publishedAt,
+    durationSeconds: parseIsoDuration(item.contentDetails?.duration),
+    viewCount: toNumber(item.statistics?.viewCount),
+    likeCount: toNumber(item.statistics?.likeCount),
+    commentCount: toNumber(item.statistics?.commentCount),
+    thumbnailUrl: bestThumbnail(item.snippet.thumbnails),
+    tags: item.snippet.tags ?? [],
+    hasCaptions: item.contentDetails?.caption === undefined
+      ? null
+      : item.contentDetails.caption === 'true',
+    license:
+      item.status?.license === 'creativeCommon'
+        ? 'creativeCommon'
+        : item.status?.license === 'youtube'
+          ? 'youtube'
+          : null,
+    embeddable: item.status?.embeddable ?? null,
+    channel: channels.get(item.snippet.channelId) ?? null,
+  };
 }
 
 /* -------------------------------------------------------------------------- */

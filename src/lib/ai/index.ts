@@ -39,6 +39,12 @@ export {
 
 export { planDiscovery, fallbackDiscoveryPlan, type DiscoveryPlan } from './agents/discovery-agent';
 
+export {
+  planTrendingTopics,
+  fallbackTrendingTopics,
+  type TrendingTopics,
+} from './agents/trending-topic-agent';
+
 export { triageEpisodes, type EpisodeTriageJudgement } from './agents/episode-triage-agent';
 
 export { refineMoments } from './agents/moment-detection-agent';

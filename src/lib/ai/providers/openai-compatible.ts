@@ -45,7 +45,21 @@ export function createOpenAiCompatibleTransport(runtime: ProviderRuntime): ChatT
         messages: request.messages,
         temperature: request.temperature,
         max_tokens: request.maxOutputTokens,
+        // Explicit non-streaming. Some proxies (e.g. the local 9router) default
+        // to streaming and append `data: [DONE]`, which breaks response.json().
+        stream: false,
       };
+
+      // Reasoning models (e.g. the 9router `deepseek` combo -> deepseek-v4)
+      // spend part of `max_tokens` on hidden reasoning, which can starve the
+      // JSON output and return an empty completion. AI_REASONING_EFFORT lets
+      // the operator turn that off (`none`) or tune it globally. Unset keeps
+      // the old behaviour (field omitted) so non-reasoning providers are
+      // unaffected.
+      const reasoningEffort = process.env.AI_REASONING_EFFORT?.trim();
+      if (reasoningEffort) {
+        body.reasoning_effort = reasoningEffort;
+      }
 
       if (request.jsonMode && runtime.definition.supportsJsonMode) {
         body.response_format = { type: 'json_object' };

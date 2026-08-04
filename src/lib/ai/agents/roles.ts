@@ -25,6 +25,7 @@ export const AGENT_ROLES = [
   'clip_seo',
   'clip_hook',
   'clip_variants',
+  'trending_topic',
 ] as const;
 
 export type AgentRole = (typeof AGENT_ROLES)[number];
@@ -85,7 +86,7 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     providerEnv: 'AGENT_CLIP_SCORING_PROVIDER',
     modelEnv: 'AGENT_CLIP_SCORING_MODEL',
     temperature: 0.15,
-    maxOutputTokens: 4_000,
+    maxOutputTokens: 8_000,
     optional: false,
   },
   clip_metadata: {
@@ -130,6 +131,17 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     modelEnv: 'AGENT_CLIP_VARIANTS_MODEL',
     temperature: 0.7,
     maxOutputTokens: 1_500,
+    optional: true,
+  },
+  trending_topic: {
+    role: 'trending_topic',
+    label: 'Trending Topic Agent',
+    purpose:
+      'Turns today mostPopular YouTube videos into the topics worth mining, so scheduled discovery can run with no manual topic input.',
+    providerEnv: 'AGENT_TRENDING_TOPIC_PROVIDER',
+    modelEnv: 'AGENT_TRENDING_TOPIC_MODEL',
+    temperature: 0.3,
+    maxOutputTokens: 600,
     optional: true,
   },
 };

@@ -98,6 +98,13 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'ending_complete', definition: 'INTEGER NOT NULL DEFAULT 0' },
     { table: 'clips', column: 'previous_topic_contamination', definition: 'REAL NOT NULL DEFAULT 0' },
     { table: 'clips', column: 'next_topic_contamination', definition: 'REAL NOT NULL DEFAULT 0' },
+    // Ending classification + next-topic trim (written by saveClips INSERT).
+    // These were added to the INSERT but the migration was missed, so every
+    // clip save failed with "table clips has no column named ending_type".
+    { table: 'clips', column: 'ending_type', definition: "TEXT NOT NULL DEFAULT ''" },
+    { table: 'clips', column: 'ending_confidence', definition: 'REAL' },
+    { table: 'clips', column: 'next_topic_removed', definition: 'INTEGER NOT NULL DEFAULT 0' },
+    { table: 'clips', column: 'next_topic_start_sec', definition: 'REAL' },
     // Topic narrative (brief §13 debug report).
     { table: 'clips', column: 'main_topic', definition: 'TEXT' },
     { table: 'clips', column: 'topic_before', definition: 'TEXT' },
