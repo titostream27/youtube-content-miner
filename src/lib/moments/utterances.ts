@@ -197,12 +197,14 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
 }
 
 export interface TranscriptSlice {
-  /** Text of the utterances overlapping [startSec, endSec], joined. */
+  /** Text of the utterances starting inside [startSec, endSec), joined. */
   text: string;
   wordCount: number;
   wordsPerSecond: number;
   /** Number of speaker changes inside the window (Phase 2 §intelligence). */
   speakerTurns: number;
+  /** True when no utterance starts inside the window (empty transcript). */
+  empty: boolean;
 }
 
 /**
@@ -219,8 +221,13 @@ export function sliceTranscriptForRange(
   startSec: number,
   endSec: number,
 ): TranscriptSlice {
+  // Phase-2 correctness (F13): slice at the utterance boundary whose START
+  // falls inside the window, instead of grabbing every overlapping utterance
+  // whole. Without word-level timings this is the honest word-level slice:
+  // trailing fragments of the previous utterance and leading fragments of
+  // the next are not counted as full words.
   const inside = utterances.filter(
-    (u) => u.endSec > startSec && u.startSec < endSec,
+    (u) => u.startSec >= startSec - 0.05 && u.startSec < endSec,
   );
   const text = inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
   const wordCount = countWords(text);
@@ -242,6 +249,7 @@ export function sliceTranscriptForRange(
     wordCount,
     wordsPerSecond: round2(wordCount / duration),
     speakerTurns,
+    empty: inside.length === 0,
   };
 }
 

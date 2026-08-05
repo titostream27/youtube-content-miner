@@ -216,14 +216,18 @@ function scoreExpectedClipDensity(
 }
 
 /**
- * Phase 2 (Opportunity scoring) — Channel-relative velocity.
+ * Phase-2 correctness (F10) — Channel-relative reach (honest fallback).
  *
- * Absolute view velocity favours big channels: a 100k-view episode is
- * unremarkable for a 5M-subscriber channel but exceptional for a 20k one.
- * Divide the episode's views-per-day by the channel's average views-per-day
- * so we measure the episode against its OWN channel's baseline.
+ * Previously named "channelRelativeVelocity", but it normalized the
+ * CHANNEL's lifetime total view count by the EPISODE's age — a mathematical
+ * mismatch: channelAgeDays should be the channel's lifetime, not the
+ * episode's. Until age-matched channel snapshots exist we cannot compute a
+ * true channel-relative velocity, so this metric is an honest fallback that
+ * divides the episode's views-per-day by the channel's lifetime average
+ * views-per-day (channel views / channel lifetime in days). The name and doc
+ * now say what it actually measures.
  */
-function scoreChannelRelativeVelocity(candidate: EpisodeCandidate, now: Date): number {
+function scoreChannelRelativeReach(candidate: EpisodeCandidate, now: Date): number {
   const age = Math.max(1, daysSince(candidate.publishedAt, now));
   const episodeViewsPerDay = candidate.viewCount / age;
   const channel = candidate.channel;
@@ -231,7 +235,13 @@ function scoreChannelRelativeVelocity(candidate: EpisodeCandidate, now: Date): n
     // No channel baseline: fall back to neutral (not a penalty).
     return 55;
   }
-  const channelAgeDays = Math.max(1, daysSince(candidate.publishedAt, now));
+  // Honest denominator: channel lifetime views-per-day, NOT episode-age.
+  // channelAgeDays is the channel's own age; when unknown we fall back to a
+  // neutral prior instead of silently reusing the episode's age.
+  const channelAgeDays = channel.ageDays ?? null;
+  if (!channelAgeDays || channelAgeDays <= 0) {
+    return 55;
+  }
   const avgViewsPerDay =
     channel.viewCount && channelAgeDays > 0 ? channel.viewCount / channelAgeDays / channel.videoCount : 0;
   if (avgViewsPerDay <= 0) return 55;
@@ -248,15 +258,15 @@ function scoreChannelRelativeVelocity(candidate: EpisodeCandidate, now: Date): n
 }
 
 /**
- * Phase 2 (Opportunity scoring) — Momentum.
+ * Phase-2 correctness (F11) — Comment velocity (renamed from "momentum").
  *
- * A proxy for acceleration without historical view series: comment velocity
- * relative to view velocity. Comments lag views (viewers finish the episode
- * before commenting), so a HIGH comments-per-1000-views on a RECENT episode
- * suggests the conversation is still building — the episode is accelerating,
- * not decaying.
+ * The old name claimed acceleration, but the metric is comments-per-view
+ * weighted by freshness — a conversation-intensity proxy, not a real
+ * velocity or acceleration (that needs historical view series we do not
+ * have). Renamed to say what it measures; a future snapshot-based
+ * velocity/acceleration can replace it without changing the factor key.
  */
-function scoreMomentum(candidate: EpisodeCandidate, now: Date): number {
+function scoreCommentVelocity(candidate: EpisodeCandidate, now: Date): number {
   const age = Math.max(1, daysSince(candidate.publishedAt, now));
   if (candidate.viewCount <= 0) return 40;
   const commentsPerDay = candidate.commentCount / age;
@@ -400,8 +410,8 @@ export function scoreEpisodeOpportunity(
     topicRelevance,
   );
   // Phase 2 (Opportunity scoring): channel-relative + economic factors.
-  const channelRelativeVelocity = scoreChannelRelativeVelocity(candidate, now);
-  const momentum = scoreMomentum(candidate, now);
+  const channelRelativeVelocity = scoreChannelRelativeReach(candidate, now);
+  const momentum = scoreCommentVelocity(candidate, now);
   const personalFit = scorePersonalFit(candidate, topic, personalTopics);
   const processingCostEfficiency = scoreProcessingCostEfficiency(candidate.durationSeconds);
 

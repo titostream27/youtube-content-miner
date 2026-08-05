@@ -16,6 +16,8 @@ export interface ChannelSummary {
   subscriberCount: number | null;
   videoCount: number | null;
   viewCount: number | null;
+  /** Channel age in days (Phase-2 F10: needed for honest per-day metrics). */
+  ageDays?: number | null;
 }
 
 /**

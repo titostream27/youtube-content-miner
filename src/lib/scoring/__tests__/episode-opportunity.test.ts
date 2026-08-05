@@ -71,7 +71,7 @@ describe('Phase 2 opportunity scoring factors (§opportunity scoring)', () => {
     // Same absolute views, tiny channel baseline -> higher relative velocity.
     const smallChan = scoreEpisodeOpportunity(
       cand({
-        viewCount: 100_000,
+        viewCount: 10_000,
         channel: {
           channelId: 'c-small',
           title: 'Tiny',
@@ -80,13 +80,14 @@ describe('Phase 2 opportunity scoring factors (§opportunity scoring)', () => {
           subscriberCount: 20_000,
           videoCount: 40,
           viewCount: 500_000,
+          ageDays: 1000,
         },
       }),
       { now },
     );
     const bigChan = scoreEpisodeOpportunity(
       cand({
-        viewCount: 100_000,
+        viewCount: 10_000,
         channel: {
           channelId: 'c-big',
           title: 'Huge',
@@ -95,6 +96,7 @@ describe('Phase 2 opportunity scoring factors (§opportunity scoring)', () => {
           subscriberCount: 5_000_000,
           videoCount: 500,
           viewCount: 2_000_000_000,
+          ageDays: 3000,
         },
       }),
       { now },

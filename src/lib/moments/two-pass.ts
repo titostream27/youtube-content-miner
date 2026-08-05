@@ -321,6 +321,22 @@ export async function twoPassHighlightSelection(
           repair.finalStartSec,
           repair.finalEndSec,
         );
+
+        // Phase-2 correctness (F12): the repaired boundary must pass the FULL
+        // validation (duration, ending, contamination, floors) again — repair
+        // previously pushed segments without re-validating.
+        const repValidation = validateBoundary(
+          repair.finalStartSec,
+          repair.finalEndSec,
+          repEnding,
+          repBoundary,
+        );
+        if (!repValidation.ok) {
+          rejectedCount += 1;
+          warnings.push(`highlight ${rough.index}: repaired but still invalid — ${repValidation.reason}`);
+          console.warn(`[two-pass] reject idx=${rough.index} after repair: ${repValidation.reason}`);
+          continue;
+        }
         endingById.set(rough.index, {
           endingType: repEnding.endingType,
           endingConfidence: round(repEnding.endingConfidence, 2),
@@ -342,13 +358,22 @@ export async function twoPassHighlightSelection(
           repair.finalStartSec,
           repair.finalEndSec,
         );
+        // Phase-2 correctness (F13): an empty transcript slice is a real
+        // anomaly, not a reason to fall back to rough text (which described
+        // a DIFFERENT window). Reject the repaired highlight instead.
+        if (finalSlice.empty || finalSlice.wordCount === 0) {
+          rejectedCount += 1;
+          warnings.push(`highlight ${rough.index}: rejected — empty transcript after repair`);
+          console.warn(`[two-pass] reject idx=${rough.index} after repair: empty transcript slice`);
+          continue;
+        }
         segments.push({
           index: rough.index,
           startSec: round(repair.finalStartSec, 2),
           endSec: round(repair.finalEndSec, 2),
           durationSec: round(repair.finalEndSec - repair.finalStartSec, 2),
-          text: finalSlice.text || rough.text,
-          wordCount: finalSlice.wordCount || rough.wordCount,
+          text: finalSlice.text,
+          wordCount: finalSlice.wordCount,
           wordsPerSecond: finalSlice.wordsPerSecond,
           salience: rough.salience,
         });
@@ -387,13 +412,21 @@ export async function twoPassHighlightSelection(
     // differ from the rough window — re-slice text and metrics from the
     // actual final range so scoring/captions describe the rendered clip.
     const finalSlice = sliceTranscriptForRange(utterances, finalStart, finalEnd);
+    // Phase-2 correctness (F13): never fall back to rough text (a different
+    // window); an empty final slice is rejected as an anomaly.
+    if (finalSlice.empty || finalSlice.wordCount === 0) {
+      rejectedCount += 1;
+      warnings.push(`highlight ${rough.index}: rejected — empty transcript slice`);
+      console.warn(`[two-pass] reject idx=${rough.index}: empty transcript slice`);
+      continue;
+    }
     segments.push({
       index: rough.index,
       startSec: round(finalStart, 2),
       endSec: round(finalEnd, 2),
       durationSec: round(duration, 2),
-      text: finalSlice.text || rough.text,
-      wordCount: finalSlice.wordCount || rough.wordCount,
+      text: finalSlice.text,
+      wordCount: finalSlice.wordCount,
       wordsPerSecond: finalSlice.wordsPerSecond,
       salience: rough.salience,
     });
