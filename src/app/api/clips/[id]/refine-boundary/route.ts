@@ -1,6 +1,6 @@
 import { getClip, updateClipBoundary } from '@/lib/db/repositories/clips';
 import { getTranscript } from '@/lib/db/repositories/transcripts';
-import { cuesToUtterances } from '@/lib/moments/utterances';
+import { cuesToUtterances, sliceTranscriptForRange } from '@/lib/moments/utterances';
 import {
   classifyEnding,
   detectTopicBoundary,
@@ -93,6 +93,14 @@ export async function POST(_request: Request, context: RouteContext) {
       durationSec: Math.round((finalEnd - finalStart) * 100) / 100,
       boundaryStatus,
       repairReason,
+      // Phase 2 (Intelligence correctness): re-slice transcript text to the
+      // final boundary so scoring/captions describe the rendered window.
+      ...(finalStart !== clip.startSec || finalEnd !== clip.endSec
+        ? (() => {
+            const s = sliceTranscriptForRange(utterances, finalStart, finalEnd);
+            return { transcript: s.text, wordCount: s.wordCount };
+          })()
+        : {}),
     });
 
     return ok({

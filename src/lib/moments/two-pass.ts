@@ -1,6 +1,6 @@
 import { config } from '@/lib/config';
 import type { MomentSegment, Transcript } from '@/lib/domain/types';
-import { cuesToUtterances, type Utterance } from '@/lib/moments/utterances';
+import { cuesToUtterances, sliceTranscriptForRange, type Utterance } from '@/lib/moments/utterances';
 import {
   classifyEnding,
   detectTopicBoundary,
@@ -326,14 +326,22 @@ export async function twoPassHighlightSelection(
           boundaryConfidence: round(Math.max(repEnding.endingConfidence, 0.7), 2),
           startComplete: true,
         });
+        // Phase 2 (Intelligence correctness): re-slice transcript text and
+        // derived metrics from the FINAL repaired boundary — never reuse the
+        // rough candidate's text/wordCount (they describe a different range).
+        const finalSlice = sliceTranscriptForRange(
+          utterances,
+          repair.finalStartSec,
+          repair.finalEndSec,
+        );
         segments.push({
           index: rough.index,
           startSec: round(repair.finalStartSec, 2),
           endSec: round(repair.finalEndSec, 2),
           durationSec: round(repair.finalEndSec - repair.finalStartSec, 2),
-          text: rough.text,
-          wordCount: rough.wordCount,
-          wordsPerSecond: round(rough.wordCount / Math.max(1, repair.finalEndSec - repair.finalStartSec), 2),
+          text: finalSlice.text || rough.text,
+          wordCount: finalSlice.wordCount || rough.wordCount,
+          wordsPerSecond: finalSlice.wordsPerSecond,
           salience: rough.salience,
         });
         warnings.push(`highlight ${rough.index}: ${repair.boundaryStatus} — ${repair.repairReason}`);
@@ -365,14 +373,18 @@ export async function twoPassHighlightSelection(
       boundaryConfidence: round(ending.endingConfidence, 2),
       startComplete: true,
     });
+    // Phase 2 (Intelligence correctness): the agent's final boundary may
+    // differ from the rough window — re-slice text and metrics from the
+    // actual final range so scoring/captions describe the rendered clip.
+    const finalSlice = sliceTranscriptForRange(utterances, finalStart, finalEnd);
     segments.push({
       index: rough.index,
       startSec: round(finalStart, 2),
       endSec: round(finalEnd, 2),
       durationSec: round(duration, 2),
-      text: rough.text,
-      wordCount: rough.wordCount,
-      wordsPerSecond: round(rough.wordCount / Math.max(1, duration), 2),
+      text: finalSlice.text || rough.text,
+      wordCount: finalSlice.wordCount || rough.wordCount,
+      wordsPerSecond: finalSlice.wordsPerSecond,
       salience: rough.salience,
     });
   }

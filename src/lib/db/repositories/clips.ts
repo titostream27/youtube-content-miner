@@ -700,7 +700,9 @@ export function updateClipSchedule(
   return result.changes > 0;
 }
 
-/** Phase 2 (Master Task Brief §22): manual boundary correction. */
+/** Phase 2 (Master Task Brief §22): manual boundary correction.
+ * Phase 2 intelligence: also re-slices the stored transcript text to the new
+ * range so scoring/captions never describe a stale time window. */
 export function updateClipBoundary(
   id: number,
   params: {
@@ -709,6 +711,9 @@ export function updateClipBoundary(
     durationSec: number;
     boundaryStatus?: string;
     repairReason?: string | null;
+    /** Re-sliced transcript text for the final range (optional). */
+    transcript?: string;
+    wordCount?: number;
   },
 ): boolean {
   const result = getDb()
@@ -718,7 +723,9 @@ export function updateClipBoundary(
               end_sec = @endSec,
               duration_sec = @durationSec,
               boundary_status = @boundaryStatus,
-              repair_reason = @repairReason
+              repair_reason = @repairReason,
+              transcript = COALESCE(@transcript, transcript),
+              word_count = COALESCE(@wordCount, word_count)
         WHERE id = @id`,
     )
     .run({
@@ -728,6 +735,8 @@ export function updateClipBoundary(
       durationSec: params.durationSec,
       boundaryStatus: params.boundaryStatus ?? 'repaired',
       repairReason: params.repairReason ?? null,
+      transcript: params.transcript ?? null,
+      wordCount: params.wordCount ?? null,
     });
   return result.changes > 0;
 }

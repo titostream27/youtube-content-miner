@@ -195,3 +195,56 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
 
   return utterances;
 }
+
+export interface TranscriptSlice {
+  /** Text of the utterances overlapping [startSec, endSec], joined. */
+  text: string;
+  wordCount: number;
+  wordsPerSecond: number;
+  /** Number of speaker changes inside the window (Phase 2 §intelligence). */
+  speakerTurns: number;
+}
+
+/**
+ * Phase 2 (Intelligence correctness) — Re-slice transcript text and derived
+ * metrics from the FINAL boundary, not the rough candidate.
+ *
+ * After boundary repair or refinement moves [start, end], the clip's text,
+ * word count, speech density and speaker turns must describe the actual
+ * rendered window. Call this with the final boundaries and the full
+ * utterance list; never reuse the rough segment's text/wordCount.
+ */
+export function sliceTranscriptForRange(
+  utterances: EnrichedSentence[],
+  startSec: number,
+  endSec: number,
+): TranscriptSlice {
+  const inside = utterances.filter(
+    (u) => u.endSec > startSec && u.startSec < endSec,
+  );
+  const text = inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
+  const wordCount = countWords(text);
+  const duration = Math.max(0.5, endSec - startSec);
+
+  let speakerTurns = 0;
+  let lastSpeaker: string | null = null;
+  for (const u of inside) {
+    if (u.speakerId && u.speakerId !== lastSpeaker) {
+      if (lastSpeaker !== null) {
+        speakerTurns += 1;
+      }
+      lastSpeaker = u.speakerId;
+    }
+  }
+
+  return {
+    text,
+    wordCount,
+    wordsPerSecond: round2(wordCount / duration),
+    speakerTurns,
+  };
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
