@@ -59,8 +59,9 @@ async function renderEpisodeAll(
     mode: 'final',
     mainTopic: clips[0]?.mainTopic ?? null,
     endingType: clips[0]?.endingType ?? null,
-    // Phase 2 (Canonical transcript): propagate the real language.
+    // Phase 2 (Canonical transcript): propagate the real language + cues.
     language: transcript?.language || 'en',
+    transcript,
   });
   const payload = {
     ...contract,

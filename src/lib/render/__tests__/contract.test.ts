@@ -225,4 +225,75 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
   it('rejects empty clips array', () => {
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips: [] }))).toThrow();
   });
+
+  // ── Phase-2 correctness F19: strict cross-field invariants ──────────────
+  it('rejects NaN / non-finite start_sec', () => {
+    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: Number.NaN }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects out-of-order caption cues', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      caption_plan: {
+        language: 'en', highlight_terms: [],
+        cues: [
+          { start_sec: 3.0, end_sec: 3.5, text: 'first' },
+          { start_sec: 1.0, end_sec: 1.5, text: 'out of order' },
+        ],
+      },
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects cue with end_sec <= start_sec', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      caption_plan: {
+        language: 'en', highlight_terms: [],
+        cues: [{ start_sec: 2.0, end_sec: 2.0, text: 'zero width' }],
+      },
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects narrative payoff before hook', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      narrative: { main_topic: 'm', ending_type: 'c', hook_end_sec: 3.0, payoff_start_sec: 2.0 },
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects non-positive numeric clip_id', () => {
+    const clips = [{ ...(makeV2().clips as any[])[0], clip_id: 0 }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+});
+
+describe('Phase-2 correctness F17/F18', () => {
+  it('builds cues from the canonical transcript, not invented spacing (F17)', () => {
+    const transcript = {
+      videoId: 'ep-1', source: 'youtube_asr' as const, language: 'id',
+      durationSec: 200, wordCount: 2, cues: [
+        { startSec: 10.0, endSec: 11.2, text: 'hello', speakerId: 's1' },
+        { startSec: 11.5, endSec: 13.0, text: 'world', speakerId: 's1' },
+      ],
+    };
+    const contract = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 15 })], { transcript });
+    const cues = contract.clips[0]!.caption_plan.cues;
+    expect(cues).toHaveLength(2);
+    expect(cues[0]!.text).toBe('hello');
+    expect(cues[0]!.start_sec).toBeCloseTo(10.0, 2);
+    expect(cues[0]!.speaker_id).toBe('s1');
+  });
+
+  it('hashes the full contract into request_id (F18)', () => {
+    const a = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 15 })]);
+    const b = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 16 })]);
+    expect(a.request_id).not.toBe(b.request_id);
+    // Same semantic contract -> same id (stable idempotency).
+    const c = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 15 })]);
+    expect(c.request_id).toBe(a.request_id);
+  });
 });

@@ -87,8 +87,9 @@ export async function POST(request: Request, context: RouteContext) {
     mode,
     mainTopic: pending[0]?.mainTopic ?? null,
     endingType: pending[0]?.endingType ?? null,
-    // Phase 2 (Canonical transcript): propagate the real language.
+    // Phase 2 (Canonical transcript): propagate the real language + cues.
     language: transcript?.language || 'en',
+    transcript,
   });
   const payload = {
     ...contract,

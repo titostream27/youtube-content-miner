@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ClipRecord } from '@/lib/db/repositories/clips';
+import type { Transcript } from '@/lib/domain/types';
 
 /**
  * Phase 2 (Renderer Integration) — Versioned render contract (brief §16-17).
@@ -96,6 +97,21 @@ export const RenderRequestV2Schema = z.object({
     const seen = new Set<string | number>();
     value.clips.forEach((clip, idx) => {
       const path = ['clips', idx];
+      // F19: finite numbers (no NaN/Infinity from JSON math).
+      for (const key of ['start_sec', 'end_sec'] as const) {
+        const n = clip[key];
+        if (typeof n !== 'number' || !Number.isFinite(n)) {
+          ctx.addIssue({ code: 'custom', path: [...path, key], message: `${key} must be finite` });
+        }
+      }
+      // F19: normalized clip_id — numeric IDs must be positive integers.
+      if (typeof clip.clip_id === 'number' && (!Number.isInteger(clip.clip_id) || clip.clip_id <= 0)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'clip_id'],
+          message: `clip_id must be a positive integer, got ${clip.clip_id}`,
+        });
+      }
       if (clip.end_sec <= clip.start_sec) {
         ctx.addIssue({
           code: 'custom',
@@ -111,6 +127,8 @@ export const RenderRequestV2Schema = z.object({
         });
       }
       seen.add(clip.clip_id);
+      // F19: cues must be time-ordered and inside the clip range.
+      let lastCueEnd = -Infinity;
       for (const [ci, cue] of clip.caption_plan.cues.entries()) {
         if (cue.start_sec < clip.start_sec || cue.end_sec > clip.end_sec) {
           ctx.addIssue({
@@ -119,6 +137,31 @@ export const RenderRequestV2Schema = z.object({
             message: `caption cue [${cue.start_sec},${cue.end_sec}] outside clip range [${clip.start_sec},${clip.end_sec}]`,
           });
         }
+        if (cue.end_sec <= cue.start_sec) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, 'caption_plan', 'cues', ci],
+            message: `cue end_sec must be > start_sec`,
+          });
+        }
+        if (cue.start_sec < lastCueEnd - 0.05) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, 'caption_plan', 'cues', ci],
+            message: `cue [${cue.start_sec}] out of order (previous ended ${lastCueEnd})`,
+          });
+        }
+        lastCueEnd = Math.max(lastCueEnd, cue.end_sec);
+      }
+      // F19: narrative ordering — payoff must come after the hook.
+      const hookEnd = clip.narrative.hook_end_sec;
+      const payoffStart = clip.narrative.payoff_start_sec;
+      if (hookEnd != null && payoffStart != null && payoffStart < hookEnd) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'narrative'],
+          message: `payoff_start_sec (${payoffStart}) must be >= hook_end_sec (${hookEnd})`,
+        });
       }
       for (const [ei, ev] of clip.editing_events.entries()) {
         if (ev.time_sec < clip.start_sec || ev.time_sec > clip.end_sec) {
@@ -148,12 +191,30 @@ export interface BuildContractOptions {
   payoffStartSec?: number | null;
   /** Idempotency key (brief §20): render:<clip_id>:<contract_hash>:<mode>. */
   idempotencyKey?: string;
+  /** Phase-2 (F17): canonical transcript for word-level caption cues. */
+  transcript?: Transcript | null;
 }
 
-function cuesFromClip(clip: ClipRecord): { start_sec: number; end_sec: number; text: string; speaker_id?: string | null }[] {
-  // Clip caption cues come from the clip transcript range; for the renderer
-  // the captions are re-derived by whisper anyway, so we only send cues when
-  // a suggested caption exists (used as a hint).
+function cuesFromClip(
+  clip: ClipRecord,
+  transcript?: Transcript | null,
+): { start_sec: number; end_sec: number; text: string; speaker_id?: string | null }[] {
+  // Phase-2 correctness (F17): build cues from the CANONICAL transcript
+  // (word timing + speaker metadata) when available, instead of inventing
+  // evenly-spaced words from suggestedCaption.
+  if (transcript && transcript.cues.length > 0) {
+    const cues = transcript.cues
+      .filter((c) => c.startSec >= clip.startSec - 0.05 && c.startSec < clip.endSec)
+      .map((c) => ({
+        start_sec: round2(c.startSec),
+        end_sec: round2(c.endSec),
+        text: c.text.trim(),
+        speaker_id: c.speakerId ?? null,
+      }))
+      .filter((c) => c.text.length > 0);
+    if (cues.length > 0) return cues;
+  }
+  // Fallback: evenly spaced words from the suggested caption (hint only).
   if (!clip.suggestedCaption) return [];
   const words = clip.suggestedCaption.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return [];
@@ -180,15 +241,12 @@ export function buildRenderContract(
   options: BuildContractOptions = {},
 ): RenderRequestV2 {
   const mode = options.mode ?? 'final';
-  const requestId =
-    options.idempotencyKey ??
-    `render:${videoId}:${mode}:${clips.map((c) => c.id).join('-')}:${clips
-      .map((c) => `${round2(c.startSec)}-${round2(c.endSec)}`)
-      .join(',')}`;
+  const language = options.language ?? 'en';
 
   const payload: RenderRequestV2 = {
     contract_version: '2.0',
-    request_id: requestId,
+    // request_id is filled after the canonical hash is computed (F18).
+    request_id: '',
     episode_id: videoId,
     video_url: `https://www.youtube.com/watch?v=${videoId}`,
     mode,
@@ -218,13 +276,49 @@ export function buildRenderContract(
         allow_blur_background: true,
       },
       caption_plan: {
-        language: options.language ?? 'en',
-        cues: cuesFromClip(clip),
+        language,
+        cues: cuesFromClip(clip, options.transcript),
         highlight_terms: options.highlightTerms ?? [],
       },
       editing_events: [],
     })),
   };
 
+  // Phase-2 correctness (F18): request_id hashes the FULL normalized
+  // contract so any semantic change (boundaries, captions, narrative,
+  // layout, mode) produces a different idempotency key. Only an explicit
+  // idempotencyKey override keeps a stable id.
+  if (options.idempotencyKey) {
+    payload.request_id = options.idempotencyKey;
+  } else {
+    payload.request_id = `render:${contentHash(stableStringify(payload))}`;
+  }
+
   return RenderRequestV2Schema.parse(payload);
+}
+
+/** Deterministic, key-sorted JSON (F18): nested keys sorted recursively so
+ * equivalent contracts hash identically regardless of insertion order. */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((v) => stableStringify(v)).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Deterministic content hash (F18): full normalized contract -> 16 hex. */
+function contentHash(text: string): string {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 + c, 0x85ebca6b) >>> 0;
+  }
+  return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
 }

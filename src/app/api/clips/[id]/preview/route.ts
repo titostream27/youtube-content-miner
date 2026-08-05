@@ -52,8 +52,9 @@ export async function POST(_request: Request, context: RouteContext) {
       mode: 'preview',
       mainTopic: clip.mainTopic,
       endingType: clip.endingType,
-      // Phase 2 (Canonical transcript): propagate the real language.
+      // Phase 2 (Canonical transcript): propagate the real language + cues.
       language: transcript?.language || 'en',
+      transcript,
     });
     // Legacy hook passthrough is not needed for preview (no intro TTS).
 

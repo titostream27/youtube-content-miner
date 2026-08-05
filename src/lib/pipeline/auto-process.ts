@@ -64,8 +64,9 @@ async function renderEpisodeAll(
     mode,
     mainTopic: clips[0]?.mainTopic ?? null,
     endingType: clips[0]?.endingType ?? null,
-    // Phase 2 (Canonical transcript): propagate the real language.
+    // Phase 2 (Canonical transcript): propagate the real language + cues.
     language: transcript?.language || 'en',
+    transcript,
   });
   // Attach hooks + canonical transcript cues (with speaker identity) into the
   // contract clips (buildRenderContract doesn't know about hooks — legacy v1
