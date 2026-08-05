@@ -217,6 +217,88 @@ Every YouTube call is metered; `/api/health` reports quota consumed by the curre
 
 ---
 
+## Two-repository architecture (Phase 1)
+
+This repository is the **intelligence and control plane**: it decides **what to
+clip and why**. The renderer
+([`AI-Youtube-Shorts-Generator`](https://github.com/titostream27/AI-Youtube-Shorts-Generator))
+is the **media execution worker**: it renders the approved boundaries and
+decides **how to present them**.
+
+```
+youtube-content-miner                         AI-Youtube-Shorts-Generator
+  discovery ─► transcript ─► candidate ─►        source ─► camera/layout ─►
+  boundary ─► score ─► review ──────────┐        captions/audio ─► QC ─►
+                                       │        RenderResultV2
+                                       ▼                 │
+                              RenderRequestV2            │
+                                       │                 ▼
+                                       └────────► approve / upload / analytics
+```
+
+The renderer must **not** independently discover highlights, change clip
+boundaries, or re-rank candidates in the integrated production path. The
+miner must **not** own crop smoothing, face-switch thresholds, caption
+styling, or encoding. The renderer's standalone highlight pipeline is
+**legacy mode** and remains only until the integrated path is proven.
+
+### Shared contract
+
+The canonical contract lives in [`contracts/`](contracts/):
+
+- `render-request-v2.schema.json`, `render-result-v2.schema.json` — neutral
+  JSON Schema source of truth (draft-07).
+- `fixtures/valid/`, `fixtures/invalid/` — shared fixtures that BOTH
+  repositories must pass/reject identically.
+
+TypeScript side: `src/lib/render/contract.ts` (`RenderRequestV2Schema`, zod).
+Python side: the renderer's `render_contract.py` (`RenderRequestV2`,
+pydantic). `contract_version` must be exactly `"2.0"`; unsupported versions
+fail explicitly — a v2 payload is never silently parsed as v1.
+
+### Job states (renderer)
+
+One canonical vocabulary everywhere (memory, SQLite, API, logs):
+
+```
+queued ─► downloading ─► analysing ─► rendering ─► quality_check ─► completed
+```
+Terminal: `failed | partial_failure | cancelled | orphaned`. A job waiting
+for the render lock is `queued`, not `running`. Terminal states never
+transition back to active states.
+
+### Persistence, retry, cancellation
+
+- Renderer SQLite `render_jobs` migration is additive and idempotent
+  (`request_id`, `parent_job_id`, `attempt`, `started_at`, `finished_at`,
+  `last_error_stage` + indexes). Existing records are preserved.
+- Idempotency: a resubmitted `request_id` returns the existing job — survives
+  renderer restart.
+- Retry creates exactly one new `job_id`, records `parent_job_id` and
+  increments `attempt`; original history is preserved.
+- Cancellation: a **queued** job is cancelled and never enters rendering.
+  Active (mid-FFmpeg) cancellation is NOT supported in Phase 1 — cancelling a
+  `rendering` job returns HTTP 409.
+
+### Health
+
+Renderer exposes `GET /api/render/health` (no download, no model load):
+service status + build id, SQLite read/write probe, queue depth + active job
+id, ffmpeg/ffprobe availability, output dir writability + free disk, contract
+version, last sanitized persistence error, and
+`rendering_available_when_persistence_degraded`.
+
+### Contract tests
+
+```bash
+# Python (renderer)
+.venv/Scripts/python.exe -m pytest test_render_contract.py test_contract_fixtures.py -q
+# TypeScript (this repo)
+npx vitest run src/lib/render/__tests__/contract.test.ts src/lib/render/__tests__/contract-fixtures.test.ts
+```
+
+---
+
 ## API
 
 | Route | Purpose |

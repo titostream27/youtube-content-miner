@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { RenderRequestV2Schema } from '@/lib/render/contract';
 
-const CONTRACTS_DIR = join(__dirname, '..', '..', '..', '..', '..', 'contracts');
+const CONTRACTS_DIR = join(__dirname, '..', '..', '..', '..', 'contracts');
 const VALID_DIR = join(CONTRACTS_DIR, 'fixtures', 'valid');
 const INVALID_DIR = join(CONTRACTS_DIR, 'fixtures', 'invalid');
 
