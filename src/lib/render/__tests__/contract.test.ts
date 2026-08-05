@@ -59,10 +59,37 @@ function fakeClip(overrides: Partial<ClipRecord> = {}): ClipRecord {
     scheduledAt: null,
     targetMarket: null,
     idempotencyKey: null,
-    // renderJobId/renderError etc. above are typed as string|null already;
-    // seoTitle requires string|null — pass null via the optional override.
     ...overrides,
   } as ClipRecord;
+}
+
+/**
+ * A fully-populated VALID v2 payload. Every field the schema requires is
+ * present so a failing test fails for the intended reason only.
+ */
+function makeV2(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  const valid = {
+    contract_version: '2.0',
+    request_id: 'req-1',
+    episode_id: 'ep-1',
+    video_url: 'https://youtube.com/watch?v=abc',
+    mode: 'final',
+    source_preferences: { max_height: 2160, prefer_best_available: true },
+    output: { width: 1080, height: 1920 },
+    clips: [
+      {
+        clip_id: 1,
+        start_sec: 1.0,
+        end_sec: 5.0,
+        title: 't',
+        narrative: { main_topic: 'm', ending_type: 'c', hook_end_sec: null, payoff_start_sec: null },
+        layout_plan: { preferred_layout: 'auto', expected_speakers: null, allow_split: true, allow_blur_background: true },
+        caption_plan: { language: 'en', cues: [], highlight_terms: [] },
+        editing_events: [],
+      },
+    ],
+  };
+  return { ...valid, ...overrides };
 }
 
 describe('buildRenderContract (brief §16-17)', () => {
@@ -121,5 +148,67 @@ describe('buildRenderContract (brief §16-17)', () => {
     const contract = buildRenderContract('ep-1', [fakeClip({ id: 12 }), fakeClip({ id: 14, startSec: 440.2, endSec: 477.9 })]);
     expect(contract.clips).toHaveLength(2);
     expect(contract.video_url).toContain('ep-1');
+  });
+});
+
+describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
+  it('accepts the fully-valid base payload', () => {
+    expect(() => RenderRequestV2Schema.parse(makeV2())).not.toThrow();
+  });
+
+  it('rejects non-2.0 contract_version', () => {
+    expect(() => RenderRequestV2Schema.parse(makeV2({ contract_version: '1.0' }))).toThrow();
+  });
+
+  it('rejects empty request_id', () => {
+    expect(() => RenderRequestV2Schema.parse(makeV2({ request_id: '' }))).toThrow();
+  });
+
+  it('rejects invalid mode', () => {
+    expect(() => RenderRequestV2Schema.parse(makeV2({ mode: 'draft' }))).toThrow();
+  });
+
+  it('rejects negative start_sec', () => {
+    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: -1 }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects end_sec <= start_sec', () => {
+    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: 5.0, end_sec: 5.0 }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects caption cue outside clip range', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      caption_plan: { language: 'en', highlight_terms: [], cues: [{ start_sec: 6.0, end_sec: 7.0, text: 'late' }] },
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects duplicate clip_ids', () => {
+    const clip = (makeV2().clips as any[])[0];
+    const clips = [clip, { ...clip, start_sec: 6.0, end_sec: 7.0 }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects invalid preferred_layout enum', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      layout_plan: { preferred_layout: 'weird_layout', expected_speakers: null, allow_split: true, allow_blur_background: true },
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects editing event outside clip range', () => {
+    const clips = [{
+      ...(makeV2().clips as any[])[0],
+      editing_events: [{ time_sec: 9.0, type: 'punchline', intensity: 0.5 }],
+    }];
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
+  });
+
+  it('rejects empty clips array', () => {
+    expect(() => RenderRequestV2Schema.parse(makeV2({ clips: [] }))).toThrow();
   });
 });
