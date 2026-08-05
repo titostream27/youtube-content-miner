@@ -1,5 +1,6 @@
 import { config } from '@/lib/config';
 import { getClip, updateClipRender, updateClipQc } from '@/lib/db/repositories/clips';
+import { getTranscript } from '@/lib/db/repositories/transcripts';
 import { buildRenderContract } from '@/lib/render/contract';
 import { upsertRenderJob } from '@/lib/db/repositories/render-jobs';
 import { probeRenderJob } from '@/lib/render/job-probe';
@@ -46,10 +47,13 @@ export async function POST(_request: Request, context: RouteContext) {
     // Mark as rendering (preview is also a render_status state).
     updateClipRender(clipId, { status: 'rendering' });
 
+    const transcript = getTranscript(clip.videoId);
     const contract = buildRenderContract(clip.videoId, [clip], {
       mode: 'preview',
       mainTopic: clip.mainTopic,
       endingType: clip.endingType,
+      // Phase 2 (Canonical transcript): propagate the real language.
+      language: transcript?.language || 'en',
     });
     // Legacy hook passthrough is not needed for preview (no intro TTS).
 

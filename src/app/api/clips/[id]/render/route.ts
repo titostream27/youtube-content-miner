@@ -33,7 +33,16 @@ function clipCaptions(videoId: string, startSec: number, endSec: number) {
       start_sec: Math.max(cue.startSec, startSec),
       end_sec: Math.min(cue.endSec, endSec),
       text: cue.text,
+      // Phase 2 (Canonical transcript): propagate speaker identity so the
+      // renderer colors per-speaker instead of re-deriving it.
+      ...(cue.speakerId ? { speaker_id: cue.speakerId } : {}),
     }));
+}
+
+/** Phase 2 (Canonical transcript): the transcript's real language, or 'en'. */
+function clipLanguage(videoId: string): string {
+  const transcript = getTranscript(videoId);
+  return transcript?.language || 'en';
 }
 
 /**
@@ -137,13 +146,21 @@ export async function POST(_request: Request, context: RouteContext) {
               clip_id: clip.id,
               start_sec: clip.startSec,
               end_sec: clip.endSec,
-              narrative: { main_topic: clip.mainTopic ?? '' },
+              narrative: {
+                main_topic: clip.mainTopic ?? '',
+                ending_type: clip.endingType ?? '',
+                // Phase 2 (Canonical transcript): propagate hook/payoff timing
+                // and surrounding-topic context to the renderer.
+                hook_end_sec: null,
+                payoff_start_sec: null,
+              },
               caption_plan: {
-                language: 'en',
+                language: clipLanguage(clip.videoId),
                 cues: clipCaptions(clip.videoId, clip.startSec, clip.endSec).map((c) => ({
                   start_sec: c.start_sec,
                   end_sec: c.end_sec,
                   text: c.text,
+                  ...(c.speaker_id ? { speaker_id: c.speaker_id } : {}),
                 })),
               },
               hook,

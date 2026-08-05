@@ -149,6 +149,20 @@ describe('buildRenderContract (brief §16-17)', () => {
     expect(contract.clips).toHaveLength(2);
     expect(contract.video_url).toContain('ep-1');
   });
+
+  it('propagates transcript language (Phase 2 canonical transcript)', () => {
+    const contract = buildRenderContract('ep-1', [fakeClip()], { language: 'id' });
+    expect(contract.clips[0]!.caption_plan.language).toBe('id');
+  });
+
+  it('propagates hook/payoff timing (Phase 2 canonical transcript)', () => {
+    const contract = buildRenderContract('ep-1', [fakeClip()], {
+      hookEndSec: 128.0,
+      payoffStartSec: 150.0,
+    });
+    expect(contract.clips[0]!.narrative.hook_end_sec).toBe(128.0);
+    expect(contract.clips[0]!.narrative.payoff_start_sec).toBe(150.0);
+  });
 });
 
 describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {

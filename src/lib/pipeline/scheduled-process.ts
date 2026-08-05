@@ -54,14 +54,35 @@ async function renderEpisodeAll(
     clipWithHooks.push({ ...c, hook });
   }
 
+  const transcript = getTranscript(videoId);
   const contract = buildRenderContract(videoId, clipWithHooks, {
     mode: 'final',
     mainTopic: clips[0]?.mainTopic ?? null,
     endingType: clips[0]?.endingType ?? null,
+    // Phase 2 (Canonical transcript): propagate the real language.
+    language: transcript?.language || 'en',
   });
   const payload = {
     ...contract,
-    clips: contract.clips.map((cc, i) => ({ ...cc, hook: clipWithHooks[i]?.hook ?? '' })),
+    clips: contract.clips.map((cc, i) => {
+      const clip = clipWithHooks[i]!;
+      const realCues = (transcript?.cues ?? [])
+        .filter((cue) => cue.startSec >= clip.startSec && cue.startSec < clip.endSec)
+        .map((cue) => ({
+          start_sec: Math.max(cue.startSec, clip.startSec),
+          end_sec: Math.min(cue.endSec, clip.endSec),
+          text: cue.text,
+          ...(cue.speakerId ? { speaker_id: cue.speakerId } : {}),
+        }));
+      return {
+        ...cc,
+        hook: clip.hook ?? '',
+        caption_plan: {
+          ...cc.caption_plan,
+          cues: realCues.length > 0 ? realCues : cc.caption_plan.cues,
+        },
+      };
+    }),
   };
 
   const renderBase = config.render.baseUrl.replace(/\/$/, '');

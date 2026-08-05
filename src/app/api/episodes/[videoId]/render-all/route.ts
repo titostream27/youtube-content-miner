@@ -82,14 +82,37 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   // Phase 2 (brief §16): build the versioned v2 contract.
+  const transcript = getTranscript(videoId);
   const contract = buildRenderContract(videoId, clipWithHooks, {
     mode,
     mainTopic: pending[0]?.mainTopic ?? null,
     endingType: pending[0]?.endingType ?? null,
+    // Phase 2 (Canonical transcript): propagate the real language.
+    language: transcript?.language || 'en',
   });
   const payload = {
     ...contract,
-    clips: contract.clips.map((cc, i) => ({ ...cc, hook: clipWithHooks[i]?.hook ?? '' })),
+    clips: contract.clips.map((cc, i) => {
+      const clip = clipWithHooks[i]!;
+      // Phase 2 (Canonical transcript): prefer real transcript cues with
+      // speaker identity over the flat suggested-caption hint.
+      const realCues = (transcript?.cues ?? [])
+        .filter((cue) => cue.startSec >= clip.startSec && cue.startSec < clip.endSec)
+        .map((cue) => ({
+          start_sec: Math.max(cue.startSec, clip.startSec),
+          end_sec: Math.min(cue.endSec, clip.endSec),
+          text: cue.text,
+          ...(cue.speakerId ? { speaker_id: cue.speakerId } : {}),
+        }));
+      return {
+        ...cc,
+        hook: clip.hook ?? '',
+        caption_plan: {
+          ...cc.caption_plan,
+          cues: realCues.length > 0 ? realCues : cc.caption_plan.cues,
+        },
+      };
+    }),
   };
 
   const renderBase = config.render.baseUrl.replace(/\/$/, '');

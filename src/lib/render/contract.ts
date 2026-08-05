@@ -141,6 +141,11 @@ export interface BuildContractOptions {
   /** Optional narrative context from the boundary debug report. */
   mainTopic?: string | null;
   endingType?: string | null;
+  /** Phase 2 (Canonical transcript): the transcript's real language. */
+  language?: string;
+  /** Phase 2: hook/payoff timing from the boundary report (absolute sec). */
+  hookEndSec?: number | null;
+  payoffStartSec?: number | null;
   /** Idempotency key (brief §20): render:<clip_id>:<contract_hash>:<mode>. */
   idempotencyKey?: string;
 }
@@ -202,8 +207,9 @@ export function buildRenderContract(
       narrative: {
         main_topic: options.mainTopic ?? clip.mainTopic ?? '',
         ending_type: options.endingType ?? clip.endingType ?? '',
-        hook_end_sec: null,
-        payoff_start_sec: null,
+        // Phase 2 (Canonical transcript): propagate hook/payoff timing.
+        hook_end_sec: options.hookEndSec ?? null,
+        payoff_start_sec: options.payoffStartSec ?? null,
       },
       layout_plan: {
         preferred_layout: 'auto',
@@ -212,7 +218,7 @@ export function buildRenderContract(
         allow_blur_background: true,
       },
       caption_plan: {
-        language: 'en',
+        language: options.language ?? 'en',
         cues: cuesFromClip(clip),
         highlight_terms: options.highlightTerms ?? [],
       },
