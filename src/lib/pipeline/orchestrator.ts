@@ -17,6 +17,7 @@ import {
 } from '@/lib/ai';
 import {
   discoverByTopic,
+  discoverFromTrending,
   discoverFromChannels,
   mineChannelArchive,
 } from '@/lib/youtube/discovery';
@@ -181,6 +182,40 @@ async function runDiscovery(
         topic: null,
         source: 'live',
         warnings: [...warnings, 'Trending topic agent returned no usable topic.'],
+      };
+    }
+
+    // Quota-friendly path: use the trending videos themselves as candidates
+    // (videos.list = 1 unit) instead of expanding the topic via search
+    // (search.list = 100 units each). Search expansion is skipped by default
+    // so daily YouTube quota is preserved for the whole run; set
+    // TRENDING_EXPAND_VIA_SEARCH=true to restore the old search-heavy path.
+    const expandViaSearch = process.env.TRENDING_EXPAND_VIA_SEARCH === 'true';
+
+    if (!expandViaSearch) {
+      const trendingOutcome = await discoverFromTrending({
+        regionCode: config.trending.regionCode,
+        maxResults: config.trending.maxVideos,
+      });
+      warnings.push(...trendingOutcome.warnings);
+
+      // Trending lists skew to Shorts/music; keep only long-form podcasts.
+      const candidates = trendingOutcome.candidates.filter(
+        (candidate) => (candidate.durationSeconds ?? 0) >= 600,
+      );
+
+      if (candidates.length === 0) {
+        warnings.push(
+          'No long-form (>=10min) candidates from trending list — run found nothing.',
+        );
+      }
+
+      return {
+        candidates: dedupeCandidates(candidates).slice(0, maxEpisodes),
+        searchQueries: [],
+        topic,
+        source: trendingOutcome.source,
+        warnings: Array.from(new Set(warnings)),
       };
     }
 

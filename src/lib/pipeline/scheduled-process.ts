@@ -319,9 +319,14 @@ export async function autoProcessScheduled(runId: number): Promise<ScheduledProc
 async function publishScheduledClip(clip: ClipRecord, scheduledAt: string): Promise<boolean> {
   const publishBase = config.publish.baseUrl.replace(/\/$/, '');
   const renderBase = config.render.baseUrl.replace(/\/$/, '');
+  // Base URL yang dipakai untuk file_url/thumbnail_url yang dikirim ke POSTER.
+  // Poster jalan di HOST (bukan container), jadi tidak bisa pakai
+  // host.docker.internal (hanya resolve dari dalam container). Default ke
+  // 127.0.0.1 supaya poster bisa download file dari render service.
+  const renderHostBase = (config.render.posterFileBaseUrl ?? 'http://127.0.0.1:8084').replace(/\/$/, '');
   const jobId = clip.renderPath?.split('/')[0] ?? '';
-  const fileUrl = `${renderBase}/files/${clip.renderPath}`;
-  const thumbnailUrl = jobId ? `${renderBase}/files/${jobId}/thumbnail.jpg` : '';
+  const fileUrl = `${renderHostBase}/files/${clip.renderPath}`;
+  const thumbnailUrl = jobId ? `${renderHostBase}/files/${jobId}/thumbnail.jpg` : '';
 
   try {
     const response = await fetch(`${publishBase}/api/publish`, {

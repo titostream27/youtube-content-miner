@@ -23,7 +23,12 @@ export class YouTubeApiError extends Error {
 
   /** True when the failure is a hard quota stop rather than a transient error. */
   get isQuotaExceeded(): boolean {
-    return this.reason === 'quotaExceeded' || this.reason === 'dailyLimitExceeded';
+    return (
+      this.reason === 'quotaExceeded' ||
+      this.reason === 'dailyLimitExceeded' ||
+      // Google returns rateLimitExceeded for the search quota wall too.
+      this.reason === 'rateLimitExceeded'
+    );
   }
 }
 
@@ -59,8 +64,8 @@ async function request<T>(
   endpoint: keyof typeof QUOTA_COST,
   params: Record<string, string | number | undefined>,
 ): Promise<T> {
-  const apiKey = config.youtube.apiKey;
-  if (!apiKey) throw new YouTubeNotConfiguredError();
+  const keys = config.youtube.apiKeys.length > 0 ? config.youtube.apiKeys : config.youtube.apiKey ? [config.youtube.apiKey] : [];
+  if (keys.length === 0) throw new YouTubeNotConfiguredError();
 
   const url = new URL(`${API_BASE}/${endpoint}`);
   for (const [key, value] of Object.entries(params)) {
@@ -68,17 +73,26 @@ async function request<T>(
       url.searchParams.set(key, String(value));
     }
   }
-  url.searchParams.set('key', apiKey);
 
-  const response = await fetch(url, {
-    headers: { accept: 'application/json' },
-    // Discovery results change constantly; never serve a stale cache.
-    cache: 'no-store',
-  });
+  let lastError: unknown = null;
 
-  quotaUsedThisProcess += QUOTA_COST[endpoint] ?? 1;
+  // Rotate through API keys on quota-exceeded so total daily quota scales
+  // with the number of configured keys instead of stopping the whole run.
+  for (const apiKey of keys) {
+    url.searchParams.set('key', apiKey);
 
-  if (!response.ok) {
+    const response = await fetch(url, {
+      headers: { accept: 'application/json' },
+      // Discovery results change constantly; never serve a stale cache.
+      cache: 'no-store',
+    });
+
+    quotaUsedThisProcess += QUOTA_COST[endpoint] ?? 1;
+
+    if (response.ok) {
+      return (await response.json()) as T;
+    }
+
     let reason: string | null = null;
     let message = `YouTube API ${endpoint} failed with ${response.status}`;
 
@@ -92,10 +106,24 @@ async function request<T>(
       // Non-JSON error body; keep the generic message.
     }
 
-    throw new YouTubeApiError(message, response.status, reason);
+    const quotaExhausted =
+      response.status === 429 &&
+      (reason === 'quotaExceeded' ||
+        reason === 'dailyLimitExceeded' ||
+        reason === 'rateLimitExceeded');
+
+    // Quota exhausted on this key — try the next one. Any other error is
+    // not key-specific, so surface it immediately.
+    if (!quotaExhausted) {
+      throw new YouTubeApiError(message, response.status, reason);
+    }
+
+    lastError = new YouTubeApiError(message, response.status, reason);
   }
 
-  return (await response.json()) as T;
+  throw lastError instanceof Error
+    ? lastError
+    : new YouTubeApiError('YouTube API quota exhausted on all configured keys', 429, 'quotaExceeded');
 }
 
 /* -------------------------------------------------------------------------- */

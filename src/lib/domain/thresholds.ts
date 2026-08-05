@@ -86,7 +86,7 @@ export function tierForScore(finalScore: number): PriorityTier {
   if (finalScore >= 95) return 'publish_immediately';
   if (finalScore >= 90) return 'high_priority';
   if (finalScore >= 85) return 'good_candidate';
-  if (finalScore >= 80) return 'optional';
+  if (finalScore >= 70) return 'optional';
   return 'archive';
 }
 
@@ -107,7 +107,7 @@ export function tierLabel(tier: PriorityTier): string {
  * Archive clips are still persisted (they are the training dataset that
  * becomes the long-term moat) but they never reach the editor.
  */
-export const LIBRARY_MIN_SCORE = 80;
+export const LIBRARY_MIN_SCORE = 70;
 
 /**
  * Ranking order used everywhere the UI sorts by priority.

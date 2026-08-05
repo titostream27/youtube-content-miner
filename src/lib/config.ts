@@ -125,6 +125,16 @@ function resolveAgentAssignments(): Record<AgentRole, AgentAssignment> {
 export const config = {
   youtube: {
     apiKey: readString('YOUTUBE_API_KEY'),
+    /**
+     * Additional YouTube API keys for quota rotation. Comma-separated in
+     * YOUTUBE_API_KEYS (or YOUTUBE_API_KEY followed by extras). When a request
+     * hits the daily quota on the current key, the client retries with the
+     * next key in the list, so total daily quota scales with key count.
+     */
+    apiKeys: (readString('YOUTUBE_API_KEYS') ?? readString('YOUTUBE_API_KEY') ?? '')
+      .split(',')
+      .map((key) => key.trim())
+      .filter(Boolean),
     /** Serve fixture data instead of calling the API. */
     demoMode: readBool('DEMO_MODE') || !readString('YOUTUBE_API_KEY'),
     /** Preferred caption languages, in order. */
@@ -284,6 +294,15 @@ export const config = {
      * the UI must be reachable from the user's browser.
      */
     publicBaseUrl: readString('RENDER_PUBLIC_URL') ?? 'http://localhost:8084',
+    /**
+     * Base URL used when handing a rendered file's URL to the POSTER service.
+     * The poster runs on the HOST, where host.docker.internal does NOT resolve
+     * (that alias only works from inside a container). Default to 127.0.0.1 so
+     * the poster can download the rendered clip + thumbnail from the render
+     * service. Distinct from `publicBaseUrl` because the poster is local to
+     * this machine, not the browser.
+     */
+    posterFileBaseUrl: readString('RENDER_FILE_HOST_URL') ?? 'http://127.0.0.1:8084',
     /**
      * Request timeout. Rendering a clip from a long source video re-encodes
      * every frame through OpenCV; a 90-minute episode can take ~5 minutes.
