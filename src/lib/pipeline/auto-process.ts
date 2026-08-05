@@ -5,6 +5,7 @@ import { getEpisode } from '@/lib/db/repositories/episodes';
 import { generateClipSeo } from '@/lib/ai/agents/clip-seo-agent';
 import type { ClipRecord } from '@/lib/db/repositories/clips';
 import { buildRenderContract } from '@/lib/render/contract';
+import { sendTelegram } from '@/lib/notify/telegram';
 
 /**
  * Auto-process pipeline: after a discovery run finishes, every clip that
@@ -123,6 +124,29 @@ async function renderEpisodeAll(
 }
 
 /** Poll the render service until the async batch job finishes. */
+async function notifyBatchDone(
+  videoId: string,
+  clips: ClipRecord[],
+  doneCount: number,
+): Promise<void> {
+  // Best-effort: Telegram failure must never break the pipeline.
+  try {
+    const episode = getEpisode(videoId);
+    const top = clips[0];
+    const title = top?.episodeTitle ?? episode?.title ?? videoId;
+    await sendTelegram({
+      text: [
+        `🎞️ *Render selesai: ${title}*`,
+        `✅ ${doneCount}/${clips.length} clip siap review`,
+        ...clips.slice(0, 3).map((c) => `• ${c.title} (${c.durationSec.toFixed(0)}s, 💯${c.finalScore})`),
+      ].join('\n'),
+      parseMode: 'Markdown',
+    });
+  } catch {
+    // ignore
+  }
+}
+
 async function pollRenderUntilDone(
   videoId: string,
   clips: ClipRecord[],
@@ -182,6 +206,9 @@ async function pollRenderUntilDone(
             });
           }
         }
+        // Phase 2 (Automation): notify the operator when the batch finished.
+        const doneCount = body.rendered.filter((r) => r.status === 'ok' && r.clip_url).length;
+        await notifyBatchDone(videoId, clips, doneCount);
         return;
       }
 
