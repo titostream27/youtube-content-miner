@@ -89,3 +89,38 @@ export function countBoundaryFeedback(clipId: number): number {
   const row = getDb().prepare('SELECT COUNT(*) AS c FROM clip_feedback_boundary WHERE clip_id = ?').get(clipId) as { c: number };
   return row.c;
 }
+
+/** Phase 2 (Confidence calibration): all labelled editor samples joined to
+ * the clip's predicted confidence, ready for calibrateConfidence(). */
+export function listCalibrationSamples(limit = 500): {
+  clipId: number;
+  confidence: number;
+  verdict: 'approved' | 'rejected' | 'boundary_adjusted';
+  boundaryShiftSec: number;
+}[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT c.id AS clip_id, c.confidence AS confidence, f.verdict AS verdict,
+              ABS(COALESCE(fb.new_start_sec, c.start_sec) - c.start_sec)
+            + ABS(COALESCE(fb.new_end_sec, c.end_sec) - c.end_sec) AS boundary_shift_sec
+         FROM clip_feedback f
+         JOIN clips c ON c.id = f.clip_id
+         LEFT JOIN clip_feedback_boundary fb ON fb.feedback_id = f.id
+        ORDER BY f.id DESC
+        LIMIT ?`,
+    )
+    .all(limit) as {
+    clip_id: number;
+    confidence: number;
+    verdict: string;
+    boundary_shift_sec: number | null;
+  }[];
+  return rows.map((r) => ({
+    clipId: r.clip_id,
+    confidence: r.confidence,
+    verdict: (['approved', 'rejected', 'boundary_adjusted'].includes(r.verdict)
+      ? r.verdict
+      : 'boundary_adjusted') as 'approved' | 'rejected' | 'boundary_adjusted',
+    boundaryShiftSec: r.boundary_shift_sec ?? 0,
+  }));
+}
