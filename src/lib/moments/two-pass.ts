@@ -8,6 +8,7 @@ import {
   type TopicBoundary,
 } from '@/lib/moments/topic-boundary';
 import { repairBoundary } from '@/lib/moments/boundary-repair';
+import { validateStartBoundary } from '@/lib/moments/start-boundary';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
 import { round } from '@/lib/scoring/normalize';
 import type { AgentOverrides, UsageLedger } from '@/lib/ai';
@@ -313,6 +314,13 @@ export async function twoPassHighlightSelection(
           ? detectTopicBoundary(repEnd, repNext, repFollowing, config.pipeline.highlight.nextTopicLookaheadSec)
           : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
 
+        // Phase 2 (Start validation): explicit start-boundary checks replace
+        // the assumed startComplete=true.
+        const startCheck = validateStartBoundary(
+          utterances,
+          repair.finalStartSec,
+          repair.finalEndSec,
+        );
         endingById.set(rough.index, {
           endingType: repEnding.endingType,
           endingConfidence: round(repEnding.endingConfidence, 2),
@@ -324,7 +332,7 @@ export async function twoPassHighlightSelection(
           roughStartSec: repair.originalStartSec,
           roughEndSec: repair.originalEndSec,
           boundaryConfidence: round(Math.max(repEnding.endingConfidence, 0.7), 2),
-          startComplete: true,
+          startComplete: startCheck.startComplete,
         });
         // Phase 2 (Intelligence correctness): re-slice transcript text and
         // derived metrics from the FINAL repaired boundary — never reuse the
@@ -360,6 +368,8 @@ export async function twoPassHighlightSelection(
     }
 
     const duration = finalEnd - finalStart;
+    // Phase 2 (Start validation): explicit start-boundary checks.
+    const startCheck = validateStartBoundary(utterances, finalStart, finalEnd);
     endingById.set(rough.index, {
       endingType: ending.endingType,
       endingConfidence: round(ending.endingConfidence, 2),
@@ -371,7 +381,7 @@ export async function twoPassHighlightSelection(
       roughStartSec: rough.startSec,
       roughEndSec: rough.endSec,
       boundaryConfidence: round(ending.endingConfidence, 2),
-      startComplete: true,
+      startComplete: startCheck.startComplete,
     });
     // Phase 2 (Intelligence correctness): the agent's final boundary may
     // differ from the rough window — re-slice text and metrics from the
