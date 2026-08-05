@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { isAgentActive, runJsonAgent, type AgentOverrides, type UsageLedger } from '../client';
 import type { VideoItem } from '@/lib/youtube/client';
+import { parseIsoDuration } from '@/lib/youtube/duration';
+import { PODCAST_MIN_DURATION_SEC } from '@/lib/youtube/discovery';
 
 /**
  * PRD "Continuous Discovery" — the topic half of scheduled runs.
@@ -23,12 +25,12 @@ export type TrendingTopics = z.infer<typeof TrendingTopicsSchema>;
 
 const SYSTEM_PROMPT = `You are the trending-topic researcher for a podcast content intelligence platform.
 
-Your job: read the titles of today's most popular YouTube videos and return the 1-3 broad topics worth mining for long-form podcast content.
+Your job: read the titles of today's most popular YouTube videos (international/global chart, not any single country) and return the 1-3 broad topics worth mining for long-form podcast content.
 
 Rules:
-- Topics must be broad enough to surface LONG-FORM INTERVIEW EPISODES (e.g. "artificial intelligence", "startup funding"), not the specific trending video itself.
+- Topics must be broad enough to surface LONG-FORM INTERVIEW EPISODES (e.g. "artificial intelligence", "startup funding", "health science"), not the specific trending video itself.
+- Prefer topics with a strong long-form podcast ecosystem: business, tech, science, psychology, politics/economics, pop culture deep-dives, true crime, sport analysis. AVOID topics that are mostly short-form viral content (dance challenges, memes, celebrity gossip clips, music releases, gaming highlights).
 - Do not invent topics that the titles do not support.
-- Prefer topics with clear search demand and conversation potential.
 - Return 1-3 topics, ordered by mining priority.
 
 Respond with JSON only, matching exactly:
@@ -60,27 +62,73 @@ function tokenize(title: string): string[] {
 
 /**
  * Deterministic fallback used when no trending-topic provider is configured
- * or the LLM call fails. Clusters titles by shared keywords and returns the
- * most frequent keyword clusters as topics.
+ * or the LLM call fails.
+ *
+ * Strategy (podcast-first): trending charts are dominated by Shorts, music
+ * and gaming streams, so raw keyword clustering produces junk topics. We:
+ *   1. Keep only long-form, non-short-form titles.
+ *   2. Cluster by meaningful bigrams/trigrams (not single words).
+ *   3. If nothing survives, fall back to evergreen podcast topic seeds that
+ *      reliably surface long-form interview episodes.
  */
+const PODCAST_TOPIC_SEEDS = [
+  'technology and AI',
+  'business and startups',
+  'health and wellness',
+  'science and space',
+  'psychology and mindset',
+  'pop culture deep dive',
+  'true crime',
+  'money and investing',
+  'sports analysis',
+];
+
 export function fallbackTrendingTopics(videos: VideoItem[], maxTopics = 3): TrendingTopics {
-  const counts = new Map<string, number>();
+  // Keywords that signal short-form viral content — never good podcast topics.
+  const shortFormHints = [
+    'shorts', 'viral', 'challenge', 'tiktok', 'reaction', 'meme',
+    'clip', 'highlights', 'mv', 'official', 'trailer', 'live', 'remix',
+    'stream', 'gameplay', 'fncs', 'fortnite', 'minecraft', 'walkthrough',
+    'direct', 'reveal', 'letra', 'lyrics', 'live stream',
+  ];
+
+  const phraseCounts = new Map<string, number>();
 
   for (const video of videos) {
-    for (const word of new Set(tokenize(video.snippet.title))) {
-      counts.set(word, (counts.get(word) ?? 0) + 1);
+    // Only long-form videos can be podcast episodes — skip Shorts/music/trailers.
+    const durationSec = parseIsoDuration(video.contentDetails?.duration);
+    if (durationSec > 0 && durationSec < PODCAST_MIN_DURATION_SEC) continue;
+
+    const title = video.snippet.title.toLowerCase();
+    if (shortFormHints.some((hint) => title.includes(hint))) continue;
+
+    // Cluster by overlapping bigrams: "the future of work" -> ["future work"].
+    const tokens = tokenize(title);
+    for (let i = 0; i < tokens.length - 1; i += 1) {
+      const phrase = `${tokens[i]} ${tokens[i + 1]}`;
+      phraseCounts.set(phrase, (phraseCounts.get(phrase) ?? 0) + 1);
     }
   }
 
-  const ranked = Array.from(counts.entries())
+  const ranked = Array.from(phraseCounts.entries())
+    .filter(([phrase, count]) => count >= 2) // shared by >=2 videos = real signal
+    .filter(([phrase]) => !shortFormHints.some((hint) => phrase.includes(hint)))
     .sort((a, b) => b[1] - a[1])
     .slice(0, maxTopics)
-    .map(([word]) => word);
+    .map(([phrase]) => phrase);
+
+  if (ranked.length >= 1) {
+    return {
+      topics: ranked,
+      rationale:
+        'Heuristic fallback: long-form bigram clusters shared across >=2 trending titles.',
+    };
+  }
 
   return {
-    topics: ranked.length > 0 ? ranked : ['trending topics'],
+    topics: PODCAST_TOPIC_SEEDS.slice(0, maxTopics),
     rationale:
-      'Heuristic fallback: top keywords shared across today mostPopular titles.',
+      'Heuristic fallback: trending lacked long-form material, using evergreen podcast topic seeds.',
   };
 }
 

@@ -30,14 +30,14 @@ function video(id: string, title: string): VideoItem {
 }
 
 describe('fallbackTrendingTopics — heuristic keyword clustering', () => {
-  it('returns the most common keyword across trending titles', () => {
+  it('returns a shared bigram when >=2 titles share it', () => {
     const videos = [
-      video('1', 'Crypto markets are booming this year'),
-      video('2', 'The crypto revolution explained'),
+      video('1', 'Climate change policy debate podcast'),
+      video('2', 'Climate change explained by scientists'),
       video('3', 'How crypto changes everything'),
     ];
     const plan = fallbackTrendingTopics(videos, 3);
-    expect(plan.topics[0]).toBe('crypto');
+    expect(plan.topics[0]).toBe('climate change');
     expect(plan.topics.length).toBeLessThanOrEqual(3);
   });
 

@@ -22,6 +22,13 @@ import {
 } from './fixtures';
 
 /**
+ * Minimum episode duration (seconds) treated as podcast/long-form material.
+ * Shorter videos (Shorts, news bites, trailers) have no stable face track for
+ * the reframe/split renderer, so they are filtered out at discovery time.
+ */
+export const PODCAST_MIN_DURATION_SEC = 1200; // 20 minutes
+
+/**
  * PRD Step 1 - AI Podcast Discovery.
  *
  * The user never supplies a YouTube URL. They type a topic, or they name
@@ -152,7 +159,14 @@ export async function discoverByTopic(params: {
       .filter((videoId): videoId is string => Boolean(videoId));
 
     const candidates = await hydrateVideos(videoIds);
-    return { candidates, warnings: [], source: 'live' };
+    // Podcast gate: keep only long-form episodes. Shorts, music videos,
+    // trailers and <20min filler break the clip renderer (short clips have no
+    // stable face track for the split layout), so they are dropped BEFORE the
+    // opportunity score sees them.
+    const podcastCandidates = candidates.filter(
+      (candidate) => (candidate.durationSeconds ?? 0) >= PODCAST_MIN_DURATION_SEC,
+    );
+    return { candidates: podcastCandidates, warnings: [], source: 'live' };
   } catch (error) {
     return {
       candidates: searchFixtureEpisodes({ topic, maxResults, publishedWithinDays }),

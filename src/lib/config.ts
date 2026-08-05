@@ -332,7 +332,7 @@ export const config = {
 
   /** Trending discovery mode - minimal configuration. */
   trending: {
-    regionCode: readString('TRENDING_REGION') ?? 'ID',
+    regionCode: readString('TRENDING_REGION') ?? 'US',
     maxVideos: readInt('TRENDING_MAX_VIDEOS', 25),
     maxTopics: readInt('TRENDING_MAX_TOPICS', 3),
     autoApproval: readBool('TRENDING_AUTO_APPROVAL', false),
