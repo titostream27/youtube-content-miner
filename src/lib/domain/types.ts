@@ -67,6 +67,11 @@ export const EPISODE_FACTOR_KEYS = [
   'channelQuality',
   'discussionDensity',
   'expectedClipDensity',
+  // Phase 2 (Opportunity scoring): channel-relative + economic factors.
+  'channelRelativeVelocity',
+  'momentum',
+  'personalFit',
+  'processingCostEfficiency',
 ] as const;
 
 export type EpisodeFactorKey = (typeof EPISODE_FACTOR_KEYS)[number];

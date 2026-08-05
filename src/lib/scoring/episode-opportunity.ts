@@ -216,6 +216,112 @@ function scoreExpectedClipDensity(
 }
 
 /**
+ * Phase 2 (Opportunity scoring) — Channel-relative velocity.
+ *
+ * Absolute view velocity favours big channels: a 100k-view episode is
+ * unremarkable for a 5M-subscriber channel but exceptional for a 20k one.
+ * Divide the episode's views-per-day by the channel's average views-per-day
+ * so we measure the episode against its OWN channel's baseline.
+ */
+function scoreChannelRelativeVelocity(candidate: EpisodeCandidate, now: Date): number {
+  const age = Math.max(1, daysSince(candidate.publishedAt, now));
+  const episodeViewsPerDay = candidate.viewCount / age;
+  const channel = candidate.channel;
+  if (!channel || !channel.videoCount || channel.videoCount <= 0) {
+    // No channel baseline: fall back to neutral (not a penalty).
+    return 55;
+  }
+  const channelAgeDays = Math.max(1, daysSince(candidate.publishedAt, now));
+  const avgViewsPerDay =
+    channel.viewCount && channelAgeDays > 0 ? channel.viewCount / channelAgeDays / channel.videoCount : 0;
+  if (avgViewsPerDay <= 0) return 55;
+  const ratio = episodeViewsPerDay / avgViewsPerDay;
+  // ratio 0.5x = baseline, 1x = on-channel, 3x+ = exceptional outlier.
+  return clamp(piecewise(ratio, [
+    [0, 20],
+    [0.5, 45],
+    [1, 62],
+    [2, 80],
+    [3.5, 92],
+    [6, 100],
+  ]));
+}
+
+/**
+ * Phase 2 (Opportunity scoring) — Momentum.
+ *
+ * A proxy for acceleration without historical view series: comment velocity
+ * relative to view velocity. Comments lag views (viewers finish the episode
+ * before commenting), so a HIGH comments-per-1000-views on a RECENT episode
+ * suggests the conversation is still building — the episode is accelerating,
+ * not decaying.
+ */
+function scoreMomentum(candidate: EpisodeCandidate, now: Date): number {
+  const age = Math.max(1, daysSince(candidate.publishedAt, now));
+  if (candidate.viewCount <= 0) return 40;
+  const commentsPerDay = candidate.commentCount / age;
+  const viewsPerDay = candidate.viewCount / age;
+  const commentRatio = commentsPerDay / Math.max(1, viewsPerDay); // comments per view
+  // Decay: momentum means "still hot NOW" — freshness multiplies the signal.
+  const freshness = Math.max(0.35, 1 - age / 60);
+  const momentum = commentRatio * 1000 * freshness;
+  return clamp(piecewise(momentum, [
+    [0, 35],
+    [1, 55],
+    [2.5, 70],
+    [5, 84],
+    [10, 95],
+    [18, 100],
+  ]));
+}
+
+/**
+ * Phase 2 (Opportunity scoring) — Personal fit.
+ *
+ * The user's own content preferences (topics they cover / watch). Without a
+ * profile we return neutral so cold-start discovery is not penalised.
+ */
+function scorePersonalFit(
+  candidate: EpisodeCandidate,
+  topic: string | null,
+  personalTopics: readonly string[],
+): number {
+  if (personalTopics.length === 0) return 60;
+  const haystack = `${candidate.title} ${candidate.description.slice(0, 800)} ${candidate.channelTitle}`;
+  let best = 0;
+  for (const t of personalTopics) {
+    if (!t.trim()) continue;
+    best = Math.max(best, termCoverage(t, haystack));
+  }
+  if (best <= 0) return 35;
+  // Scale so a strong keyword overlap lands mid-high; full match is rare.
+  return clamp(best * 130);
+}
+
+/**
+ * Phase 2 (Opportunity scoring) — Processing cost efficiency.
+ *
+ * Every minute of a long episode costs real transcription/scoring tokens.
+ * All else equal, a dense 45-minute episode is a better buy than a 3-hour
+ * one. Longer episodes are still allowed (they can hold more clips) but the
+ * per-minute cost pressure should be visible.
+ */
+function scoreProcessingCostEfficiency(durationSeconds: number): number {
+  const minutes = durationSeconds / 60;
+  // Sweet spot 25-75 min; very long episodes pay a cost penalty.
+  return piecewise(minutes, [
+    [0, 20],
+    [10, 62],
+    [25, 85],
+    [45, 95],
+    [75, 88],
+    [120, 70],
+    [180, 52],
+    [300, 35],
+  ]);
+}
+
+/**
  * Build the human readable explanation. We surface the factors that moved the
  * score furthest from neutral, in both directions, because "why was this
  * skipped" is as important to the user as "why was this picked".
@@ -264,6 +370,8 @@ export interface EpisodeOpportunityOptions {
   threshold?: number;
   now?: Date;
   semantic?: EpisodeSemanticJudgement | null;
+  /** Phase 2: user's personal content preferences (topics they cover). */
+  personalTopics?: readonly string[];
 }
 
 export function scoreEpisodeOpportunity(
@@ -275,6 +383,7 @@ export function scoreEpisodeOpportunity(
     threshold = DEFAULT_EPISODE_SCORE_THRESHOLD,
     now = new Date(),
     semantic = null,
+    personalTopics = [],
   } = options;
 
   const topicRelevance = scoreTopicRelevance(candidate, topic);
@@ -290,6 +399,11 @@ export function scoreEpisodeOpportunity(
     engagement,
     topicRelevance,
   );
+  // Phase 2 (Opportunity scoring): channel-relative + economic factors.
+  const channelRelativeVelocity = scoreChannelRelativeVelocity(candidate, now);
+  const momentum = scoreMomentum(candidate, now);
+  const personalFit = scorePersonalFit(candidate, topic, personalTopics);
+  const processingCostEfficiency = scoreProcessingCostEfficiency(candidate.durationSeconds);
 
   const factors: EpisodeFactorScores = {
     topicRelevance: round(
@@ -306,6 +420,10 @@ export function scoreEpisodeOpportunity(
       semantic ? blend(expectedClipDensity, semantic.expectedClipDensity) : expectedClipDensity,
       1,
     ),
+    channelRelativeVelocity: round(channelRelativeVelocity, 1),
+    momentum: round(momentum, 1),
+    personalFit: round(personalFit, 1),
+    processingCostEfficiency: round(processingCostEfficiency, 1),
   };
 
   let score = weightedAverage(factors, EPISODE_FACTOR_WEIGHTS);
@@ -354,4 +472,8 @@ export const episodeFactorHelp: Record<EpisodeFactorKey, string> = {
   channelQuality: 'Subscribers plus average views per video and catalogue depth.',
   discussionDensity: 'Chapter markers, guest format and comment rate as a proxy for topic variety.',
   expectedClipDensity: 'Derived prior on how many publishable moments this episode should yield.',
+  channelRelativeVelocity: 'Views per day relative to the channel\u2019s own average — an outlier for a small channel is a stronger signal than a normal day for a big one.',
+  momentum: 'Comment velocity scaled by freshness as a proxy for whether the episode is still accelerating.',
+  personalFit: 'How closely the episode matches your own content preferences (topics you cover/watch).',
+  processingCostEfficiency: 'Per-minute transcription/scoring cost pressure; dense mid-length episodes are cheaper buys.',
 };

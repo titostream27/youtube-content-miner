@@ -10,14 +10,19 @@ import type { ClipDimensionKey, EpisodeFactorKey } from '@/lib/domain/types';
  * Weights must sum to 1.
  */
 export const EPISODE_FACTOR_WEIGHTS: Record<EpisodeFactorKey, number> = {
-  topicRelevance: 0.24,
-  durationFit: 0.1,
-  engagement: 0.14,
-  viewVelocity: 0.14,
-  recency: 0.08,
-  channelQuality: 0.12,
-  discussionDensity: 0.09,
-  expectedClipDensity: 0.09,
+  topicRelevance: 0.22,
+  durationFit: 0.09,
+  engagement: 0.12,
+  viewVelocity: 0.1,
+  recency: 0.06,
+  channelQuality: 0.1,
+  discussionDensity: 0.08,
+  expectedClipDensity: 0.08,
+  // Phase 2 (Opportunity scoring): channel-relative + economic factors.
+  channelRelativeVelocity: 0.05,
+  momentum: 0.03,
+  personalFit: 0.03,
+  processingCostEfficiency: 0.04,
 };
 
 export const EPISODE_FACTOR_LABELS: Record<EpisodeFactorKey, string> = {
@@ -29,6 +34,10 @@ export const EPISODE_FACTOR_LABELS: Record<EpisodeFactorKey, string> = {
   channelQuality: 'Channel Quality',
   discussionDensity: 'Discussion Density',
   expectedClipDensity: 'Expected Clip Density',
+  channelRelativeVelocity: 'Channel-Relative Velocity',
+  momentum: 'Momentum',
+  personalFit: 'Personal Fit',
+  processingCostEfficiency: 'Processing Cost Efficiency',
 };
 
 /* -------------------------------------------------------------------------- */
