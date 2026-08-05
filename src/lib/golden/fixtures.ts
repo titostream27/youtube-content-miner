@@ -68,4 +68,51 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     ],
     topK: 2,
   },
+  {
+    // Phase-2 F22: second fixture — overlapping candidate windows exercise
+    // temporal-IoU matching (prediction ids may differ from label ids).
+    id: 'podcast-guest-story',
+    transcriptCues: [
+      { startSec: 0, endSec: 4, text: 'So you started in a garage in 2015.' },
+      { startSec: 4, endSec: 9, text: 'Yeah and we had no idea what we were doing.' },
+      { startSec: 9, endSec: 15, text: 'The first product launch was a total disaster.' },
+      { startSec: 15, endSec: 21, text: 'We shipped a broken build to ten thousand customers.' },
+      { startSec: 21, endSec: 27, text: 'People were furious and we almost shut down.' },
+      { startSec: 27, endSec: 33, text: 'But the emails from customers taught us everything.' },
+      { startSec: 33, endSec: 40, text: 'We rewrote the entire product in three weeks.' },
+      { startSec: 40, endSec: 46, text: 'That rewrite is why the company still exists today.' },
+      { startSec: 46, endSec: 52, text: 'So the lesson is ship fast but listen faster.' },
+      { startSec: 52, endSec: 58, text: 'Now switching to how you priced the second version.' },
+    ],
+    labels: [
+      {
+        clipId: 'p1',
+        expectedScore: 90,
+        expectedStartSec: 15,
+        expectedEndSec: 27,
+        expectedContamination: 0.03,
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+      {
+        clipId: 'p2',
+        expectedScore: 84,
+        expectedStartSec: 33,
+        expectedEndSec: 46,
+        expectedContamination: 0.02,
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+      {
+        clipId: 'p3',
+        expectedScore: 75,
+        expectedStartSec: 21,
+        expectedEndSec: 33,
+        expectedContamination: 0.06,
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+    ],
+    topK: 2,
+  },
 ];

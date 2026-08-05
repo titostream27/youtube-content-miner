@@ -6,6 +6,8 @@ import {
   boundaryError,
   contaminationError,
   binaryAccuracy,
+  matchByTemporalIoU,
+  temporalIoU,
   type GoldenLabel,
   type Prediction,
 } from '@/lib/golden/metrics';
@@ -100,5 +102,33 @@ describe('golden metrics (Phase 2 golden dataset)', () => {
         expect(label.expectedContamination).toBeLessThanOrEqual(1);
       }
     }
+  });
+
+  // ── Phase-2 F22: temporal-IoU matching ───────────────────────────────────
+  it('matches predictions to labels by temporal IoU, not clipId', () => {
+    expect(temporalIoU(0, 10, 2, 12)).toBeCloseTo(8 / 12, 5);
+    expect(temporalIoU(0, 10, 20, 30)).toBe(0);
+    // Different ids, overlapping windows -> matched.
+    const matches = matchByTemporalIoU(
+      [{ clipId: 'label-x', expectedScore: 90, expectedStartSec: 10, expectedEndSec: 30, expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true }],
+      [{ clipId: 'pred-y', score: 85, startSec: 12, endSec: 28, contamination: 0.05, startComplete: true, endingComplete: true }],
+      0.5,
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0]!.pred).not.toBeNull();
+  });
+
+  it('evaluateGolden reports temporal recall on the second fixture', () => {
+    const fx = GOLDEN_FIXTURES[1]!;
+    // Predictions that overlap the labeled windows (ids intentionally differ).
+    const preds: Prediction[] = [
+      { clipId: 'q1', score: 91, startSec: 16, endSec: 27, contamination: 0.03, startComplete: true, endingComplete: true },
+      { clipId: 'q2', score: 83, startSec: 33, endSec: 45, contamination: 0.02, startComplete: true, endingComplete: true },
+      { clipId: 'q3', score: 74, startSec: 22, endSec: 33, contamination: 0.06, startComplete: true, endingComplete: true },
+    ];
+    const m = evaluateGolden(fx.labels, preds, fx.topK);
+    expect(m.n).toBe(3);
+    expect(m.temporalRecall).toBe(1);
+    expect(m.meanTemporalIoU).toBeGreaterThan(0.5);
   });
 });
