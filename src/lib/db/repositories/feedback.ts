@@ -124,3 +124,52 @@ export function listCalibrationSamples(limit = 500): {
     boundaryShiftSec: r.boundary_shift_sec ?? 0,
   }));
 }
+
+/** Phase 2 (Personal learning): labelled editor samples joined to channel,
+ * topic, hook, duration and posting time, ready for
+ * buildPersonalLearningReport(). */
+export function listLearningSamples(limit = 1000): {
+  clipId: number;
+  channelTitle: string | null;
+  mainTopic: string | null;
+  suggestedHook: string;
+  durationSec: number;
+  publishedAt: string | null;
+  verdict: 'approved' | 'rejected' | 'boundary_adjusted';
+}[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT c.id AS clip_id,
+              e.channel_title AS channel_title,
+              c.main_topic AS main_topic,
+              c.suggested_hook AS suggested_hook,
+              c.duration_sec AS duration_sec,
+              e.published_at AS published_at,
+              f.verdict AS verdict
+         FROM clip_feedback f
+         JOIN clips c ON c.id = f.clip_id
+         LEFT JOIN episodes e ON e.video_id = c.video_id
+        ORDER BY f.id DESC
+        LIMIT ?`,
+    )
+    .all(limit) as {
+    clip_id: number;
+    channel_title: string | null;
+    main_topic: string | null;
+    suggested_hook: string;
+    duration_sec: number;
+    published_at: string | null;
+    verdict: string;
+  }[];
+  return rows.map((r) => ({
+    clipId: r.clip_id,
+    channelTitle: r.channel_title,
+    mainTopic: r.main_topic,
+    suggestedHook: r.suggested_hook ?? '',
+    durationSec: r.duration_sec,
+    publishedAt: r.published_at,
+    verdict: (['approved', 'rejected', 'boundary_adjusted'].includes(r.verdict)
+      ? r.verdict
+      : 'boundary_adjusted') as 'approved' | 'rejected' | 'boundary_adjusted',
+  }));
+}
