@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aelflab.com/contracts/render-result-v2.schema.json",
+  "title": "RenderResultV2",
+  "description": "Renderer -> miner result contract. Phase 1 §5.5.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["job_id", "source_video", "rendered"],
+  "properties": {
+    "job_id": { "type": "string", "minLength": 1 },
+    "source_video": { "type": "string" },
+    "rendered": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/rendered_clip" }
+    },
+    "mode": { "enum": ["preview", "final"] },
+    "artifacts": {
+      "type": ["array", "null"],
+      "items": { "$ref": "#/definitions/artifact" }
+    },
+    "source": {
+      "type": ["object", "null"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 0 },
+        "height": { "type": "integer", "minimum": 0 },
+        "codec": { "type": "string" },
+        "duration_sec": { "type": ["number", "null"] }
+      }
+    }
+  },
+  "definitions": {
+    "rendered_clip": {
+      "type": "object",
+      "required": ["clip_id", "status"],
+      "properties": {
+        "clip_id": { "type": ["string", "integer"] },
+        "status": { "enum": ["ok", "error", "skipped"] },
+        "title": { "type": "string" },
+        "start_sec": { "type": "number" },
+        "end_sec": { "type": "number" },
+        "duration_sec": { "type": "number" },
+        "video_url": { "type": ["string", "null"] },
+        "thumbnail_url": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"] },
+        "requested_layout": { "type": "string" },
+        "actual_layout": { "type": "string" },
+        "fallback_reason": { "type": ["string", "null"] }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["clip_id", "status"],
+      "properties": {
+        "clip_id": { "type": ["string", "integer"] },
+        "status": { "enum": ["ok", "error", "skipped"] },
+        "video_url": { "type": ["string", "null"] },
+        "thumbnail_url": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"] },
+        "duration_sec": { "type": ["number", "null"] },
+        "requested_layout": { "type": "string" },
+        "actual_layout": { "type": "string" },
+        "fallback_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -18,76 +18,119 @@ import type { ClipRecord } from '@/lib/db/repositories/clips';
 
 export const RenderRequestV2Schema = z.object({
   contract_version: z.literal('2.0'),
-  request_id: z.string(),
-  episode_id: z.string(),
+  request_id: z.string().min(1, 'request_id must be non-empty'),
+  episode_id: z.string().min(1, 'episode_id must be non-empty'),
   video_url: z.string().url(),
 
   mode: z.enum(['preview', 'final']),
 
   source_preferences: z.object({
-    max_height: z.number().int(),
+    max_height: z.number().int().min(0),
     prefer_best_available: z.boolean(),
   }),
 
   output: z.object({
-    width: z.number().int(),
-    height: z.number().int(),
-    fps: z.number().optional(),
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+    fps: z.number().int().positive().optional(),
   }),
 
-  clips: z.array(
-    z.object({
-      clip_id: z.union([z.string(), z.number()]),
+  clips: z
+    .array(
+      z.object({
+        clip_id: z.union([z.string(), z.number()]),
 
-      start_sec: z.number(),
-      end_sec: z.number(),
+        start_sec: z.number().min(0, 'start_sec must be >= 0'),
+        end_sec: z.number(),
 
-      title: z.string(),
+        title: z.string(),
 
-      narrative: z.object({
-        main_topic: z.string(),
-        ending_type: z.string(),
-        hook_end_sec: z.number().nullable(),
-        payoff_start_sec: z.number().nullable(),
-      }),
+        narrative: z.object({
+          main_topic: z.string(),
+          ending_type: z.string(),
+          hook_end_sec: z.number().nullable(),
+          payoff_start_sec: z.number().nullable(),
+        }),
 
-      layout_plan: z.object({
-        preferred_layout: z.enum([
-          'auto',
-          'face_crop',
-          'dual_face',
-          'blur_background',
-          'stacked_source',
-          'screen_plus_face',
-        ]),
-        expected_speakers: z.number().int().nullable(),
-        allow_split: z.boolean(),
-        allow_blur_background: z.boolean(),
-      }),
+        layout_plan: z.object({
+          preferred_layout: z.enum([
+            'auto',
+            'face_crop',
+            'dual_face',
+            'blur_background',
+            'stacked_source',
+            'screen_plus_face',
+          ]),
+          expected_speakers: z.number().int().min(0).nullable(),
+          allow_split: z.boolean(),
+          allow_blur_background: z.boolean(),
+        }),
 
-      caption_plan: z.object({
-        language: z.string(),
-        cues: z.array(
+        caption_plan: z.object({
+          language: z.string().min(1),
+          cues: z.array(
+            z.object({
+              start_sec: z.number().min(0),
+              end_sec: z.number(),
+              text: z.string(),
+              speaker_id: z.string().nullable().optional(),
+            }),
+          ),
+          highlight_terms: z.array(z.string()),
+        }),
+
+        editing_events: z.array(
           z.object({
-            start_sec: z.number(),
-            end_sec: z.number(),
-            text: z.string(),
-            speaker_id: z.string().nullable().optional(),
+            time_sec: z.number().min(0),
+            type: z.enum(['emphasis', 'punchline', 'important_number', 'topic_label']),
+            intensity: z.number().min(0).max(1),
           }),
         ),
-        highlight_terms: z.array(z.string()),
       }),
-
-      editing_events: z.array(
-        z.object({
-          time_sec: z.number(),
-          type: z.enum(['emphasis', 'punchline', 'important_number', 'topic_label']),
-          intensity: z.number().min(0).max(1),
-        }),
-      ),
-    }),
-  ),
-});
+    )
+    .min(1, 'at least one clip is required'),
+})
+  // Phase 1 §5.5: cross-field rules shared with the JSON Schema and the
+  // Python validator (render_contract.py).
+  .superRefine((value, ctx) => {
+    const seen = new Set<string | number>();
+    value.clips.forEach((clip, idx) => {
+      const path = ['clips', idx];
+      if (clip.end_sec <= clip.start_sec) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'end_sec'],
+          message: `end_sec (${clip.end_sec}) must be > start_sec (${clip.start_sec})`,
+        });
+      }
+      if (seen.has(clip.clip_id)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'clip_id'],
+          message: `duplicate clip_id ${clip.clip_id}`,
+        });
+      }
+      seen.add(clip.clip_id);
+      for (const [ci, cue] of clip.caption_plan.cues.entries()) {
+        if (cue.start_sec < clip.start_sec || cue.end_sec > clip.end_sec) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, 'caption_plan', 'cues', ci],
+            message: `caption cue [${cue.start_sec},${cue.end_sec}] outside clip range [${clip.start_sec},${clip.end_sec}]`,
+          });
+        }
+      }
+      for (const [ei, ev] of clip.editing_events.entries()) {
+        if (ev.time_sec < clip.start_sec || ev.time_sec > clip.end_sec) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, 'editing_events', ei],
+            message: `editing event at ${ev.time_sec} outside clip range [${clip.start_sec},${clip.end_sec}]`,
+          });
+        }
+      }
+    });
+  });
 
 export type RenderRequestV2 = z.infer<typeof RenderRequestV2Schema>;
 

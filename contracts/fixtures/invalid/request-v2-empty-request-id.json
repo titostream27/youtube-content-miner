@@ -1,0 +1,56 @@
+{
+  "contract_version": "2.0",
+  "request_id": "",
+  "episode_id": "ep-1",
+  "video_url": "https://www.youtube.com/watch?v=ep-1",
+  "mode": "final",
+  "source_preferences": {
+    "max_height": 2160,
+    "prefer_best_available": true
+  },
+  "output": {
+    "width": 1080,
+    "height": 1920
+  },
+  "clips": [
+    {
+      "clip_id": 12,
+      "start_sec": 124.3,
+      "end_sec": 157.8,
+      "title": "Why expansion failed",
+      "narrative": {
+        "main_topic": "why expansion failed",
+        "ending_type": "CONCLUSION",
+        "hook_end_sec": 128.0,
+        "payoff_start_sec": 150.0
+      },
+      "layout_plan": {
+        "preferred_layout": "auto",
+        "expected_speakers": 2,
+        "allow_split": true,
+        "allow_blur_background": true
+      },
+      "caption_plan": {
+        "language": "en",
+        "cues": [
+          {
+            "start_sec": 124.3,
+            "end_sec": 126.0,
+            "text": "Most companies do not fail.",
+            "speaker_id": "SPEAKER_00"
+          }
+        ],
+        "highlight_terms": [
+          "fail"
+        ]
+      },
+      "editing_events": [
+        {
+          "time_sec": 130.0,
+          "type": "punchline",
+          "intensity": 0.9
+        }
+      ]
+    }
+  ]
+}
