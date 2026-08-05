@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
   cuesToUtterances,
   sliceTranscriptForRange,
+  utteranceAfter,
   type EnrichedSentence,
-  type TranscriptCue,
 } from '@/lib/moments/utterances';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
+import type { TranscriptCue } from '@/lib/domain/types';
 
 function u(start: number, end: number, text: string, opts: Partial<EnrichedSentence> = {}): EnrichedSentence {
   return {
@@ -83,13 +84,44 @@ describe('correctness brief 2 — F13/F14/F16 (RED pre-fix)', () => {
     });
     const check = validateStartBoundary([longHook], 0, 20);
     expect(
-      check.reasons.some((r) => r.code === 'MISSING_CONTEXT' || r.code === 'UNRESOLVED_REFERENCE'),
+      check.issues.includes('MISSING_CONTEXT') || check.issues.includes('UNRESOLVED_REFERENCE'),
     ).toBe(false);
   });
 
   it('F16 lowercase start without dangling pronoun is weak evidence', () => {
     const utt = u(0, 8, 'turns out the market shifted', { isCompleteSentence: true });
     const check = validateStartBoundary([utt], 0, 8);
-    expect(check.reasons.some((r) => r.code === 'MID_SENTENCE')).toBe(false);
+    expect(check.issues.includes('MID_SENTENCE')).toBe(false);
+  });
+});
+
+describe('Brief 2 Phase B leftovers (candidate identity / helpers / preceding context)', () => {
+  // ── utteranceAfter helper (containing / before / after split) ────────────
+  it('utteranceAfter returns the first utterance starting at/after target', () => {
+    const utterances = [u(0, 5, 'first'), u(5, 10, 'second'), u(10, 15, 'third')];
+    expect(utteranceAfter(utterances, 6)).toBe(2);
+    expect(utteranceAfter(utterances, 5)).toBe(1);
+    expect(utteranceAfter(utterances, 20)).toBe(-1);
+  });
+
+  // ── preceding context in start-boundary ──────────────────────────────────
+  it('flags MID_SENTENCE when the preceding utterance ends mid-sentence', () => {
+    // Utterance before the window ends with a trailing comma -> the window
+    // opening continues that thought.
+    const utterances = [
+      u(0, 5, 'And the reason we pivoted,', { isCompleteSentence: false }),
+      u(5, 12, 'was that the old model stopped working.', { isCompleteSentence: true }),
+    ];
+    const check = validateStartBoundary(utterances, 5, 12);
+    expect(check.issues.includes('MID_SENTENCE')).toBe(true);
+  });
+
+  it('does NOT flag MID_SENTENCE when the preceding utterance ends cleanly', () => {
+    const utterances = [
+      u(0, 5, 'So we moved on completely.', { isCompleteSentence: true }),
+      u(5, 12, 'The new approach was totally different.', { isCompleteSentence: true }),
+    ];
+    const check = validateStartBoundary(utterances, 5, 12);
+    expect(check.issues.includes('MID_SENTENCE')).toBe(false);
   });
 });

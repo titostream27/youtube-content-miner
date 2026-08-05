@@ -278,6 +278,11 @@ export function detectMoments(
       wordCount: candidate.words,
       wordsPerSecond: round(candidate.words / Math.max(1, candidate.durationSec), 2),
       salience: round(candidate.salience, 3),
+      // Identity fields are filled by the two-pass stage which knows the
+      // videoId + generation run (Brief 2 Phase B).
+      candidateId: '',
+      generationRunId: '',
+      revision: 1,
     })),
   };
 }

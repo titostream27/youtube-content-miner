@@ -298,7 +298,8 @@ export function replaceClipsForEpisode(
         ending_type, ending_confidence, next_topic_removed, next_topic_start_sec, next_topic_contamination,
         boundary_status, boundary_confidence, start_complete, repair_reason,
         rough_start_sec, rough_end_sec, main_topic, topic_before, topic_after,
-        rights_status, qc_status, qc_score
+        rights_status, qc_status, qc_score,
+        candidate_id, generation_run_id, revision
       ) VALUES (
         @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
         @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
@@ -307,7 +308,8 @@ export function replaceClipsForEpisode(
         @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination,
         @boundaryStatus, @boundaryConfidence, @startComplete, @repairReason,
         @roughStartSec, @roughEndSec, @mainTopic, @topicBefore, @topicAfter,
-        @rightsStatus, @qcStatus, @qcScore
+        @rightsStatus, @qcStatus, @qcScore,
+        @candidateId, @generationRunId, @revision
       )`,
     );
 
@@ -357,6 +359,10 @@ export function replaceClipsForEpisode(
         rightsReviewedBy: null,
         qcStatus: 'pending',
         qcScore: null,
+        // Brief 2 Phase B: stable identity.
+        candidateId: clip.candidateId ?? null,
+        generationRunId: clip.generationRunId ?? null,
+        revision: clip.revision ?? 1,
         editorialStatus: 'new',
         scheduleStatus: 'unscheduled',
         analyticsStatus: 'not_tracked',

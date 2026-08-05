@@ -136,6 +136,10 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'schedule_status', definition: "TEXT NOT NULL DEFAULT 'unscheduled'" },
     // Analytics: not_tracked | tracking | ready
     { table: 'clips', column: 'analytics_status', definition: "TEXT NOT NULL DEFAULT 'not_tracked'" },
+    // Brief 2 Phase B: stable identity (candidate / generation run / revision).
+    { table: 'clips', column: 'candidate_id', definition: 'TEXT' },
+    { table: 'clips', column: 'generation_run_id', definition: 'TEXT' },
+    { table: 'clips', column: 'revision', definition: 'INTEGER NOT NULL DEFAULT 1' },
   ];
 
   for (const { table, column, definition } of columns) {

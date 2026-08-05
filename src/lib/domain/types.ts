@@ -150,6 +150,15 @@ export interface MomentSegment {
    * segments are worth spending an LLM call on.
    */
   salience: number;
+  /**
+   * Phase-2 correctness (Brief 2 Phase B): stable identity for this candidate
+   * across pipeline stages (segment -> clip -> DB) and across re-runs.
+   */
+  candidateId: string;
+  /** Id of the generation run that produced this segment. */
+  generationRunId: string;
+  /** How many times this candidate's boundary was revised (1 = initial). */
+  revision: number;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -223,6 +232,10 @@ export interface ScoredClip {
   repairReason?: string | null;
   roughStartSec?: number | null;
   roughEndSec?: number | null;
+  /** Brief 2 Phase B: stable identity propagated from the segment. */
+  candidateId?: string;
+  generationRunId?: string;
+  revision?: number;
   mainTopic?: string | null;
   topicBefore?: string | null;
   topicAfter?: string | null;

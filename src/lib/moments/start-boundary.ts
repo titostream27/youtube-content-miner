@@ -1,3 +1,4 @@
+import { utteranceAtOrBefore } from '@/lib/moments/utterances';
 import type { EnrichedSentence } from '@/lib/moments/utterances';
 
 /**
@@ -89,12 +90,28 @@ export function validateStartBoundary(
   // 1. MID_SENTENCE — the opening continues a sentence.
   // Phase-2 correctness (F16): capitalization is WEAK evidence. Many
   // transcriptions normalize casing, so a lowercase start alone must not
-  // flag MID_SENTENCE; it needs a continuation word or a mid-utterance
-  // boundary to count.
+  // flag MID_SENTENCE; it needs a continuation word, a mid-utterance
+  // boundary, or PRECEDING CONTEXT to count.
   const continuesThought = CONTINUATION_RE.test(first.text.trim());
   const startsMidUtterance = first.startSec < startSec - 0.05;
   const startsLower = !startsFreshSentence(first.text);
-  if (continuesThought || startsMidUtterance || (startsLower && continuesThought)) {
+  // Brief 2 Phase B: preceding context — the utterance immediately before
+  // the window. If it ends mid-sentence (trailing comma / conjunction /
+  // no terminal punctuation), the window opening continues that thought.
+  let precedingContinues = false;
+  const beforeIdx = utteranceAtOrBefore(utterances, startSec);
+  if (beforeIdx >= 0) {
+    const before = utterances[beforeIdx]!;
+    if (before.endSec <= startSec + 0.05 && before.startSec < startSec - 0.05) {
+      const bt = before.text.trim();
+      // Trailing comma, dangling conjunction, or missing terminal punctuation.
+      precedingContinues =
+        /,\s*$/.test(bt) ||
+        /(and|but|so|because|then|jadi|terus|tapi|karena)\s*$/i.test(bt) ||
+        !/[.!?…"\u201D]$/.test(bt);
+    }
+  }
+  if (continuesThought || startsMidUtterance || (startsLower && continuesThought) || precedingContinues) {
     issues.push('MID_SENTENCE');
   }
 

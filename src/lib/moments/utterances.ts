@@ -300,6 +300,23 @@ export function utteranceContaining(
 }
 
 /**
+ * Phase-2 correctness (F15): nearest utterance STARTING at/after target.
+ * Complementary to utteranceAtOrBefore — lets callers split a timestamp
+ * lookup into containing / before / after without duplicating logic.
+ */
+export function utteranceAfter(
+  utterances: readonly EnrichedSentence[],
+  targetSec: number,
+): number {
+  for (let i = 0; i < utterances.length; i += 1) {
+    if (utterances[i]!.startSec >= targetSec - 0.05) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * Phase-2 correctness (F15): nearest utterance end at/before target, but if
  * the target lies INSIDE an utterance that utterance wins (previously it
  * returned the PREVIOUS utterance for any in-utterance timestamp).

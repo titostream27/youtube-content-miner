@@ -202,6 +202,11 @@ export async function twoPassHighlightSelection(
   const utterances = cuesToUtterances(transcript.cues);
   const endingById = new Map<number, BoundaryDebugInfo>();
 
+  // Phase-2 correctness (Brief 2 Phase B): one stable generation run id per
+  // call; every emitted segment carries it + a stable candidateId.
+  const generationRunId = `gen-${transcript.videoId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const candidateIdOf = (index: number): string => `candidate-${transcript.videoId}-${index}`;
+
   if (roughSegments.length === 0) {
     return { segments: [], utterances, warnings, endingById };
   }
@@ -361,6 +366,10 @@ export async function twoPassHighlightSelection(
           wordCount: finalSlice.wordCount,
           wordsPerSecond: finalSlice.wordsPerSecond,
           salience: rough.salience,
+          // Brief 2 Phase B: repaired boundary -> revision 2.
+          candidateId: candidateIdOf(rough.index),
+          generationRunId,
+          revision: 2,
         });
         warnings.push(`highlight ${rough.index}: ${repair.boundaryStatus} — ${repair.repairReason}`);
         console.warn(`[two-pass] repair idx=${rough.index}: ${repair.repairReason}`);
@@ -414,6 +423,10 @@ export async function twoPassHighlightSelection(
       wordCount: finalSlice.wordCount,
       wordsPerSecond: finalSlice.wordsPerSecond,
       salience: rough.salience,
+      // Brief 2 Phase B: unmodified boundary -> revision 1.
+      candidateId: candidateIdOf(rough.index),
+      generationRunId,
+      revision: 1,
     });
   }
 

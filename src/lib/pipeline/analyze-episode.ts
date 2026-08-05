@@ -98,6 +98,10 @@ function buildClip(params: {
     suggestedCaption: judgement.suggestedCaption,
     editingNotes: judgement.editingNotes,
     engine: judgement.engine,
+    // Brief 2 Phase B: stable identity from the two-pass segment.
+    candidateId: segment.candidateId || undefined,
+    generationRunId: segment.generationRunId || undefined,
+    revision: segment.revision ?? 1,
   };
 }
 

@@ -155,6 +155,10 @@ CREATE TABLE IF NOT EXISTS clips (
   publish_url       TEXT,
   publish_error     TEXT,
   published_at      TEXT,
+  -- Brief 2 Phase B: stable identity (candidate / generation run / revision).
+  candidate_id      TEXT,
+  generation_run_id TEXT,
+  revision          INTEGER NOT NULL DEFAULT 1,
   created_at        TEXT NOT NULL,
   UNIQUE (video_id, segment_index)
 );
