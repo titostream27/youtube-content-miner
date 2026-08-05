@@ -41,12 +41,15 @@ export interface StartBoundaryResult {
 /** Words that continue a sentence / a train of thought — at the OPENING. */
 const CONTINUATION_RE =
   /^(because|but|so|and|or|then|that|which|while|when|if|although|though|since|until|jadi|terus|tapi|karena|kalau|sementara|sampai|sehingga|namun|sedangkan|yang|dan|atau)\b/i;
-/** Openers that refer to something already introduced. */
+/** Openers that refer to something already introduced — anchored to START.
+ * Deictic pronouns (we/us/you/kita/kami/anda) are excluded: they always
+ * resolve to the speakers/audience and are valid at the start of a clip.
+ */
 const REFERENTIAL_OPENERS_RE =
-  /\b(this|that|these|those|it|its|he|she|they|them|we|us|you|the|so|ini|itu|dia|mereka|kita|kami|anda|jadi|terus|tapi|yang|gini|gitu)\b/i;
-/** Pronouns with no antecedent inside the window. */
+  /^(this|that|these|those|it|its|he|she|they|them|the|so|ini|itu|dia|mereka|jadi|terus|tapi|yang|gini|gitu)\b/i;
+/** Pronouns with no antecedent inside the window — anchored to START. */
 const PRONOUN_OPENERS_RE =
-  /\b(he|she|it|they|them|we|us|you|this|that|these|those|dia|mereka|kita|kami|anda|ini|itu)\b/i;
+  /^(he|she|it|they|them|this|that|these|those|dia|mereka|ini|itu)\b/i;
 /** Hook-like signals: numbers, superlatives, contrasts, questions, claims. */
 const HOOK_SIGNAL_RE =
   /\b(\d+|most|best|never|always|only|secret|shocking|crazy|insane|huge|problem|mistake|failed|success|win|won|broke|why|how|what|actually|literally|worst|first|last|percent|million|billion|ribu|juta|miliar|miliaran|paling|terbesar|terbaik|gagal|sukses|rahasia|masalah|kenapa|bagaimana)\b/i;
@@ -84,10 +87,14 @@ export function validateStartBoundary(
   const issues: StartBoundaryIssue[] = [];
 
   // 1. MID_SENTENCE — the opening continues a sentence.
-  const startsLower = !startsFreshSentence(first.text);
+  // Phase-2 correctness (F16): capitalization is WEAK evidence. Many
+  // transcriptions normalize casing, so a lowercase start alone must not
+  // flag MID_SENTENCE; it needs a continuation word or a mid-utterance
+  // boundary to count.
   const continuesThought = CONTINUATION_RE.test(first.text.trim());
   const startsMidUtterance = first.startSec < startSec - 0.05;
-  if (startsLower || continuesThought || startsMidUtterance) {
+  const startsLower = !startsFreshSentence(first.text);
+  if (continuesThought || startsMidUtterance || (startsLower && continuesThought)) {
     issues.push('MID_SENTENCE');
   }
 

@@ -64,7 +64,19 @@ const TRANSITION_START_RE =
 /** Cues that look like a speaker label, e.g. "[SPEAKER_00]" or "(speaker_1)". */
 const SPEAKER_TAG_RE = /^\s*[\[(]*\s*SPEAKER[\s_-]?\d+\s*[)\]]\s*$/i;
 
+function isSpeakerLabelCue(cue: TranscriptCue): boolean {
+  // Only a cue whose TEXT is a pure speaker label is metadata, never content.
+  return SPEAKER_TAG_RE.test(cue.text.trim());
+}
+
 function extractSpeaker(cue: TranscriptCue): string | null {
+  // Phase-2 correctness (F14): the structured speakerId is authoritative —
+  // prefer it over heuristically parsing a textual [SPEAKER_n] tag. This is
+  // METADATA for content cues; it does not make a content cue a label.
+  if (cue.speakerId) {
+    return cue.speakerId;
+  }
+  if (!isSpeakerLabelCue(cue)) return null;
   const match = cue.text.match(SPEAKER_TAG_RE);
   if (!match) return null;
   return match[0].trim();
@@ -139,14 +151,26 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
 
     // Speaker label cues ("[SPEAKER_00]") are metadata, not content — they
     // set the speaker for the following content and mark a speaker change.
-    const speaker = extractSpeaker(cue);
-    if (speaker) {
-      if (currentSpeaker !== null && currentSpeaker !== speaker) {
+    // Phase-2 correctness (F14): content cues carry speakerId as metadata and
+    // must still be included as content.
+    if (isSpeakerLabelCue(cue)) {
+      const labelSpeaker = extractSpeaker(cue);
+      if (labelSpeaker) {
+        if (currentSpeaker !== null && currentSpeaker !== labelSpeaker) {
+          // Speaker change: flush the previous unit immediately.
+          flush();
+        }
+        currentSpeaker = labelSpeaker;
+      }
+      continue;
+    }
+    const cueSpeaker = extractSpeaker(cue);
+    if (cueSpeaker) {
+      if (currentSpeaker !== null && currentSpeaker !== cueSpeaker) {
         // Speaker change: flush the previous unit immediately.
         flush();
       }
-      currentSpeaker = speaker;
-      continue;
+      currentSpeaker = cueSpeaker;
     }
 
     // A topic-length pause always breaks the utterance.
@@ -255,4 +279,46 @@ export function sliceTranscriptForRange(
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/**
+ * Phase-2 correctness (F15): find the utterance CONTAINING a timestamp, or
+ * the closest one ending at/before it. A target inside an utterance must
+ * resolve to THAT utterance, not the previous one.
+ */
+export function utteranceContaining(
+  utterances: readonly EnrichedSentence[],
+  targetSec: number,
+): number {
+  for (let i = 0; i < utterances.length; i += 1) {
+    const u = utterances[i]!;
+    if (targetSec >= u.startSec - 0.05 && targetSec <= u.endSec + 0.05) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Phase-2 correctness (F15): nearest utterance end at/before target, but if
+ * the target lies INSIDE an utterance that utterance wins (previously it
+ * returned the PREVIOUS utterance for any in-utterance timestamp).
+ */
+export function utteranceAtOrBefore(
+  utterances: readonly EnrichedSentence[],
+  targetSec: number,
+): number {
+  const containing = utteranceContaining(utterances, targetSec);
+  if (containing >= 0) {
+    return containing;
+  }
+  let best = -1;
+  for (let i = 0; i < utterances.length; i += 1) {
+    if (utterances[i]!.endSec <= targetSec + 0.05) {
+      best = i;
+    } else {
+      break;
+    }
+  }
+  return best;
 }

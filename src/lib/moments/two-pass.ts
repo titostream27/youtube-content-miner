@@ -1,6 +1,6 @@
 import { config } from '@/lib/config';
 import type { MomentSegment, Transcript } from '@/lib/domain/types';
-import { cuesToUtterances, sliceTranscriptForRange, type Utterance } from '@/lib/moments/utterances';
+import { cuesToUtterances, sliceTranscriptForRange, utteranceAtOrBefore, type Utterance } from '@/lib/moments/utterances';
 import {
   classifyEnding,
   detectTopicBoundary,
@@ -66,21 +66,6 @@ interface BoundaryInfo {
   nextTopicStart: number | null;
   nextTopicContamination: number;
   reason: string;
-}
-
-/**
- * Find the utterance whose end is nearest (and <=) a target timestamp.
- */
-function utteranceAtOrBefore(utterances: Utterance[], targetSec: number): number {
-  let best = -1;
-  for (let i = 0; i < utterances.length; i += 1) {
-    if (utterances[i]!.endSec <= targetSec + 0.05) {
-      best = i;
-    } else {
-      break;
-    }
-  }
-  return best;
 }
 
 /** Snap a boundary to the nearest utterance end within a small window. */
