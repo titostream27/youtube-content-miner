@@ -171,4 +171,36 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     // sponsor block.
     topK: 1,
   },
+  {
+    // Hardening v3 F3 (#33): single hard-negative — a clean clip whose
+    // sponsor/CTA sentence is pure contamination. Exercises the
+    // contamination metric and tests that a filtered prediction reports
+    // non-zero contamination when it wrongly includes the sponsor.
+    id: 'golden-contamination',
+    transcriptCues: [
+      { startSec: 0, endSec: 18, text: 'We launched the second protocol in April. Use code AFLAB for ten percent off your annual plan.' },
+      { startSec: 18, endSec: 88, text: 'The retention numbers shocked everyone. It changed how we ship software.' },
+    ],
+    labels: [
+      {
+        clipId: 'c1',
+        expectedScore: 92,
+        expectedStartSec: 0,
+        expectedEndSec: 18,
+        expectedContamination: 0.35, // includes the sponsor sentence
+        expectedStartComplete: true,
+        expectedEndingComplete: false,
+      },
+      {
+        clipId: 'c2',
+        expectedScore: 88,
+        expectedStartSec: 58,
+        expectedEndSec: 88,
+        expectedContamination: 0.0, // clean editorial
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+    ],
+    topK: 2,
+  },
 ];
