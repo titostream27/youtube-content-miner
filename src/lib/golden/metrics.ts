@@ -105,52 +105,34 @@ export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], 
   return sum / labelTop.length;
 }
 
+/**
+ * @deprecated Brief v6 8.3 (E03) — clipId-positional matching disagrees with
+ * temporal assignment. Redirected to the canonical AssignmentResult: metrics
+ * now use temporal IoU matching, not clipId equality.
+ */
 export function boundaryError(preds: Prediction[], labels: GoldenLabel[]): { start: number; end: number } {
-  const byId = new Map(labels.map((l) => [l.clipId, l]));
-  let startSum = 0;
-  let endSum = 0;
-  let n = 0;
-  for (const p of preds) {
-    const label = byId.get(p.clipId);
-    if (!label) continue;
-    startSum += Math.abs(p.startSec - label.expectedStartSec);
-    endSum += Math.abs(p.endSec - label.expectedEndSec);
-    n += 1;
-  }
-  return {
-    start: n === 0 ? 0 : startSum / n,
-    end: n === 0 ? 0 : endSum / n,
-  };
+  const a = computeAssignmentResult(labels, preds, 0.5);
+  return boundaryErrorFromAssignment(a);
 }
 
+/**
+ * @deprecated Brief v6 8.3 (E03) — redirected to assignment-based metrics.
+ */
 export function contaminationError(preds: Prediction[], labels: GoldenLabel[]): number {
-  const byId = new Map(labels.map((l) => [l.clipId, l]));
-  let sum = 0;
-  let n = 0;
-  for (const p of preds) {
-    const label = byId.get(p.clipId);
-    if (!label) continue;
-    sum += Math.abs(p.contamination - label.expectedContamination);
-    n += 1;
-  }
-  return n === 0 ? 0 : sum / n;
+  const a = computeAssignmentResult(labels, preds, 0.5);
+  return contaminationErrorFromAssignment(a);
 }
 
+/**
+ * @deprecated Brief v6 8.3 (E03) — redirected to assignment-based metrics.
+ */
 export function binaryAccuracy(
   preds: Prediction[],
   labels: GoldenLabel[],
   pick: (p: Prediction, l: GoldenLabel) => boolean,
 ): number {
-  const byId = new Map(labels.map((l) => [l.clipId, l]));
-  let correct = 0;
-  let n = 0;
-  for (const p of preds) {
-    const label = byId.get(p.clipId);
-    if (!label) continue;
-    if (pick(p, label) === true) correct += 1;
-    n += 1;
-  }
-  return n === 0 ? 0 : correct / n;
+  const a = computeAssignmentResult(labels, preds, 0.5);
+  return binaryAccuracyFromAssignment(a, pick);
 }
 
 /** Temporal IoU of two [start, end) intervals (Phase-2 F22). */
