@@ -16,6 +16,24 @@ import {
 } from '@/lib/golden/metrics';
 import { GOLDEN_FIXTURES } from '@/lib/golden/fixtures';
 
+describe('golden dataset coverage (hardening v3 F3 matrix)', () => {
+  it('covers both languages and both caption quality levels', () => {
+    const langs = new Set(GOLDEN_FIXTURES.map((f) => f.language));
+    const qualities = new Set(GOLDEN_FIXTURES.map((f) => f.captionsQuality));
+    expect(langs.has('en')).toBe(true);
+    expect(langs.has('id')).toBe(true);
+    expect(qualities.has('clean')).toBe(true);
+    expect(qualities.has('noisy')).toBe(true);
+  });
+
+  it('has at least one multi-speaker and one hard-negative fixture', () => {
+    expect(GOLDEN_FIXTURES.length).toBeGreaterThanOrEqual(5);
+    const hardNegatives = GOLDEN_FIXTURES.flatMap((f) => f.labels)
+      .filter((l) => l.expectedScore < 60 || l.expectedContamination > 0.5);
+    expect(hardNegatives.length).toBeGreaterThan(0);
+  });
+});
+
 describe('golden metrics (Phase 2 golden dataset)', () => {
   const labels: GoldenLabel[] = [
     { clipId: 'a', expectedScore: 95, expectedStartSec: 10, expectedEndSec: 20, expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },

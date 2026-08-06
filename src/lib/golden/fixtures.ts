@@ -18,11 +18,20 @@ export interface GoldenFixture {
   transcriptCues: { startSec: number; endSec: number; text: string }[];
   labels: GoldenLabel[];
   topK: number;
+  /**
+   * Hardening v3 F3: dataset matrix metadata so coverage is explicit and
+   * measurable against the brief (EN/ID, clean/noisy captions).
+   */
+  language?: 'en' | 'id';
+  /** Caption source quality: clean (manual/YT captions) or noisy (ASR). */
+  captionsQuality?: 'clean' | 'noisy';
 }
 
 export const GOLDEN_FIXTURES: GoldenFixture[] = [
   {
     id: 'growth-podcast',
+    language: 'en',
+    captionsQuality: 'clean',
     transcriptCues: [
       { startSec: 0, endSec: 3, text: 'Welcome back to the show everyone.' },
       { startSec: 3, endSec: 6, text: 'Today we are talking about startup growth.' },
@@ -72,6 +81,8 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     // Phase-2 F22: second fixture — overlapping candidate windows exercise
     // temporal-IoU matching (prediction ids may differ from label ids).
     id: 'podcast-guest-story',
+    language: 'en',
+    captionsQuality: 'clean',
     transcriptCues: [
       { startSec: 0, endSec: 4, text: 'So you started in a garage in 2015.' },
       { startSec: 4, endSec: 9, text: 'Yeah and we had no idea what we were doing.' },
@@ -121,6 +132,8 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     // that must NOT be a positive moment) to exercise start-complete and
     // contamination classification.
     id: 'podcast-bilingual-reaction',
+    language: 'id',
+    captionsQuality: 'clean',
     transcriptCues: [
       { startSec: 0, endSec: 5, text: 'Halo semua, selamat datang kembali di podcast.' },
       { startSec: 5, endSec: 9, text: 'Today we have a very special guest joining us.' },
@@ -177,6 +190,8 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     // contamination metric and tests that a filtered prediction reports
     // non-zero contamination when it wrongly includes the sponsor.
     id: 'golden-contamination',
+    language: 'en',
+    captionsQuality: 'noisy',
     transcriptCues: [
       { startSec: 0, endSec: 18, text: 'We launched the second protocol in April. Use code AFLAB for ten percent off your annual plan.' },
       { startSec: 18, endSec: 88, text: 'The retention numbers shocked everyone. It changed how we ship software.' },
@@ -202,5 +217,48 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
       },
     ],
     topK: 2,
+  },
+  {
+    // Hardening v3 F3 coverage: Indonesian, NOISY ASR captions. Exercises
+    // diarization-less ASR with misheard words ("kanguru" vs "program").
+    id: 'podcast-id-noisy-asr',
+    language: 'id',
+    captionsQuality: 'noisy',
+    transcriptCues: [
+      { startSec: 0, endSec: 6, text: 'hai semuanya kita balik lagi di episode baru' },
+      { startSec: 6, endSec: 12, text: 'tadi gue ngomong sama kanguru yang bikin gue merinding' },
+      { startSec: 12, endSec: 19, text: 'bahasa dalam tim itu selalu pin, bukan, selalu WIN' },
+      { startSec: 19, endSec: 25, text: 'jadii gimana tuh perpisahan di bulan pertama' },
+      { startSec: 25, endSec: 32, text: 'semua orang di meja itu mah psicker dan kita bisa nebakinya' },
+      { startSec: 32, endSec: 39, text: 'di bulan ketiga gue lihat angkanya, gue kaget alias tak tak tak' },
+      { startSec: 39, endSec: 46, text: 'jadi pesan gue jangan takut gagal di awal' },
+    ],
+    labels: [
+      { clipId: 'n1', expectedScore: 88, expectedStartSec: 32, expectedEndSec: 46, expectedContamination: 0.08, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'n2', expectedScore: 72, expectedStartSec: 0, expectedEndSec: 12, expectedContamination: 0.6, expectedStartComplete: false, expectedEndingComplete: false },
+    ],
+    topK: 1,
+  },
+  {
+    // Hardening v3 F3 coverage: multi-speaker EN with noisy ASR and an
+    // explicit hard-negative (weak hook = negative).
+    id: 'podcast-multispeaker-noisy',
+    language: 'en',
+    captionsQuality: 'noisy',
+    transcriptCues: [
+      { startSec: 0, endSec: 5, text: 'so we found the growth lever through the roof' },
+      { startSec: 5, endSec: 10, text: 'guest the paid channel doubled in ninety days' },
+      { startSec: 10, endSec: 16, text: 'host that is crazy tell me about the dashboard' },
+      { startSec: 16, endSec: 23, text: 'guest we just looked at cohorts and the numbers popped' },
+      { startSec: 23, endSec: 30, text: 'host and the budget stayed flat right' },
+      { startSec: 30, endSec: 36, text: 'so like the thing is you know we do the thing' },
+    ],
+    labels: [
+      // Positive: dialog moment, complete on both sides.
+      { clipId: 'm1', expectedScore: 90, expectedStartSec: 5, expectedEndSec: 23, expectedContamination: 0.02, expectedStartComplete: true, expectedEndingComplete: true },
+      // Hard negative: ambiguous filler with no resolved thought.
+      { clipId: 'm2', expectedScore: 40, expectedStartSec: 30, expectedEndSec: 36, expectedContamination: 0.9, expectedStartComplete: false, expectedEndingComplete: false },
+    ],
+    topK: 1,
   },
 ];
