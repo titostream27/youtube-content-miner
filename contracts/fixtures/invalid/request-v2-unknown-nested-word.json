@@ -1,0 +1,28 @@
+{
+  "contract_version": "2.0",
+  "request_id": "c-inv-02",
+  "episode_id": "ep",
+  "video_url": "https://example.com/video.mp4",
+  "mode": "final",
+  "source_preferences": { "max_height": 2160, "prefer_best_available": true },
+  "output": { "width": 1080, "height": 1920 },
+  "clips": [
+    {
+      "clip_id": 1,
+      "start_sec": 1,
+      "end_sec": 5,
+      "title": "a",
+      "narrative": { "main_topic": "m", "ending_type": "c", "hook_end_sec": null, "payoff_start_sec": null },
+      "layout_plan": { "preferred_layout": "auto" },
+      "caption_plan": {
+        "language": "en",
+        "cues": [
+          { "start_sec": 1, "end_sec": 2, "text": "hi",
+            "words": [ { "start_sec": 1, "end_sec": 1.5, "text": "hi", "unknown_word_field": true } ] }
+        ],
+        "highlight_terms": []
+      },
+      "editing_events": []
+    }
+  ]
+}

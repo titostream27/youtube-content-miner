@@ -28,7 +28,13 @@
       "request-v2-wrong-version.json",
       "request-v2-zero-output.json",
       "request-v2-word-outside-cue.json",
-      "render-result-v2-bad-state.json"
+      "render-result-v2-bad-state.json",
+      "request-v2-unknown-top-level.json",
+      "request-v2-unknown-nested-word.json",
+      "request-v2-nan-numeric.json",
+      "request-v2-cue-reversed.json",
+      "request-v2-narrative-outside-clip.json",
+      "request-v2-hook-after-payoff.json"
     ]
   }
 }
