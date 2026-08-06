@@ -69,7 +69,7 @@ export const RenderRequestV2Schema = z.object({
         }).strict(),
 
         caption_plan: z.object({
-          language: z.string().min(1),
+          language: z.string().min(1).default('auto'),  // Brief v6 6.1
           provider: z.string().min(1).default('unknown'),
           transcript_version: z.string().default(''),
           alignment_confidence: z.number().min(0).max(1).default(0),
@@ -201,6 +201,21 @@ export const RenderRequestV2Schema = z.object({
           code: 'custom',
           path: [...path, 'narrative'],
           message: `payoff_start_sec (${payoffStart}) must be >= hook_end_sec (${hookEnd})`,
+        });
+      }
+      // Brief v6 6.2: narrative fields must sit INSIDE the clip range.
+      if (hookEnd != null && (hookEnd < clip.start_sec || hookEnd > clip.end_sec)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'narrative', 'hook_end_sec'],
+          message: `hook_end_sec (${hookEnd}) outside clip range [${clip.start_sec},${clip.end_sec}]`,
+        });
+      }
+      if (payoffStart != null && (payoffStart < clip.start_sec || payoffStart > clip.end_sec)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'narrative', 'payoff_start_sec'],
+          message: `payoff_start_sec (${payoffStart}) outside clip range [${clip.start_sec},${clip.end_sec}]`,
         });
       }
       for (const [ei, ev] of clip.editing_events.entries()) {

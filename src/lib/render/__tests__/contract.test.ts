@@ -328,16 +328,18 @@ describe('Hardening v3 E2 — normalized ids + profile hashing', () => {
 
   it('per-clip narrative timings do not leak across clips (F17)', () => {
     const clips = [fakeClip(), { ...fakeClip(), id: 13 }];
+    // Narrative values must sit INSIDE the clip range (brief v6 6.2);
+    // fakeClip spans [124.3, 157.8].
     const c = buildRenderContract('ep-1', clips, {
       narrativeByClipId: {
-        12: { hookEndSec: 3.0, payoffStartSec: 4.0 },
-        13: { hookEndSec: 7.0, payoffStartSec: 8.0 },
+        12: { hookEndSec: 130.0, payoffStartSec: 135.0 },
+        13: { hookEndSec: 140.0, payoffStartSec: 145.0 },
       },
     });
-    expect(c.clips[0]!.narrative.hook_end_sec).toBe(3.0);
-    expect(c.clips[0]!.narrative.payoff_start_sec).toBe(4.0);
-    expect(c.clips[1]!.narrative.hook_end_sec).toBe(7.0);
-    expect(c.clips[1]!.narrative.payoff_start_sec).toBe(8.0);
+    expect(c.clips[0]!.narrative.hook_end_sec).toBe(130.0);
+    expect(c.clips[0]!.narrative.payoff_start_sec).toBe(135.0);
+    expect(c.clips[1]!.narrative.hook_end_sec).toBe(140.0);
+    expect(c.clips[1]!.narrative.payoff_start_sec).toBe(145.0);
   });
 
   it('caption cues and words are clamped to clip boundaries (F14)', () => {
