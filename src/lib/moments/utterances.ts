@@ -40,6 +40,12 @@ export interface EnrichedSentence {
 
   sourceCueStartIndex: number;
   sourceCueEndIndex: number;
+  /**
+   * Brief v5 M-03: canonical per-word timing carried from the transcript
+   * cues into the semantic utterance. Present when the vendor provided
+   * words; sliceTranscriptForRange uses these for TRUE word-level slicing.
+   */
+  words?: { text: string; startSec: number; endSec: number }[];
 }
 
 /** Backward-compatible alias used by earlier modules. */
@@ -107,6 +113,7 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
   const utterances: EnrichedSentence[] = [];
 
   let buffer: string[] = [];
+  let wordBuffer: { text: string; startSec: number; endSec: number }[] = [];
   let startSec: number | null = null;
   let endSec = 0;
   let words = 0;
@@ -127,6 +134,8 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
         text,
         wordCount: words,
         speakerId: currentSpeaker,
+        // Brief v5 M-03: propagate canonical word timing into the utterance.
+        words: wordBuffer.length > 0 ? [...wordBuffer] : undefined,
         pauseBeforeSec: utterances.length === 0 ? 0 : Math.max(0, startSec - lastUtteranceEnd),
         pauseAfterSec: 0,
         isCompleteSentence: SENTENCE_END_RE.test(text),
@@ -144,6 +153,7 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
       seq += 1;
     }
     buffer = [];
+    wordBuffer = [];
     startSec = null;
     words = 0;
     cueStartIndex = -1;
@@ -207,6 +217,14 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
     }
 
     buffer.push(cue.text);
+    // Brief v5 M-03: carry canonical per-word timing into the utterance.
+    if (Array.isArray(cue.words) && cue.words.length > 0) {
+      wordBuffer.push(...cue.words.map((w) => ({
+        text: w.text,
+        startSec: w.startSec,
+        endSec: w.endSec,
+      })));
+    }
     endSec = cue.endSec;
     words += countWords(cue.text);
 

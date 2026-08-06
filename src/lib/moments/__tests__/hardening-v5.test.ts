@@ -8,6 +8,7 @@
 // Run: npx vitest run src/lib/moments/__tests__/hardening-v5.test.ts
 import { describe, it, expect } from 'vitest';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
+import { cuesToUtterances, sliceTranscriptForRange } from '@/lib/moments/utterances';
 import type { EnrichedSentence } from '@/lib/moments/utterances';
 
 function utt(id: string, start: number, end: number, text: string, extra: Partial<EnrichedSentence> = {}): EnrichedSentence {
@@ -60,6 +61,38 @@ describe('M-04 repeated pronouns are not antecedents', () => {
     ];
     const check = validateStartBoundary(utterances, 0, 5);
     expect(check.issues).not.toContain('UNRESOLVED_REFERENCE');
+  });
+});
+
+describe('M-03 canonical words propagate to utterances and slicing', () => {
+  it('cue words are carried into the enriched utterance', () => {
+    const cues = [
+      { startSec: 0, endSec: 5, text: 'alpha beta', speakerId: null, words: [
+        { startSec: 0, endSec: 1, text: 'alpha' },
+        { startSec: 1, endSec: 5, text: 'beta' },
+      ] },
+    ] as unknown as Parameters<typeof cuesToUtterances>[0];
+    const utts = cuesToUtterances(cues);
+    expect(utts[0]!.words).toBeDefined();
+    expect(utts[0]!.words!.map((w) => w.text)).toEqual(['alpha', 'beta']);
+  });
+
+  it('word-level slicing uses real propagated words (timingPrecision=word)', () => {
+    const cues = [
+      { startSec: 0, endSec: 10, text: 'one two three four five', speakerId: null, words: [
+        { startSec: 0, endSec: 1, text: 'one' },
+        { startSec: 1, endSec: 2, text: 'two' },
+        { startSec: 2, endSec: 3, text: 'three' },
+        { startSec: 3, endSec: 4, text: 'four' },
+        { startSec: 4, endSec: 5, text: 'five' },
+      ] },
+    ] as unknown as Parameters<typeof cuesToUtterances>[0];
+    const utts = cuesToUtterances(cues);
+    const slice = sliceTranscriptForRange(utts, 1.5, 4.0);
+    expect(slice.timingPrecision).toBe('word');
+    expect(slice.sliceApproximate).toBe(false);
+    expect(slice.text).toBe('two three four');
+    expect(slice.wordCount).toBe(3);
   });
 });
 
