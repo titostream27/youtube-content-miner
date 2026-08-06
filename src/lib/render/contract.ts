@@ -164,6 +164,23 @@ export const RenderRequestV2Schema = z.object({
           });
         }
         lastCueEnd = Math.max(lastCueEnd, cue.end_sec);
+        // Hardening sprint P0.4: word-level timing must sit inside its cue.
+        for (const [wi, word] of (cue.words ?? []).entries()) {
+          if (word.start_sec < cue.start_sec || word.end_sec > cue.end_sec) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [...path, 'caption_plan', 'cues', ci, 'words', wi],
+              message: `word [${word.start_sec},${word.end_sec}] outside its cue [${cue.start_sec},${cue.end_sec}]`,
+            });
+          }
+          if (word.end_sec <= word.start_sec) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [...path, 'caption_plan', 'cues', ci, 'words', wi],
+              message: 'word end_sec must be > start_sec',
+            });
+          }
+        }
       }
       // F19: narrative ordering — payoff must come after the hook.
       const hookEnd = clip.narrative.hook_end_sec;

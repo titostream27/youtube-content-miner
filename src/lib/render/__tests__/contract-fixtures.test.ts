@@ -37,6 +37,7 @@ const VALIDATOR_ONLY_INVALID = [
   'request-v2-duplicate-clip-ids.json',
   'request-v2-end-not-after-start.json',
   'request-v2-event-outside-range.json',
+  'request-v2-word-outside-cue.json',
 ];
 
 function loadJsonSchema(): Ajv.ValidateFunction {
