@@ -311,6 +311,61 @@ describe('Hardening v3 E2 — normalized ids + profile hashing', () => {
     // The field is still transmitted to the renderer.
     expect(forced.force_rerender).toBe(true);
   });
+
+  it('language resolution: explicit > transcript > auto (F16)', () => {
+    const withExplicit = buildRenderContract('ep-1', [fakeClip()], { language: 'id' });
+    expect(withExplicit.clips[0]!.caption_plan.language).toBe('id');
+    const withTranscript = buildRenderContract('ep-1', [fakeClip()], {
+      transcript: {
+        videoId: 'ep-1', source: 'youtube_manual', language: 'id', durationSec: 100, wordCount: 10,
+        cues: [], provider: 'youtube_manual', transcriptVersion: 'v1', alignmentConfidence: 0.9,
+      },
+    });
+    expect(withTranscript.clips[0]!.caption_plan.language).toBe('id');
+    const withAuto = buildRenderContract('ep-1', [fakeClip()]);
+    expect(withAuto.clips[0]!.caption_plan.language).toBe('auto');
+  });
+
+  it('per-clip narrative timings do not leak across clips (F17)', () => {
+    const clips = [fakeClip(), { ...fakeClip(), id: 13 }];
+    const c = buildRenderContract('ep-1', clips, {
+      narrativeByClipId: {
+        12: { hookEndSec: 3.0, payoffStartSec: 4.0 },
+        13: { hookEndSec: 7.0, payoffStartSec: 8.0 },
+      },
+    });
+    expect(c.clips[0]!.narrative.hook_end_sec).toBe(3.0);
+    expect(c.clips[0]!.narrative.payoff_start_sec).toBe(4.0);
+    expect(c.clips[1]!.narrative.hook_end_sec).toBe(7.0);
+    expect(c.clips[1]!.narrative.payoff_start_sec).toBe(8.0);
+  });
+
+  it('caption cues and words are clamped to clip boundaries (F14)', () => {
+    const clip = fakeClip();
+    clip.startSec = 10;
+    clip.endSec = 20;
+    const transcript = {
+      videoId: 'ep-1', source: 'youtube_manual' as const, language: 'en', durationSec: 100, wordCount: 10,
+      provider: 'youtube_manual', transcriptVersion: 'v1', alignmentConfidence: 0.95,
+      cues: [
+        {
+          startSec: 5, endSec: 12, text: 'starts before the clip',
+          speakerId: null,
+          words: [
+            { startSec: 5, endSec: 8, text: 'early' },
+            { startSec: 8, endSec: 11, text: 'inside' },
+          ],
+        },
+      ],
+    };
+    const c = buildRenderContract('ep-1', [clip], { transcript });
+    const cue = c.clips[0]!.caption_plan.cues[0]!;
+    // Cue clipped to [10, 20]; 'early' (ends 8 < 10) dropped; 'inside' kept.
+    expect(cue.start_sec).toBe(10);
+    expect(cue.end_sec).toBe(12);
+    expect(cue.words).toHaveLength(1);
+    expect(cue.words![0]!.text).toBe('inside');
+  });
 });
 
 describe('Phase-2 correctness F17/F18', () => {

@@ -232,9 +232,17 @@ export interface BuildContractOptions {
   endingType?: string | null;
   /** Phase 2 (Canonical transcript): the transcript's real language. */
   language?: string;
-  /** Phase 2: hook/payoff timing from the boundary report (absolute sec). */
+  /** Phase 2: hook/payoff timing from the boundary report (absolute sec).
+   * @deprecated Brief v4 C6 (F17): prefer per-clip narrativeByClipId so one
+   * request never leaks one clip's timing onto another. */
   hookEndSec?: number | null;
   payoffStartSec?: number | null;
+  /**
+   * Brief v4 C6 (F17): per-clip narrative timing. Key = clip id. When set,
+   * each clip receives its OWN hook_end_sec/payoff_start_sec; the global
+   * hookEndSec/payoffStartSec are only a fallback for clips without an entry.
+   */
+  narrativeByClipId?: Record<string, { hookEndSec?: number | null; payoffStartSec?: number | null }>;
   /** Idempotency key (brief §20): render:<clip_id>:<contract_hash>:<mode>. */
   idempotencyKey?: string;
   /**
@@ -264,20 +272,30 @@ function cuesFromClip(
   // Hardening sprint P0.4: propagate canonical word-level timing (c.words)
   // so the renderer can use it directly (no full re-transcription).
   if (transcript && transcript.cues.length > 0) {
+    // Brief v4 C1 (F14): intersect each cue with the clip range, filter words
+    // to the cue+clip bounds, and drop zero/negative-duration items.
     const cues = transcript.cues
-      .filter((c) => c.startSec >= clip.startSec - 0.05 && c.startSec < clip.endSec)
-      .map((c) => ({
-        start_sec: round2(c.startSec),
-        end_sec: round2(c.endSec),
-        text: c.text.trim(),
-        speaker_id: c.speakerId ?? null,
-        words: (c.words ?? []).map((w) => ({
-          start_sec: round2(w.startSec),
-          end_sec: round2(w.endSec),
-          text: w.text,
-        })),
-      }))
-      .filter((c) => c.text.length > 0);
+      .filter((c) => c.endSec > clip.startSec && c.startSec < clip.endSec)
+      .map((c) => {
+        const cueStart = Math.max(c.startSec, clip.startSec);
+        const cueEnd = Math.min(c.endSec, clip.endSec);
+        const words = (c.words ?? [])
+          .filter((w) => w.endSec > cueStart && w.startSec < cueEnd)
+          .map((w) => ({
+            start_sec: round2(Math.max(w.startSec, cueStart)),
+            end_sec: round2(Math.min(w.endSec, cueEnd)),
+            text: w.text,
+          }))
+          .filter((w) => w.end_sec > w.start_sec);
+        return {
+          start_sec: round2(cueStart),
+          end_sec: round2(cueEnd),
+          text: c.text.trim(),
+          speaker_id: c.speakerId ?? null,
+          words,
+        };
+      })
+      .filter((c) => c.text.length > 0 && c.end_sec > c.start_sec);
     if (cues.length > 0) return cues;
   }
   // Fallback: evenly spaced words from the suggested caption (hint only).
@@ -320,7 +338,11 @@ export function buildRenderContract(
   options: BuildContractOptions = {},
 ): RenderRequestV2 {
   const mode = options.mode ?? 'final';
-  const language = options.language ?? 'en';
+  // Brief v4 C5 (F16): language resolution — explicit option first, then the
+  // canonical transcript language, then 'auto' (never blind 'en').
+  const language = options.language
+    ?? options.transcript?.language
+    ?? 'auto';
 
   const payload: RenderRequestV2 = {
     contract_version: '2.0',
@@ -337,7 +359,17 @@ export function buildRenderContract(
       ? { width: 540, height: 960 }
       : { width: 1080, height: 1920 },
     force_rerender: options.forceRerender ?? false,
-    clips: clips.map((clip) => ({
+    clips: clips.map((clip) => {
+      // Brief v4 C6 (F17): per-clip narrative timings — never share one
+      // global hook/payoff across clips.
+      const perClipNarrative = options.narrativeByClipId?.[clip.id] ?? {};
+      const hookEnd = perClipNarrative.hookEndSec !== undefined
+        ? perClipNarrative.hookEndSec
+        : (options.hookEndSec ?? null);
+      const payoffStart = perClipNarrative.payoffStartSec !== undefined
+        ? perClipNarrative.payoffStartSec
+        : (options.payoffStartSec ?? null);
+      return {
       clip_id: clip.id,
       start_sec: round2(clip.startSec),
       end_sec: round2(clip.endSec),
@@ -346,8 +378,8 @@ export function buildRenderContract(
         main_topic: options.mainTopic ?? clip.mainTopic ?? '',
         ending_type: options.endingType ?? clip.endingType ?? '',
         // Phase 2 (Canonical transcript): propagate hook/payoff timing.
-        hook_end_sec: options.hookEndSec ?? null,
-        payoff_start_sec: options.payoffStartSec ?? null,
+        hook_end_sec: hookEnd,
+        payoff_start_sec: payoffStart,
       },
       layout_plan: {
         preferred_layout: 'auto',
@@ -366,7 +398,8 @@ export function buildRenderContract(
         highlight_terms: options.highlightTerms ?? [],
       },
       editing_events: [],
-    })),
+      };
+    }),
   };
 
   // Phase-2 correctness (F18): request_id hashes the FULL normalized
