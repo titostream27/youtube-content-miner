@@ -376,10 +376,17 @@ export function buildRenderContract(
   if (options.idempotencyKey) {
     payload.request_id = options.idempotencyKey;
   } else {
+    // Phase-2 correctness (F18): request_id hashes the FULL normalized
+    // contract so any semantic change (boundaries, captions, narrative,
+    // layout, mode) produces a different idempotency key.
+    // Brief v4 F4: force_rerender is EXECUTION control, not semantic content
+    // — it must NOT participate in the identity hash. We hash the payload
+    // with force_rerender stripped; the field itself is still transmitted.
+    const { force_rerender: _ignored, ...semanticPayload } = payload;
     // Hardening v3 E2 (#28): fold the renderer profile version into the hash
     // so an algorithm change invalidates the idempotency key naturally.
     const profileSalt = options.renderProfileVersion ?? '';
-    payload.request_id = `render:${contentHash(stableStringify(payload) + '|' + profileSalt)}`;
+    payload.request_id = `render:${contentHash(stableStringify(semanticPayload) + '|' + profileSalt)}`;
   }
 
   return RenderRequestV2Schema.parse(payload);

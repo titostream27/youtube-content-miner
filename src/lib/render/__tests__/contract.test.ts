@@ -302,6 +302,15 @@ describe('Hardening v3 E2 — normalized ids + profile hashing', () => {
     const c = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v3' });
     expect(c.request_id).toBe(a.request_id);
   });
+
+  it('force_rerender does NOT change the semantic request hash (F4)', () => {
+    const normal = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v3' });
+    const forced = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v3', forceRerender: true });
+    // Identity is content + render profile; execution control is excluded.
+    expect(forced.request_id).toBe(normal.request_id);
+    // The field is still transmitted to the renderer.
+    expect(forced.force_rerender).toBe(true);
+  });
 });
 
 describe('Phase-2 correctness F17/F18', () => {
