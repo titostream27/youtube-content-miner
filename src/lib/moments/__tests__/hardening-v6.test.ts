@@ -66,23 +66,25 @@ describe('M01 final range revalidation after start repair', () => {
 
 describe('M02 mixed word timing preserves untimed content', () => {
   it('hybrid slice keeps untimed overlapping utterance text', () => {
-    // One utterance has words; an overlapping untimed utterance must NOT be
-    // dropped from the final text (M02).
+    // Two SEPARATE utterances: one timed (0-4s), one untimed (3-7s) that
+    // overlaps. The untimed text must NOT be dropped (M02).
     const cues = [
       {
-        startSec: 0, endSec: 4, text: 'timed alpha', speakerId: null,
+        startSec: 0, endSec: 4, text: 'timed alpha.', speakerId: 'SPEAKER_00',
         words: [
           { startSec: 0, endSec: 2, text: 'timed' },
-          { startSec: 2, endSec: 4, text: 'alpha' },
+          { startSec: 2, endSec: 4, text: 'alpha.' },
         ],
       },
-      { startSec: 3, endSec: 7, text: 'untimed beta remains', speakerId: null, words: [] },
+      { startSec: 3, endSec: 7, text: 'untimed beta remains.', speakerId: 'SPEAKER_01', words: [] },
     ] as unknown as Parameters<typeof cuesToUtterances>[0];
     const utts = cuesToUtterances(cues);
     const slice = sliceTranscriptForRange(utts, 0, 7);
     // The untimed utterance (3-7s) overlaps the timed one; its text must
     // survive in the slice (hybrid behavior).
     expect(slice.text).toContain('untimed beta remains');
+    expect(slice.timingPrecision).toBe('hybrid');
+    expect(slice.sliceApproximate).toBe(true);
   });
 
   it('100% word timing yields precision word and full text', () => {

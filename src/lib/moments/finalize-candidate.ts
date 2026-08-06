@@ -15,8 +15,11 @@ export interface FinalizedSlice {
   wordCount: number;
   wordsPerSecond: number;
   speakerTurns: number;
-  timingPrecision?: 'word' | 'cue' | 'utterance';
+  timingPrecision?: 'word' | 'hybrid' | 'cue' | 'utterance';
   sliceApproximate?: boolean;
+  /** Brief v6 5.3: fraction of window covered by word timing. */
+  wordTimingCoverage?: number;
+  uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
 }
 
 export interface FinalizeOutcome {
@@ -158,6 +161,9 @@ export function finalizeCandidate(
     salience,
     timingPrecision: slice.timingPrecision,
     sliceApproximate: slice.sliceApproximate,
+    // Brief v6 5.3: carry coverage onto the final candidate.
+    wordTimingCoverage: slice.wordTimingCoverage,
+    uncoveredIntervalsSec: slice.uncoveredIntervalsSec,
     candidateId: opts.candidateId,
     generationRunId: opts.generationRunId,
     revision: opts.revision,

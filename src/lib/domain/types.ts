@@ -180,9 +180,12 @@ export interface MomentSegment {
   /** Hardening sprint Phase C: exact scoring configuration version. */
     scoringVersion?: string;
     /** Hardening v3 C4 (#17): slice timing precision (word|cue|utterance). */
-    timingPrecision?: 'word' | 'cue' | 'utterance';
+    timingPrecision?: 'word' | 'hybrid' | 'cue' | 'utterance';
     /** Hardening v3 C4 (#17): whether the slice is approximate. */
     sliceApproximate?: boolean;
+    /** Brief v6 5.3 (M02): fraction of the clip window covered by word timing. */
+    wordTimingCoverage?: number;
+    uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
   }
 
 /* -------------------------------------------------------------------------- */

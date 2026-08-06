@@ -51,13 +51,17 @@ describe('C2 pronoun resolution uses PRECEDING context (#20)', () => {
 });
 
 describe('C4 transcript slicing hierarchy (#17)', () => {
-  it('sliceTranscriptForRange marks cue-level precision when words are absent', () => {
+  it('sliceTranscriptForRange marks utterance-level precision when words are absent', () => {
     const utt = [u(0, 10, 'a complete thought worth clipping.')];
     const slice = sliceTranscriptForRange(utt, 0, 10);
     // New fields: timing precision + approximate flag must exist and be
-    // honest — cue-level here because no word timing is provided.
+    // honest — utterance-level here because no word timing is provided and
+    // the slice is built from enriched utterances, not canonical cues
+    // (brief v6 M03).
     expect(slice).toHaveProperty('timingPrecision');
-    expect(slice.timingPrecision).toBe('cue');
+    expect(slice.timingPrecision).toBe('utterance');
+    expect(slice.sliceApproximate).toBe(true);
+    expect(slice.wordTimingCoverage).toBe(0);
   });
 });
 

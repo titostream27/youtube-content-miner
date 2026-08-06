@@ -262,12 +262,17 @@ export interface TranscriptSlice {
   /**
    * Hardening v3 C4 (#17): how precise the slice is.
    * - 'word'      — built from word-level timing (canonical, exact).
+   * - 'hybrid'    — timed words where available + untimed text for gaps.
    * - 'cue'       — cue-level timing only (intersected/clamped at cue start).
    * - 'utterance' — approximate; derived without reliable per-cue timing.
    */
-  timingPrecision: 'word' | 'cue' | 'utterance';
-  /** True when the slice is approximate (cue/utterance precision). */
+  timingPrecision: 'word' | 'hybrid' | 'cue' | 'utterance';
+  /** True when the slice is approximate (hybrid/cue/utterance precision). */
   sliceApproximate: boolean;
+  /** Brief v6 5.3 (M02): fraction of the window covered by word timing (0..1). */
+  wordTimingCoverage: number;
+  /** Brief v6 5.3 (M02): untimed intervals inside the window (diagnostics). */
+  uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
 }
 
 /**
@@ -294,15 +299,15 @@ export function sliceTranscriptForRange(
     (u) => u.endSec > startSec && u.startSec < endSec,
   );
 
-  // Brief v4 F13: when canonical per-word timing exists, slice at WORD level
-  // and CLIP first/last words to the window — text/wordCount describe exactly
-  // the rendered range, not the whole containing utterance.
+  // Brief v6 5.3 (M02): explicit timing coverage + hybrid slicing.
+  // Compute the union of timed (word) intervals and untimed overlap.
   const wordsInside: { text: string; startSec: number; endSec: number }[] = [];
-  let hasWordTiming = false;
+  const timedIntervals: { startSec: number; endSec: number }[] = [];
+  let timedTotal = 0;
   for (const u of overlapping) {
     const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
     if (Array.isArray(ws) && ws.length > 0) {
-      hasWordTiming = true;
+      const clipped: { startSec: number; endSec: number }[] = [];
       for (const w of ws) {
         if (w.endSec > startSec && w.startSec < endSec) {
           wordsInside.push({
@@ -310,15 +315,68 @@ export function sliceTranscriptForRange(
             startSec: Math.max(w.startSec, startSec),
             endSec: Math.min(w.endSec, endSec),
           });
+          clipped.push({ startSec: Math.max(w.startSec, startSec), endSec: Math.min(w.endSec, endSec) });
         }
       }
+      timedIntervals.push(...clipped);
     }
   }
+  // Total timed duration inside the window (union of intervals).
+  timedIntervals.sort((a, b) => a.startSec - b.startSec);
+  let mergedTimed = 0;
+  let cursor = startSec;
+  for (const iv of timedIntervals) {
+    if (iv.endSec <= cursor) continue;
+    const s = Math.max(iv.startSec, cursor);
+    mergedTimed += iv.endSec - s;
+    cursor = Math.max(cursor, iv.endSec);
+  }
+  const windowDuration = Math.max(0.5, endSec - startSec);
+  const coverage = Math.min(1, mergedTimed / windowDuration);
+
+  // Untimed overlapping utterances: their text must NOT be dropped (M02).
+  const untimedOverlap = overlapping.filter(
+    (u) => !((u as { words?: unknown[] }).words && (u as { words: unknown[] }).words.length > 0),
+  );
+  const untimedText = untimedOverlap
+    .map((u) => u.text.trim())
+    .filter(Boolean)
+    .join(' ');
+  // Uncovered intervals = untimed utterance spans clipped to the window.
+  const uncoveredIntervalsSec = untimedOverlap
+    .map((u) => ({ startSec: Math.max(u.startSec, startSec), endSec: Math.min(u.endSec, endSec) }))
+    .filter((iv) => iv.endSec > iv.startSec);
+
   const wordLevelText = wordsInside.map((w) => w.text).join(' ');
   const wordLevelCount = wordsInside.length;
 
-  const text = hasWordTiming && wordLevelText ? wordLevelText : inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
-  const wordCount = hasWordTiming && wordLevelText ? wordLevelCount : countWords(text);
+  // Decide precision honestly:
+  //   coverage >= 0.95 -> 'word' (exact)
+  //   coverage > 0     -> 'hybrid' (timed words + untimed text, approximate)
+  //   coverage == 0    -> 'utterance' (no word timing at all)
+  let text: string;
+  let wordCount: number;
+  let timingPrecision: 'word' | 'hybrid' | 'utterance';
+  let sliceApproximate: boolean;
+  if (coverage >= 0.95 && wordLevelText) {
+    timingPrecision = 'word';
+    sliceApproximate = false;
+    text = wordLevelText;
+    wordCount = wordLevelCount;
+  } else if (coverage > 0) {
+    timingPrecision = 'hybrid';
+    sliceApproximate = true;
+    // Merge timed words + untimed text; avoid duplicating timed words that
+    // are already inside untimed utterances.
+    text = untimedText ? `${wordLevelText} ${untimedText}`.trim() : wordLevelText;
+    wordCount = countWords(text);
+  } else {
+    // No word timing — slice at utterance level (NOT cue level).
+    timingPrecision = 'utterance';
+    sliceApproximate = true;
+    text = inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
+    wordCount = countWords(text);
+  }
   const duration = Math.max(0.5, endSec - startSec);
 
   let speakerTurns = 0;
@@ -332,10 +390,6 @@ export function sliceTranscriptForRange(
     }
   }
 
-  // Determine timing precision honestly (#17): word timing when present,
-  // otherwise cue-level approximate.
-  const timingPrecision: 'word' | 'cue' | 'utterance' = hasWordTiming ? 'word' : 'cue';
-
   return {
     text,
     wordCount,
@@ -343,7 +397,10 @@ export function sliceTranscriptForRange(
     speakerTurns,
     empty: inside.length === 0 && wordsInside.length === 0,
     timingPrecision,
-    sliceApproximate: timingPrecision !== 'word',
+    sliceApproximate,
+    // Brief v6 5.3 (M02): honest coverage + diagnostics.
+    wordTimingCoverage: round2(coverage),
+    uncoveredIntervalsSec,
   };
 }
 
