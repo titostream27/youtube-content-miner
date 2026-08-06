@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
   evaluateGolden,
-  topKRecall,
-  topKRankAwareRecall,
   boundaryError,
   contaminationError,
   binaryAccuracy,
   matchByTemporalIoU,
+  boundaryErrorFromMatches,
+  contaminationErrorFromMatches,
+  binaryAccuracyFromMatches,
+  topKRecall,
+  topKRankAwareRecall,
   temporalIoU,
   type GoldenLabel,
   type Prediction,
@@ -130,5 +133,27 @@ describe('golden metrics (Phase 2 golden dataset)', () => {
     expect(m.n).toBe(3);
     expect(m.temporalRecall).toBe(1);
     expect(m.meanTemporalIoU).toBeGreaterThan(0.5);
+  });
+
+  // ── Hardening v3 F2 (#32): all boundary metrics share ONE temporal
+  // assignment — no metric silently falls back to clipId-positional maps ────
+  it('boundary metrics use the COMMON temporal assignment, not clipId maps', () => {
+    const labels = [
+      { clipId: 'label-x', expectedScore: 90, expectedStartSec: 10, expectedEndSec: 30,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+    ];
+    const preds: Prediction[] = [
+      { clipId: 'pred-y', score: 85, startSec: 12, endSec: 28, contamination: 0.05,
+        startComplete: true, endingComplete: true },
+    ];
+    const m = evaluateGolden(labels, preds, 1);
+    expect(m.temporalRecall).toBeCloseTo(1, 5);
+    expect(m.meanBoundaryStartErrorSec).toBeCloseTo(2, 5);
+    expect(m.meanBoundaryEndErrorSec).toBeCloseTo(2, 5);
+    expect(m.startCompleteAccuracy).toBe(1);
+    const matches = matchByTemporalIoU(labels, preds, 0.5);
+    expect(boundaryErrorFromMatches(matches).start).toBeCloseTo(2, 5);
+    expect(contaminationErrorFromMatches(matches)).toBe(0);
+    expect(binaryAccuracyFromMatches(matches, (p, l) => p.startComplete === l.expectedStartComplete)).toBe(1);
   });
 });

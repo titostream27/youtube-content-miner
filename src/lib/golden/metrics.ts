@@ -181,6 +181,93 @@ export function matchByTemporalIoU(
 }
 
 export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: number): GoldenMetrics {
+  // Hardening v3 F2 (#32): EVERY boundary-sensitive metric is computed from
+  // the SAME common temporal assignment (matchByTemporalIoU). No metric
+  // silently falls back to a clipId-positional map.
+  const matches = matchByTemporalIoU(labels, preds, 0.5);
+  const matched = matches.filter((m) => m.pred !== null);
+  const temporalRecall = labels.length === 0 ? 0 : matched.length / labels.length;
+  const meanTemporalIoU =
+    matched.length === 0
+      ? 0
+      : matched.reduce((s, m) => {
+          const p = m.pred!;
+          return s + temporalIoU(p.startSec, p.endSec, m.label.expectedStartSec, m.label.expectedEndSec);
+        }, 0) / matched.length;
+
+  // Boundary errors / contamination / binary accuracy over the COMMON
+  // assignment (matched pairs only, same windows as recall).
+  const { start, end } = boundaryErrorFromMatches(matches);
+  const meanContamination = contaminationErrorFromMatches(matches);
+  const startCompleteAcc = binaryAccuracyFromMatches(
+    matches,
+    (p, l) => p.startComplete === l.expectedStartComplete,
+  );
+  const endingCompleteAcc = binaryAccuracyFromMatches(
+    matches,
+    (p, l) => p.endingComplete === l.expectedEndingComplete,
+  );
+  return {
+    topKRecall: topKRecall(labels, preds, k),
+    topKRankAwareRecall: topKRankAwareRecall(labels, preds, k),
+    meanBoundaryStartErrorSec: round2(start),
+    meanBoundaryEndErrorSec: round2(end),
+    meanContaminationError: round2(meanContamination),
+    startCompleteAccuracy: round2(startCompleteAcc),
+    endingCompleteAccuracy: round2(endingCompleteAcc),
+    n: labels.length,
+    temporalRecall: round2(temporalRecall),
+    meanTemporalIoU: round2(meanTemporalIoU),
+  };
+}
+
+/** Boundary start/end error over a COMMON temporal assignment. */
+export function boundaryErrorFromMatches(
+  matches: { label: GoldenLabel; pred: Prediction | null }[],
+): { start: number; end: number } {
+  let startSum = 0;
+  let endSum = 0;
+  let n = 0;
+  for (const m of matches) {
+    if (!m.pred) continue;
+    startSum += Math.abs(m.pred.startSec - m.label.expectedStartSec);
+    endSum += Math.abs(m.pred.endSec - m.label.expectedEndSec);
+    n += 1;
+  }
+  return { start: n === 0 ? 0 : startSum / n, end: n === 0 ? 0 : endSum / n };
+}
+
+/** Contamination error over a COMMON temporal assignment. */
+export function contaminationErrorFromMatches(
+  matches: { label: GoldenLabel; pred: Prediction | null }[],
+): number {
+  let sum = 0;
+  let n = 0;
+  for (const m of matches) {
+    if (!m.pred) continue;
+    sum += Math.abs(m.pred.contamination - m.label.expectedContamination);
+    n += 1;
+  }
+  return n === 0 ? 0 : sum / n;
+}
+
+/** Binary accuracy over a COMMON temporal assignment. */
+export function binaryAccuracyFromMatches(
+  matches: { label: GoldenLabel; pred: Prediction | null }[],
+  pick: (p: Prediction, l: GoldenLabel) => boolean,
+): number {
+  let correct = 0;
+  let n = 0;
+  for (const m of matches) {
+    if (!m.pred) continue;
+    if (pick(m.pred, m.label) === true) correct += 1;
+    n += 1;
+  }
+  return n === 0 ? 0 : correct / n;
+}
+
+/** @deprecated clipId-positional variant; kept for legacy callers. */
+export function evaluateGoldenLegacy(labels: GoldenLabel[], preds: Prediction[], k: number): GoldenMetrics {
   const { start, end } = boundaryError(preds, labels);
   // Phase-2 F22: temporal matching metrics.
   const matches = matchByTemporalIoU(labels, preds, 0.5);
