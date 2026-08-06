@@ -17,15 +17,21 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install exact lockfile dependencies
         run: npm ci
 
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: Unit + contract + evaluation tests
+      - name: Unit + contract + evaluation + moments tests
         run: npx vitest run
 
-      - name: Lint
+      - name: Lint (BLOCKING — brief v5 9.1)
         run: npx eslint . --max-warnings 0
-        continue-on-error: true
+        continue-on-error: false
+
+      - name: Publish test summary
+        if: always()
+        run: |
+          echo "## Test results" >> $GITHUB_STEP_SUMMARY
+          echo "- vitest: all unit/contract/evaluation tests" >> $GITHUB_STEP_SUMMARY
