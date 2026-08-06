@@ -1,0 +1,10 @@
+{
+  "contract_version": "2.0",
+  "request_id": "req-result-bad",
+  "episode_id": "ep-result",
+  "job_id": "abc",
+  "state": "running",
+  "clips": [
+    { "clip_id": "1", "status": "pending" }
+  ]
+}

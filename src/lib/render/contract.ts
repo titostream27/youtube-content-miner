@@ -131,14 +131,24 @@ export const RenderRequestV2Schema = z.object({
           message: `end_sec (${clip.end_sec}) must be > start_sec (${clip.start_sec})`,
         });
       }
-      if (seen.has(clip.clip_id)) {
+      // Hardening v3 E2 (#27): normalize clip_id to a non-empty STRING key
+      // before the duplicate check so "1" and 1 and "01" are all the same id.
+      const normId = normalizeClipId(clip.clip_id);
+      if (normId === '') {
         ctx.addIssue({
           code: 'custom',
           path: [...path, 'clip_id'],
-          message: `duplicate clip_id ${clip.clip_id}`,
+          message: `clip_id must normalize to a non-empty string, got ${JSON.stringify(clip.clip_id)}`,
         });
       }
-      seen.add(clip.clip_id);
+      if (seen.has(normId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'clip_id'],
+          message: `duplicate clip_id after normalization: ${normId}`,
+        });
+      }
+      seen.add(normId);
       // F19: cues must be time-ordered and inside the clip range.
       let lastCueEnd = -Infinity;
       for (const [ci, cue] of clip.caption_plan.cues.entries()) {
@@ -220,6 +230,13 @@ export interface BuildContractOptions {
   payoffStartSec?: number | null;
   /** Idempotency key (brief §20): render:<clip_id>:<contract_hash>:<mode>. */
   idempotencyKey?: string;
+  /**
+   * Hardening v3 E2 (#28): renderer algorithm version to salt the request
+   * hash. A camera/caption/tracker/encoder change must not stay a permanent
+   * idempotency/cache hit, so this version is folded into request_id. The
+   * value itself is NOT sent in the payload — it only perturbs the hash.
+   */
+  renderProfileVersion?: string;
   /** Phase-2 (F17): canonical transcript for word-level caption cues. */
   transcript?: Transcript | null;
 }
@@ -271,6 +288,19 @@ function cuesFromClip(
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/** Hardening v3 E2 (#27): normalize a numeric or string clip id to a canonical
+ * non-empty string key for duplicate detection. Numeric 1 and "1" and "01"
+ * collapse to the same id after normalization. */
+function normalizeClipId(raw: string | number): string {
+  const s = String(raw).trim();
+  if (s === '') return '';
+  // Numeric-looking ids ("1", "01", 1) normalize to canonical integer string.
+  if (/^\d+$/.test(s)) {
+    return String(parseInt(s, 10));
+  }
+  return s;
 }
 
 /**
@@ -338,7 +368,10 @@ export function buildRenderContract(
   if (options.idempotencyKey) {
     payload.request_id = options.idempotencyKey;
   } else {
-    payload.request_id = `render:${contentHash(stableStringify(payload))}`;
+    // Hardening v3 E2 (#28): fold the renderer profile version into the hash
+    // so an algorithm change invalidates the idempotency key naturally.
+    const profileSalt = options.renderProfileVersion ?? '';
+    payload.request_id = `render:${contentHash(stableStringify(payload) + '|' + profileSalt)}`;
   }
 
   return RenderRequestV2Schema.parse(payload);

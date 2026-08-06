@@ -1,0 +1,34 @@
+{
+  "schema_version": "1",
+  "contracts": {
+    "request": "render-request-v2.schema.json",
+    "result": "render-result-v2.schema.json"
+  },
+  "validators": ["json_schema", "zod", "pydantic"],
+  "fixtures": {
+    "valid": [
+      "request-v1-legacy.json",
+      "request-v2-multi-clip.json",
+      "request-v2-preview.json",
+      "request-v2-single-clip.json",
+      "request-v2-word-timing.json",
+      "render-result-v2-single.json"
+    ],
+    "invalid": [
+      "request-v2-cue-outside-range.json",
+      "request-v2-duplicate-clip-ids.json",
+      "request-v2-empty-clips.json",
+      "request-v2-empty-request-id.json",
+      "request-v2-end-not-after-start.json",
+      "request-v2-event-outside-range.json",
+      "request-v2-invalid-layout.json",
+      "request-v2-invalid-mode.json",
+      "request-v2-negative-start.json",
+      "request-v2-no-video-url.json",
+      "request-v2-wrong-version.json",
+      "request-v2-zero-output.json",
+      "request-v2-word-outside-cue.json",
+      "render-result-v2-bad-state.json"
+    ]
+  }
+}

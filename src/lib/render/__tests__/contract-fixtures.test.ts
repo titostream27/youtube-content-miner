@@ -60,7 +60,7 @@ describe('shared contract fixtures — TypeScript parity (Phase 1 §5.7.10)', ()
       expect(schemaValidate(payload), `${f} should FAIL JSON Schema`).toBe(false);
       expect(() => RenderRequestV2Schema.parse(payload), `${f} should be invalid (Zod)`).toThrow();
     }
-    for (const f of jsonFiles(VALID_DIR).filter((x) => x.includes('v2'))) {
+    for (const f of jsonFiles(VALID_DIR).filter((x) => x.includes('v2') && !x.startsWith('render-result'))) {
       const payload = JSON.parse(readFileSync(join(VALID_DIR, f), 'utf-8'));
       expect(schemaValidate(payload), `${f} should pass JSON Schema`).toBe(true);
       expect(() => RenderRequestV2Schema.parse(payload), `${f} should be valid (Zod)`).not.toThrow();
@@ -75,16 +75,46 @@ describe('shared contract fixtures — TypeScript parity (Phase 1 §5.7.10)', ()
   });
 
   it('accepts every valid v2 fixture', () => {
-    for (const f of jsonFiles(VALID_DIR).filter((x) => x.includes('v2'))) {
+    for (const f of jsonFiles(VALID_DIR).filter((x) => x.includes('v2') && !x.startsWith('render-result'))) {
       const payload = JSON.parse(readFileSync(join(VALID_DIR, f), 'utf-8'));
       expect(() => RenderRequestV2Schema.parse(payload), `${f} should be valid`).not.toThrow();
     }
   });
 
   it('rejects every invalid fixture', () => {
-    for (const f of jsonFiles(INVALID_DIR)) {
+    for (const f of jsonFiles(INVALID_DIR).filter((x) => !x.startsWith('render-result'))) {
       const payload = JSON.parse(readFileSync(join(INVALID_DIR, f), 'utf-8'));
       expect(() => RenderRequestV2Schema.parse(payload), `${f} should be invalid`).toThrow();
+    }
+  });
+});
+
+// ── Hardening v3 E1 (#26/#29/#30): shared source of truth for RenderResult
+// (JSON Schema validates the neutral result fixture; parity enforced in the
+// Python side via render_contract RenderResult). Missing fixtures FAIL. ──────
+describe('render-result shared fixtures (hardening v3 E1)', () => {
+  const RESULT_SCHEMA = JSON.parse(
+    readFileSync(join(CONTRACTS_DIR, 'render-result-v2.schema.json'), 'utf-8'),
+  );
+  const resultValidate = new Ajv({ allErrors: true }).compile(RESULT_SCHEMA);
+
+  it('accepts the valid render-result fixture', () => {
+    const files = jsonFiles(VALID_DIR).filter((f) => f.startsWith('render-result'));
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) {
+      const payload = JSON.parse(readFileSync(join(VALID_DIR, f), 'utf-8'));
+      const ok = resultValidate(payload);
+      expect(ok, `${f} should pass JSON Schema`).toBe(true);
+    }
+  });
+
+  it('rejects the invalid render-result fixture', () => {
+    const files = jsonFiles(INVALID_DIR).filter((f) => f.startsWith('render-result'));
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) {
+      const payload = JSON.parse(readFileSync(join(INVALID_DIR, f), 'utf-8'));
+      const ok = resultValidate(payload);
+      expect(ok, `${f} should FAIL JSON Schema`).toBe(false);
     }
   });
 });

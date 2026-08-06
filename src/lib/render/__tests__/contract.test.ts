@@ -271,6 +271,39 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
   });
 });
 
+describe('Hardening v3 E2 — normalized ids + profile hashing', () => {
+  it('rejects duplicate clip ids that differ only by numeric format (#27)', () => {
+    // "1" and 1 must be treated as the SAME id after normalization.
+    const payload = {
+      contract_version: '2.0',
+      request_id: 'req-dup-norm',
+      episode_id: 'ep',
+      video_url: 'https://youtu.be/x',
+      mode: 'final',
+      source_preferences: { max_height: 2160, prefer_best_available: true },
+      output: { width: 1080, height: 1920 },
+      clips: [
+        { clip_id: '1', start_sec: 1, end_sec: 3, title: 'a',
+          narrative: { main_topic: 'm', ending_type: 'c', hook_end_sec: null, payoff_start_sec: null },
+          layout_plan: { preferred_layout: 'auto' }, caption_plan: { language: 'en', cues: [], highlight_terms: [] }, editing_events: [] },
+        { clip_id: 1, start_sec: 3, end_sec: 5, title: 'b',
+          narrative: { main_topic: 'm', ending_type: 'c', hook_end_sec: null, payoff_start_sec: null },
+          layout_plan: { preferred_layout: 'auto' }, caption_plan: { language: 'en', cues: [], highlight_terms: [] }, editing_events: [] },
+      ],
+    };
+    expect(() => RenderRequestV2Schema.parse(payload)).toThrow();
+  });
+
+  it('render profile version salts the request_id (#28)', () => {
+    const a = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v3' });
+    const b = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v4' });
+    expect(a.request_id).not.toBe(b.request_id);
+    // Same profile + same contract -> stable id.
+    const c = buildRenderContract('ep-1', [fakeClip()], { renderProfileVersion: 'camera-v3' });
+    expect(c.request_id).toBe(a.request_id);
+  });
+});
+
 describe('Phase-2 correctness F17/F18', () => {
   it('builds cues from the canonical transcript, not invented spacing (F17)', () => {
     const transcript = {
