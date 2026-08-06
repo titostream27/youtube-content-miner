@@ -10,6 +10,8 @@ import {
 import { repairBoundary } from '@/lib/moments/boundary-repair';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
 import { startBoundaryNeedsReject, expandStartBackToComplete } from '@/lib/moments/start-gate';
+import { candidateFingerprint } from '@/lib/moments/candidate-identity';
+import { rescoreSegmentFromSlice } from '@/lib/moments/finalize-candidate';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
 import { round } from '@/lib/scoring/normalize';
 import type { AgentOverrides, UsageLedger } from '@/lib/ai';
@@ -213,7 +215,18 @@ export async function twoPassHighlightSelection(
   // Phase-2 correctness (Brief 2 Phase B): one stable generation run id per
   // call; every emitted segment carries it + a stable candidateId.
   const generationRunId = `gen-${transcript.videoId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  const candidateIdOf = (index: number): string => `candidate-${transcript.videoId}-${index}`;
+  // Hardening v3 C6 (#19): candidate identity is a stable content/window
+  // FINGERPRINT (survives rough-index shifts), not derived from the index.
+  const candidateIdOf = (rough: MomentSegment): string => {
+    const fp = candidateFingerprint(
+      transcript.videoId,
+      rough.startSec,
+      rough.endSec,
+      rough.text.split(/\s+/).slice(0, 4).join(' '),
+      rough.text.split(/\s+/).slice(-4).join(' '),
+    );
+    return `c=${fp.slice(0, 12)}`;
+  };
 
   if (roughSegments.length === 0) {
     return { segments: [], utterances, warnings, endingById };
@@ -375,7 +388,7 @@ export async function twoPassHighlightSelection(
           wordsPerSecond: finalSlice.wordsPerSecond,
           salience: rough.salience,
           // Brief 2 Phase B: repaired boundary -> revision 2.
-          candidateId: candidateIdOf(rough.index),
+          candidateId: candidateIdOf(rough),
           generationRunId,
           revision: 2,
           // Hardening Phase C: lineage + source + scoring version.
@@ -449,17 +462,27 @@ export async function twoPassHighlightSelection(
       console.warn(`[two-pass] reject idx=${rough.index}: empty transcript slice`);
       continue;
     }
+    // Hardening v3 C5 (#18): recompute salience and boundary-sensitive
+    // metrics from the FINAL slice — never inherit from the rough candidate.
+    const finalized = rescoreSegmentFromSlice(rough, {
+      text: finalSlice.text,
+      wordCount: finalSlice.wordCount,
+      wordsPerSecond: finalSlice.wordsPerSecond,
+      speakerTurns: finalSlice.speakerTurns,
+    });
     segments.push({
       index: rough.index,
       startSec: round(finalStart, 2),
       endSec: round(finalEnd, 2),
       durationSec: round(duration, 2),
-      text: finalSlice.text,
-      wordCount: finalSlice.wordCount,
-      wordsPerSecond: finalSlice.wordsPerSecond,
-      salience: rough.salience,
+      text: finalized.text,
+      wordCount: finalized.wordCount,
+      wordsPerSecond: finalized.wordsPerSecond,
+      salience: finalized.salience,
+      timingPrecision: finalSlice.timingPrecision,
+      sliceApproximate: finalSlice.sliceApproximate,
       // Brief 2 Phase B: unmodified boundary -> revision 1.
-      candidateId: candidateIdOf(rough.index),
+      candidateId: candidateIdOf(rough),
       generationRunId,
       revision: 1,
       // Hardening Phase C: lineage + source + scoring version.

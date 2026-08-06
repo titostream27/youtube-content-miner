@@ -11,15 +11,13 @@ import type { EnrichedSentence } from '@/lib/moments/utterances';
 import type { MomentSegment } from '@/lib/domain/types';
 
 function u(start: number, end: number, text: string, isCompleteSentence = true): EnrichedSentence {
-  const words = text.trim().split(/\s+/);
   return {
     id: `u-${start}`,
     startSec: start,
     endSec: end,
-    words: words.map((w, i) => ({ startSec: start + i, endSec: start + i + 0.4, text: w })),
     text,
-    wordCount: words.length,
-    wordsPerSecond: words.length / Math.max(1, end - start),
+    wordCount: text.trim().split(/\s+/).length,
+    wordsPerSecond: 1,
     speakerId: null,
     speaker: null,
     isCompleteSentence,

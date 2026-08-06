@@ -121,16 +121,34 @@ export function validateStartBoundary(
     // Check if the referent appears later in the window (self-contained).
     const rest = inside.slice(1).map((u) => u.text).join(' ');
     const hasLaterReferent = /\b(he|she|it|they|this|that|these|those|the|dia|mereka|ini|itu|yang)\b/i.test(rest);
-    if (!hasLaterReferent) {
+    // Hardening v3 C2 (#20): a pronoun/opener whose antecedent sits
+    // immediately BEFORE the window is NOT missing context — it is resolved.
+    const preceding = utterances
+      .filter((u) => u.endSec <= startSec + 0.05)
+      .slice(-2)
+      .map((u) => u.text)
+      .join(' ');
+    const hasPrecedingEntity = /\b(Mr|Ms|Dr|guest|coach|customer|friend|host|expert|founder|doctor|dia|beliau|mereka)\b/i.test(preceding);
+    if (!hasLaterReferent && !hasPrecedingEntity) {
       issues.push('MISSING_CONTEXT');
     }
   }
 
   // 3. UNRESOLVED_REFERENCE — pronoun opener with no antecedent at all.
+  // Hardening v3 C2 (#20): consult PRECEDING context (noun/entity before the
+  // window), not only a repeated pronoun later inside the clip — a pronoun is
+  // resolved when its antecedent appears immediately before the window.
   if (PRONOUN_OPENERS_RE.test(firstText)) {
     const rest = inside.slice(1).map((u) => u.text).join(' ');
-    const hasAntecedent = /\b(he|she|it|they|this|that|these|those|the|dia|mereka|ini|itu|yang)\b/i.test(rest);
-    if (!hasAntecedent) {
+    const hasLaterReferent = /\b(he|she|it|they|this|that|these|those|the|dia|mereka|ini|itu|yang)\b/i.test(rest);
+    // Preceding noun/entity context resolves a deictic or referential opener.
+    const preceding = utterances
+      .filter((u) => u.endSec <= startSec + 0.05)
+      .slice(-2)
+      .map((u) => u.text)
+      .join(' ');
+    const hasPrecedingEntity = /\b(Mr|Ms|Dr|guest|coach|customer|friend|host|expert|founder|doctor|dia|beliau|mereka)\b/i.test(preceding);
+    if (!hasLaterReferent && !hasPrecedingEntity) {
       issues.push('UNRESOLVED_REFERENCE');
     }
   }

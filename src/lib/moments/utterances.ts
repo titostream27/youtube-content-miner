@@ -229,6 +229,15 @@ export interface TranscriptSlice {
   speakerTurns: number;
   /** True when no utterance starts inside the window (empty transcript). */
   empty: boolean;
+  /**
+   * Hardening v3 C4 (#17): how precise the slice is.
+   * - 'word'      — built from word-level timing (canonical, exact).
+   * - 'cue'       — cue-level timing only (intersected/clamped at cue start).
+   * - 'utterance' — approximate; derived without reliable per-cue timing.
+   */
+  timingPrecision: 'word' | 'cue' | 'utterance';
+  /** True when the slice is approximate (cue/utterance precision). */
+  sliceApproximate: boolean;
 }
 
 /**
@@ -268,12 +277,20 @@ export function sliceTranscriptForRange(
     }
   }
 
+  // Determine timing precision honestly (#17): if any utterance carries
+  // per-word timing we can slice at word level; otherwise cue-level
+  // approximate.
+  const hasWordTiming = inside.some((u) => Array.isArray((u as { words?: unknown[] }).words) && (u as { words?: unknown[] }).words!.length > 0);
+  const timingPrecision: 'word' | 'cue' | 'utterance' = hasWordTiming ? 'word' : 'cue';
+
   return {
     text,
     wordCount,
     wordsPerSecond: round2(wordCount / duration),
     speakerTurns,
     empty: inside.length === 0,
+    timingPrecision,
+    sliceApproximate: timingPrecision !== 'word',
   };
 }
 

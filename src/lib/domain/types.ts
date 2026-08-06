@@ -178,8 +178,12 @@ export interface MomentSegment {
   /** Hardening sprint Phase C: which component set the boundary. */
   boundarySource?: 'rough' | 'semantic' | 'repair' | 'manual';
   /** Hardening sprint Phase C: exact scoring configuration version. */
-  scoringVersion?: string;
-}
+    scoringVersion?: string;
+    /** Hardening v3 C4 (#17): slice timing precision (word|cue|utterance). */
+    timingPrecision?: 'word' | 'cue' | 'utterance';
+    /** Hardening v3 C4 (#17): whether the slice is approximate. */
+    sliceApproximate?: boolean;
+  }
 
 /* -------------------------------------------------------------------------- */
 /* Step 5 - Clip scoring                                                      */
