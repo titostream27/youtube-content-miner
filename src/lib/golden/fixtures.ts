@@ -115,4 +115,60 @@ export const GOLDEN_FIXTURES: GoldenFixture[] = [
     ],
     topK: 2,
   },
+  {
+    // Hardening sprint Phase E: third fixture — BILINGUAL (Indonesian/English)
+    // with an overlapping reaction window and a hard-negative (sponsor segment
+    // that must NOT be a positive moment) to exercise start-complete and
+    // contamination classification.
+    id: 'podcast-bilingual-reaction',
+    transcriptCues: [
+      { startSec: 0, endSec: 5, text: 'Halo semua, selamat datang kembali di podcast.' },
+      { startSec: 5, endSec: 9, text: 'Today we have a very special guest joining us.' },
+      { startSec: 9, endSec: 14, text: 'Sebelum kita mulai, dulu sponsor kita dulu ya.' },
+      { startSec: 14, endSec: 19, text: 'Use code GROWTH for twenty percent off your first order.' },
+      { startSec: 19, endSec: 25, text: 'Okay let us actually start the real conversation.' },
+      { startSec: 25, endSec: 30, text: 'Jadi gimana perasaan lo setelah perjalanan panjang itu?' },
+      { startSec: 30, endSec: 37, text: 'Honestly, I felt like giving up in the first two years.' },
+      { startSec: 37, endSec: 44, text: 'Ada satu momen di mana semua terasa sia-sia banget.' },
+      { startSec: 44, endSec: 52, text: 'But then one message from one user changed everything.' },
+      { startSec: 52, endSec: 58, text: 'Itu pesan kecil tapi mikir banget buat gue.' },
+      { startSec: 58, endSec: 65, text: 'So the real lesson is to keep going through the doubt.' },
+      { startSec: 65, endSec: 70, text: 'Oke, terakhir, pesan apa buat orang yang baru mulai?' },
+    ],
+    labels: [
+      {
+        clipId: 'b1',
+        expectedScore: 92,
+        expectedStartSec: 30,
+        expectedEndSec: 44,
+        expectedContamination: 0.02,
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+      {
+        // Hard negative: the sponsor block must NOT score anywhere near the
+        // editorial moments.
+        clipId: 'b2',
+        expectedScore: 60,
+        expectedStartSec: 9,
+        expectedEndSec: 25,
+        expectedContamination: 0.12,
+        expectedStartComplete: false,
+        expectedEndingComplete: false,
+      },
+      {
+        clipId: 'b3',
+        expectedScore: 84,
+        expectedStartSec: 44,
+        expectedEndSec: 58,
+        expectedContamination: 0.04,
+        expectedStartComplete: true,
+        expectedEndingComplete: true,
+      },
+    ],
+    // Bilingual hard-negative exercises start-boundary (a reaction window may
+    // open mid-thought); top-1 should resolve the editorial moment, not the
+    // sponsor block.
+    topK: 1,
+  },
 ];
