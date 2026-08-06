@@ -5,7 +5,63 @@
 import { describe, it, expect } from 'vitest';
 import { candidateFingerprint } from '@/lib/moments/candidate-identity';
 import { rescoreSegmentFromSlice } from '@/lib/moments/finalize-candidate';
+import { validateStartBoundary } from '@/lib/moments/start-boundary';
+import { sliceTranscriptForRange } from '@/lib/moments/utterances';
+import type { EnrichedSentence } from '@/lib/moments/utterances';
 import type { MomentSegment } from '@/lib/domain/types';
+
+function u(start: number, end: number, text: string, isCompleteSentence = true): EnrichedSentence {
+  const words = text.trim().split(/\s+/);
+  return {
+    id: `u-${start}`,
+    startSec: start,
+    endSec: end,
+    words: words.map((w, i) => ({ startSec: start + i, endSec: start + i + 0.4, text: w })),
+    text,
+    wordCount: words.length,
+    wordsPerSecond: words.length / Math.max(1, end - start),
+    speakerId: null,
+    speaker: null,
+    isCompleteSentence,
+    pauseBeforeSec: 0,
+    pauseAfterSec: 0,
+  } as unknown as EnrichedSentence;
+}
+
+describe('C2 pronoun resolution uses PRECEDING context (#20)', () => {
+  it('a window starting with a pronoun whose antecedent is BEFORE the window is NOT unresolved', () => {
+    // "he" in the window refers to the guest named before the window.
+    const ctx = [
+      u(0, 5, 'Our guest today is Dr. Rivera.'),
+      u(5, 8, 'He is a world-class cardiologist.'),
+    ];
+    const check = validateStartBoundary(ctx, 5, 8);
+    // Dr. Rivera (preceding noun context) resolves "He" — must NOT flag
+    // UNRESOLVED_REFERENCE.
+    expect(check.issues.includes('UNRESOLVED_REFERENCE')).toBe(false);
+    expect(check.startComplete).toBe(true);
+  });
+
+  it('a pronoun with NO antecedent anywhere (before or inside) is unresolved', () => {
+    const ctx = [
+      u(0, 5, 'We open with a quick intro to the topic.'),
+      u(5, 8, 'He will explain the details later.'),
+    ];
+    const check = validateStartBoundary(ctx, 5, 8);
+    expect(check.issues.includes('UNRESOLVED_REFERENCE')).toBe(true);
+  });
+});
+
+describe('C4 transcript slicing hierarchy (#17)', () => {
+  it('sliceTranscriptForRange marks cue-level precision when words are absent', () => {
+    const utt = [u(0, 10, 'a complete thought worth clipping.')];
+    const slice = sliceTranscriptForRange(utt, 0, 10);
+    // New fields: timing precision + approximate flag must exist and be
+    // honest — cue-level here because no word timing is provided.
+    expect(slice).toHaveProperty('timingPrecision');
+    expect(slice.timingPrecision).toBe('cue');
+  });
+});
 
 describe('C6 stable candidate identity (#19)', () => {
   it('fingerprint is content/window based, not index based', () => {
