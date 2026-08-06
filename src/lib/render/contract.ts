@@ -23,7 +23,8 @@ export const RenderRequestV2Schema = z.object({
   episode_id: z.string().min(1, 'episode_id must be non-empty'),
   video_url: z.string().url(),
 
-  mode: z.enum(['preview', 'final']),
+  mode: z.enum(['preview', 'final']), /** Hardening v3 E3: forced new attempt. */
+  force_rerender: z.boolean().optional().default(false),
 
   source_preferences: z.object({
     max_height: z.number().int().min(0),
@@ -218,6 +219,12 @@ export type RenderRequestV2 = z.infer<typeof RenderRequestV2Schema>;
 
 export interface BuildContractOptions {
   mode?: 'preview' | 'final';
+  /**
+   * Hardening v3 E3: force a NEW render attempt even for a previously
+   * completed request_id. The renderer creates a fresh job (parent lineage
+   * preserved) and does not delete prior history.
+   */
+  forceRerender?: boolean;
   /** Optional highlight terms (e.g. punchline phrases) to emphasize. */
   highlightTerms?: string[];
   /** Optional narrative context from the boundary debug report. */
@@ -329,6 +336,7 @@ export function buildRenderContract(
     output: mode === 'preview'
       ? { width: 540, height: 960 }
       : { width: 1080, height: 1920 },
+    force_rerender: options.forceRerender ?? false,
     clips: clips.map((clip) => ({
       clip_id: clip.id,
       start_sec: round2(clip.startSec),

@@ -12,6 +12,7 @@
     "episode_id": { "type": "string", "minLength": 1 },
     "video_url": { "type": "string", "format": "uri" },
     "mode": { "enum": ["preview", "final"] },
+      "force_rerender": { "type": "boolean", "default": false },
     "source_preferences": {
       "type": "object",
       "required": ["max_height", "prefer_best_available"],
