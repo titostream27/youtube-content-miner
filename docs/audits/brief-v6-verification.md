@@ -25,8 +25,30 @@
 | V6-E03 | Evaluator | **CONFIRMED** | `boundaryError`, `contaminationError`, `binaryAccuracy`, `evaluateGoldenLegacy` masih public clipId-based — perlu deprecate/private + redirect. |
 
 ## Summary
-- **CONFIRMED**: 10 (R01,R02,R03,R05,R06,R07,M01,M02,M03,C02,C03 = 11; E03 = 12)
-- **PARTIALLY FIXED**: 2 (R04, C01)
+- **CONFIRMED**: 12 (R01,R02,R03,R05,R06,R07,M01,M02,M03,C02,C03,E03) — ALL FIXED in commits 1-13.
+- **PARTIALLY FIXED**: 2 (R04 → Option A closed; C01 → parity closed)
 - **ALREADY FIXED**: 2 (E01, E02)
 - **NOT REPRODUCIBLE**: 0
 - Stop condition (>3 NOT REPRODUCIBLE): NOT triggered.
+
+## Final status (v6 commits 1-14)
+| ID | Status | Commit |
+|---|---|---|
+| R01 | FIXED | 2 (8ac9883) |
+| R02 | FIXED | 2/3 |
+| R03 | FIXED | 2 (8ac9883) |
+| R04 | FIXED (Option A) | 4 (ad74ed2) |
+| R05 | FIXED | 4 (ad74ed2) |
+| R06 | FIXED | 2/5 (d35e012) |
+| R07 | FIXED | 11 (121cf90) |
+| M01 | FIXED | 7 (22584ce) |
+| M02 | FIXED | 8 (150e78e) |
+| M03 | FIXED | 8 (150e78e) |
+| C01 | FIXED | 9/10 (f168e7f/e4f2b06/4149df1) |
+| C02 | FIXED | 10 (4149df1/e4f2b06) |
+| C03 | FIXED | 10 (4149df1) |
+| E01 | ALREADY FIXED (v5) | — |
+| E02 | ALREADY FIXED (v5) | — |
+| E03 | FIXED | 12 (cd96695) |
+
+Full report: docs/audits/brief-v6-completion-report.md
