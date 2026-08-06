@@ -156,12 +156,16 @@ CREATE TABLE IF NOT EXISTS clips (
   publish_error     TEXT,
   published_at      TEXT,
   -- Brief 2 Phase B: stable identity (candidate / generation run / revision).
-  candidate_id      TEXT,
-  generation_run_id TEXT,
-  revision          INTEGER NOT NULL DEFAULT 1,
-  created_at        TEXT NOT NULL,
-  UNIQUE (video_id, segment_index)
-);
+    candidate_id      TEXT,
+    generation_run_id TEXT,
+    revision          INTEGER NOT NULL DEFAULT 1,
+    -- Hardening Phase C: lineage + source + scoring version.
+    parent_candidate_id TEXT,
+    boundary_source     TEXT,
+    scoring_version     TEXT,
+    created_at        TEXT NOT NULL,
+    UNIQUE (video_id, segment_index)
+  );
 
 CREATE INDEX IF NOT EXISTS idx_clips_video ON clips (video_id);
 CREATE INDEX IF NOT EXISTS idx_clips_score ON clips (final_score DESC);

@@ -138,9 +138,13 @@ function applyColumnMigrations(db: Database.Database): void {
     { table: 'clips', column: 'analytics_status', definition: "TEXT NOT NULL DEFAULT 'not_tracked'" },
     // Brief 2 Phase B: stable identity (candidate / generation run / revision).
     { table: 'clips', column: 'candidate_id', definition: 'TEXT' },
-    { table: 'clips', column: 'generation_run_id', definition: 'TEXT' },
-    { table: 'clips', column: 'revision', definition: 'INTEGER NOT NULL DEFAULT 1' },
-  ];
+        { table: 'clips', column: 'generation_run_id', definition: 'TEXT' },
+        { table: 'clips', column: 'revision', definition: 'INTEGER NOT NULL DEFAULT 1' },
+        // Hardening Phase C: lineage + source + scoring version.
+        { table: 'clips', column: 'parent_candidate_id', definition: 'TEXT' },
+        { table: 'clips', column: 'boundary_source', definition: 'TEXT' },
+        { table: 'clips', column: 'scoring_version', definition: 'TEXT' },
+      ];
 
   for (const { table, column, definition } of columns) {
     const existing = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

@@ -9,9 +9,17 @@ import {
 } from '@/lib/moments/topic-boundary';
 import { repairBoundary } from '@/lib/moments/boundary-repair';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
+import { startBoundaryNeedsReject, expandStartBackToComplete } from '@/lib/moments/start-gate';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
 import { round } from '@/lib/scoring/normalize';
 import type { AgentOverrides, UsageLedger } from '@/lib/ai';
+
+/**
+ * Hardening sprint Phase C: exact scoring configuration version stamped on
+ * every emitted segment (lifecycle field). Bump when scoring weights / caps /
+ * feature extraction change so offline evaluation can tell revisions apart.
+ */
+export const SCORING_VERSION = 'clip-score-v2';
 
 /**
  * Phase 1 (Correctness) — Two-pass highlight selection.
@@ -279,8 +287,8 @@ export async function twoPassHighlightSelection(
       boundary,
       config.pipeline.highlight.endGuardSec,
     );
-    const finalEnd = Math.min(info.finalEndSec, guard.end);
-    const finalStart = Math.min(info.finalStartSec, finalEnd - 1);
+    let finalEnd = Math.min(info.finalEndSec, guard.end);
+    let finalStart = Math.min(info.finalStartSec, finalEnd - 1);
 
     const validation = validateBoundary(finalStart, finalEnd, ending, boundary);
     if (!validation.ok) {
@@ -370,6 +378,10 @@ export async function twoPassHighlightSelection(
           candidateId: candidateIdOf(rough.index),
           generationRunId,
           revision: 2,
+          // Hardening Phase C: lineage + source + scoring version.
+          parentCandidateId: rough.candidateId || undefined,
+          boundarySource: 'repair',
+          scoringVersion: SCORING_VERSION,
         });
         warnings.push(`highlight ${rough.index}: ${repair.boundaryStatus} — ${repair.repairReason}`);
         console.warn(`[two-pass] repair idx=${rough.index}: ${repair.repairReason}`);
@@ -388,7 +400,30 @@ export async function twoPassHighlightSelection(
 
     const duration = finalEnd - finalStart;
     // Phase 2 (Start validation): explicit start-boundary checks.
+    // Phase C (P0.3): a hard start failure is repaired by pulling the start
+    // back to a complete prior utterance, or the clip is rejected — never a
+    // soft cap.
     const startCheck = validateStartBoundary(utterances, finalStart, finalEnd);
+    if (startBoundaryNeedsReject(startCheck.issues)) {
+      let repairedStart = finalStart;
+      // Repair: expand start back to the last complete prior utterance.
+      const expanded = expandStartBackToComplete(utterances, finalStart);
+      if (expanded < finalStart - 0.05) {
+        const repairedCheck = validateStartBoundary(utterances, expanded, finalEnd);
+        if (!startBoundaryNeedsReject(repairedCheck.issues)) {
+          repairedStart = expanded;
+        }
+      }
+      if (repairedStart >= finalStart - 0.05) {
+        rejectedCount += 1;
+        warnings.push(`highlight ${rough.index}: rejected — start ${startCheck.primaryIssue ?? 'unresolved'} (${startCheck.issues.join(', ')})`);
+        console.warn(`[two-pass] reject idx=${rough.index}: unresolved start boundary (${startCheck.issues.join(', ')})`);
+        continue;
+      }
+      // Accepted repair: the start moved back; recompute the window.
+      finalStart = repairedStart;
+    }
+    const startCompleteFinal = validateStartBoundary(utterances, finalStart, finalEnd);
     endingById.set(rough.index, {
       endingType: ending.endingType,
       endingConfidence: round(ending.endingConfidence, 2),
@@ -400,7 +435,7 @@ export async function twoPassHighlightSelection(
       roughStartSec: rough.startSec,
       roughEndSec: rough.endSec,
       boundaryConfidence: round(ending.endingConfidence, 2),
-      startComplete: startCheck.startComplete,
+      startComplete: startCompleteFinal.startComplete,
     });
     // Phase 2 (Intelligence correctness): the agent's final boundary may
     // differ from the rough window — re-slice text and metrics from the
@@ -427,6 +462,10 @@ export async function twoPassHighlightSelection(
       candidateId: candidateIdOf(rough.index),
       generationRunId,
       revision: 1,
+      // Hardening Phase C: lineage + source + scoring version.
+      parentCandidateId: rough.candidateId || undefined,
+      boundarySource: 'semantic',
+      scoringVersion: SCORING_VERSION,
     });
   }
 

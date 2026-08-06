@@ -102,6 +102,10 @@ function buildClip(params: {
     candidateId: segment.candidateId || undefined,
     generationRunId: segment.generationRunId || undefined,
     revision: segment.revision ?? 1,
+    // Hardening Phase C: lineage + source + scoring version.
+    parentCandidateId: segment.parentCandidateId || undefined,
+    boundarySource: segment.boundarySource,
+    scoringVersion: segment.scoringVersion,
   };
 }
 

@@ -159,6 +159,15 @@ export interface MomentSegment {
   generationRunId: string;
   /** How many times this candidate's boundary was revised (1 = initial). */
   revision: number;
+  /**
+   * Hardening sprint Phase C: optional lineage — the candidateId this one was
+   * revised from (null for first generation).
+   */
+  parentCandidateId?: string;
+  /** Hardening sprint Phase C: which component set the boundary. */
+  boundarySource?: 'rough' | 'semantic' | 'repair' | 'manual';
+  /** Hardening sprint Phase C: exact scoring configuration version. */
+  scoringVersion?: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -233,9 +242,13 @@ export interface ScoredClip {
   roughStartSec?: number | null;
   roughEndSec?: number | null;
   /** Brief 2 Phase B: stable identity propagated from the segment. */
-  candidateId?: string;
-  generationRunId?: string;
-  revision?: number;
+    candidateId?: string;
+    generationRunId?: string;
+    revision?: number;
+    /** Hardening Phase C: lineage + source + scoring version. */
+    parentCandidateId?: string;
+    boundarySource?: string;
+    scoringVersion?: string;
   mainTopic?: string | null;
   topicBefore?: string | null;
   topicAfter?: string | null;

@@ -299,18 +299,20 @@ export function replaceClipsForEpisode(
         boundary_status, boundary_confidence, start_complete, repair_reason,
         rough_start_sec, rough_end_sec, main_topic, topic_before, topic_after,
         rights_status, qc_status, qc_score,
-        candidate_id, generation_run_id, revision
-      ) VALUES (
-        @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
-        @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
-        @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
-        'new', @createdAt,
-        @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination,
-        @boundaryStatus, @boundaryConfidence, @startComplete, @repairReason,
-        @roughStartSec, @roughEndSec, @mainTopic, @topicBefore, @topicAfter,
-        @rightsStatus, @qcStatus, @qcScore,
-        @candidateId, @generationRunId, @revision
-      )`,
+                candidate_id, generation_run_id, revision,
+                parent_candidate_id, boundary_source, scoring_version
+              ) VALUES (
+                @videoId, @runId, @segmentIndex, @title, @startSec, @endSec, @durationSec,
+                @finalScore, @confidence, @tier, @category, @dimensions, @whyThisWorks,
+                @suggestedHook, @suggestedCaption, @editingNotes, @transcript, @engine,
+                'new', @createdAt,
+                @endingType, @endingConfidence, @nextTopicRemoved, @nextTopicStartSec, @nextTopicContamination,
+                @boundaryStatus, @boundaryConfidence, @startComplete, @repairReason,
+                @roughStartSec, @roughEndSec, @mainTopic, @topicBefore, @topicAfter,
+                @rightsStatus, @qcStatus, @qcScore,
+                @candidateId, @generationRunId, @revision,
+                @parentCandidateId, @boundarySource, @scoringVersion
+              )`,
     );
 
     const createdAt = nowIso();
@@ -361,8 +363,11 @@ export function replaceClipsForEpisode(
         qcScore: null,
         // Brief 2 Phase B: stable identity.
         candidateId: clip.candidateId ?? null,
-        generationRunId: clip.generationRunId ?? null,
-        revision: clip.revision ?? 1,
+                generationRunId: clip.generationRunId ?? null,
+                revision: clip.revision ?? 1,
+                parentCandidateId: clip.parentCandidateId ?? null,
+                boundarySource: clip.boundarySource ?? null,
+                scoringVersion: clip.scoringVersion ?? null,
         editorialStatus: 'new',
         scheduleStatus: 'unscheduled',
         analyticsStatus: 'not_tracked',
