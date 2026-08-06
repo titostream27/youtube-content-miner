@@ -57,10 +57,12 @@ const SENTENCE_END_RE = /[.!?…]["')\]]?\s*$/;
 const QUESTION_END_RE = /\?\s*$/;
 /** Question STARTERS (Indonesian + English). */
 const QUESTION_START_RE =
-  /\b(how|what|why|when|where|who|do you|did you|can you|could you|would you|are you|is it|have you|berapa|bagaimana|kenapa|mengapa|apa|siapa|kapan|di mana|apakah|bisa|bisakah)\b/i;
-/** Transition phrases (brief §7). These are weak signals, never proof alone. */
+  /^(how|what|why|when|where|who|do you|did you|can you|could you|would you|are you|is it|have you|berapa|bagaimana|kenapa|mengapa|apa|siapa|kapan|di mana|apakah|bisa|bisakah)\b/i;
+/** Transition phrases (brief §7). These are weak signals, never proof alone.
+ * Brief v4 F12: anchored to the START of the utterance — a mid-sentence
+ * 'anyway'/'by the way' must not set startsWithTransition. */
 const TRANSITION_START_RE =
-  /\b(by the way|moving on|another question|speaking of|ngomong-ngomong|omong-omong|selanjutnya|sekarang soal|gue mau nanya|ada topik lain|ada hal lain|balik lagi ke|pertanyaan berikutnya|next up|so next|anyway)\b/i;
+  /^(by the way|moving on|another question|speaking of|ngomong-ngomong|omong-omong|selanjutnya|sekarang soal|gue mau nanya|ada topik lain|ada hal lain|balik lagi ke|pertanyaan berikutnya|next up|so next|anyway)\b/i;
 /** Cues that look like a speaker label, e.g. "[SPEAKER_00]" or "(speaker_1)". */
 const SPEAKER_TAG_RE = /^\s*[\[(]*\s*SPEAKER[\s_-]?\d+\s*[)\]]\s*$/i;
 
@@ -110,7 +112,7 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
   let words = 0;
   let cueStartIndex = -1;
   let cueEndIndex = -1;
-  let lastEndSec = 0;
+  let lastUtteranceEnd = 0;
   let currentSpeaker: string | null = null;
   let seq = 0;
 
@@ -125,7 +127,7 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
         text,
         wordCount: words,
         speakerId: currentSpeaker,
-        pauseBeforeSec: utterances.length === 0 ? 0 : Math.max(0, startSec - lastEndSec),
+        pauseBeforeSec: utterances.length === 0 ? 0 : Math.max(0, startSec - lastUtteranceEnd),
         pauseAfterSec: 0,
         isCompleteSentence: SENTENCE_END_RE.test(text),
         startsWithTransition: TRANSITION_START_RE.test(text),
@@ -135,6 +137,10 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
         sourceCueStartIndex: cueStartIndex,
         sourceCueEndIndex: cueEndIndex,
       });
+      // Track the END of the utterance just flushed so the NEXT utterance's
+      // pauseBeforeSec measures the real gap between utterances (not the end
+      // of the current cue, which would be the same as its start).
+      lastUtteranceEnd = endSec;
       seq += 1;
     }
     buffer = [];
@@ -178,6 +184,14 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
       flush();
     }
 
+    // Brief v4 F11: a paragraph-length pause (0.75s) also breaks the
+    // utterance — and must FLUSH BEFORE adding this cue, so the cue after the
+    // pause STARTS a fresh utterance instead of being merged into the
+    // previous one (which happens when the flush runs after buffer.push).
+    if (previous && gap >= PARAGRAPH_GAP_SEC) {
+      flush();
+    }
+
     if (startSec === null) {
       startSec = cue.startSec;
       cueStartIndex = i;
@@ -196,16 +210,14 @@ export function cuesToUtterances(cues: readonly TranscriptCue[]): EnrichedSenten
     endSec = cue.endSec;
     words += countWords(cue.text);
 
+    // Brief v4 F11: paragraph pause is handled above (pre-push flush), so the
+    // after-push completion closure covers punctuation + word cap only.
     const punctuated = SENTENCE_END_RE.test(cue.text);
-    const longPause = previous && gap >= PARAGRAPH_GAP_SEC;
     const runOn = words >= MAX_WORDS;
 
-    // Completion evidence: punctuation / paragraph pause are primary; the
-    // word cap is the fallback for punctuation-free tracks.
-    if (punctuated || longPause || runOn) {
+    if (punctuated || runOn) {
       flush();
     }
-    lastEndSec = endSec;
   }
 
   flush();
@@ -255,15 +267,40 @@ export function sliceTranscriptForRange(
   endSec: number,
 ): TranscriptSlice {
   // Phase-2 correctness (F13): slice at the utterance boundary whose START
-  // falls inside the window, instead of grabbing every overlapping utterance
-  // whole. Without word-level timings this is the honest word-level slice:
-  // trailing fragments of the previous utterance and leading fragments of
-  // the next are not counted as full words.
+  // falls inside the window; for word-level slicing we also need utterances
+  // that OVERLAP the window (started before) so their words can be clipped.
   const inside = utterances.filter(
     (u) => u.startSec >= startSec - 0.05 && u.startSec < endSec,
   );
-  const text = inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
-  const wordCount = countWords(text);
+  const overlapping = utterances.filter(
+    (u) => u.endSec > startSec && u.startSec < endSec,
+  );
+
+  // Brief v4 F13: when canonical per-word timing exists, slice at WORD level
+  // and CLIP first/last words to the window — text/wordCount describe exactly
+  // the rendered range, not the whole containing utterance.
+  const wordsInside: { text: string; startSec: number; endSec: number }[] = [];
+  let hasWordTiming = false;
+  for (const u of overlapping) {
+    const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
+    if (Array.isArray(ws) && ws.length > 0) {
+      hasWordTiming = true;
+      for (const w of ws) {
+        if (w.endSec > startSec && w.startSec < endSec) {
+          wordsInside.push({
+            text: w.text,
+            startSec: Math.max(w.startSec, startSec),
+            endSec: Math.min(w.endSec, endSec),
+          });
+        }
+      }
+    }
+  }
+  const wordLevelText = wordsInside.map((w) => w.text).join(' ');
+  const wordLevelCount = wordsInside.length;
+
+  const text = hasWordTiming && wordLevelText ? wordLevelText : inside.map((u) => u.text.trim()).filter(Boolean).join(' ');
+  const wordCount = hasWordTiming && wordLevelText ? wordLevelCount : countWords(text);
   const duration = Math.max(0.5, endSec - startSec);
 
   let speakerTurns = 0;
@@ -277,10 +314,8 @@ export function sliceTranscriptForRange(
     }
   }
 
-  // Determine timing precision honestly (#17): if any utterance carries
-  // per-word timing we can slice at word level; otherwise cue-level
-  // approximate.
-  const hasWordTiming = inside.some((u) => Array.isArray((u as { words?: unknown[] }).words) && (u as { words?: unknown[] }).words!.length > 0);
+  // Determine timing precision honestly (#17): word timing when present,
+  // otherwise cue-level approximate.
   const timingPrecision: 'word' | 'cue' | 'utterance' = hasWordTiming ? 'word' : 'cue';
 
   return {
@@ -288,7 +323,7 @@ export function sliceTranscriptForRange(
     wordCount,
     wordsPerSecond: round2(wordCount / duration),
     speakerTurns,
-    empty: inside.length === 0,
+    empty: inside.length === 0 && wordsInside.length === 0,
     timingPrecision,
     sliceApproximate: timingPrecision !== 'word',
   };

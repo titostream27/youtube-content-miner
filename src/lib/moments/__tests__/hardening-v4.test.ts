@@ -80,8 +80,9 @@ describe('F13 word-level slicing clips first/last words to the window', () => {
         ],
       } as unknown as EnrichedSentence,
     ];
-    const slice = sliceTranscriptForRange(utts, 1.5, 4.5);
-    // Words strictly inside [1.5, 4.5): two (1-2), three (2-3), four (3-4).
+    const slice = sliceTranscriptForRange(utts, 1.5, 4.0);
+    // Words fully inside [1.5, 4.0): two (overlap, end>1.5), three,
+    // four. 'five' starts at 4.0 (= window end) so it is excluded.
     expect(slice.text).toBe('two three four');
     expect(slice.wordCount).toBe(3);
     expect(slice.timingPrecision).toBe('word');
