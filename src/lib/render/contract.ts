@@ -69,12 +69,24 @@ export const RenderRequestV2Schema = z.object({
 
         caption_plan: z.object({
           language: z.string().min(1),
+          provider: z.string().min(1).default('unknown'),
+          transcript_version: z.string().default(''),
+          alignment_confidence: z.number().min(0).max(1).default(0),
           cues: z.array(
             z.object({
               start_sec: z.number().min(0),
               end_sec: z.number(),
               text: z.string(),
               speaker_id: z.string().nullable().optional(),
+              words: z
+                .array(
+                  z.object({
+                    start_sec: z.number().min(0),
+                    end_sec: z.number(),
+                    text: z.string(),
+                  }),
+                )
+                .optional(),
             }),
           ),
           highlight_terms: z.array(z.string()),
@@ -198,10 +210,18 @@ export interface BuildContractOptions {
 function cuesFromClip(
   clip: ClipRecord,
   transcript?: Transcript | null,
-): { start_sec: number; end_sec: number; text: string; speaker_id?: string | null }[] {
+): {
+  start_sec: number;
+  end_sec: number;
+  text: string;
+  speaker_id?: string | null;
+  words?: { start_sec: number; end_sec: number; text: string }[];
+}[] {
   // Phase-2 correctness (F17): build cues from the CANONICAL transcript
   // (word timing + speaker metadata) when available, instead of inventing
   // evenly-spaced words from suggestedCaption.
+  // Hardening sprint P0.4: propagate canonical word-level timing (c.words)
+  // so the renderer can use it directly (no full re-transcription).
   if (transcript && transcript.cues.length > 0) {
     const cues = transcript.cues
       .filter((c) => c.startSec >= clip.startSec - 0.05 && c.startSec < clip.endSec)
@@ -210,6 +230,11 @@ function cuesFromClip(
         end_sec: round2(c.endSec),
         text: c.text.trim(),
         speaker_id: c.speakerId ?? null,
+        words: (c.words ?? []).map((w) => ({
+          start_sec: round2(w.startSec),
+          end_sec: round2(w.endSec),
+          text: w.text,
+        })),
       }))
       .filter((c) => c.text.length > 0);
     if (cues.length > 0) return cues;
@@ -277,6 +302,11 @@ export function buildRenderContract(
       },
       caption_plan: {
         language,
+        // Hardening sprint P0.4: caption provenance so the renderer knows
+        // whether the timing is trusted (use directly) or needs a fallback.
+        provider: options.transcript?.provider ?? 'unknown',
+        transcript_version: options.transcript?.transcriptVersion ?? '',
+        alignment_confidence: options.transcript?.alignmentConfidence ?? 0,
         cues: cuesFromClip(clip, options.transcript),
         highlight_terms: options.highlightTerms ?? [],
       },

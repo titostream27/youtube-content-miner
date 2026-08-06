@@ -296,4 +296,32 @@ describe('Phase-2 correctness F17/F18', () => {
     const c = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 15 })]);
     expect(c.request_id).toBe(a.request_id);
   });
+
+  it('propagates caption provenance + word-level timing (P0.4)', () => {
+    const transcript = {
+      videoId: 'ep-1', source: 'youtube_manual' as const, language: 'en',
+      durationSec: 200, wordCount: 2,
+      provider: 'youtube_manual',
+      transcriptVersion: 'v3',
+      alignmentConfidence: 0.94,
+      cues: [
+        {
+          startSec: 10.0, endSec: 11.2, text: 'the company',
+          speakerId: 'guest',
+          words: [
+            { startSec: 10.0, endSec: 10.5, text: 'the' },
+            { startSec: 10.5, endSec: 11.2, text: 'company' },
+          ],
+        },
+      ],
+    };
+    const contract = buildRenderContract('ep-1', [fakeClip({ startSec: 10, endSec: 15 })], { transcript });
+    const cp = contract.clips[0]!.caption_plan;
+    expect(cp.provider).toBe('youtube_manual');
+    expect(cp.transcript_version).toBe('v3');
+    expect(cp.alignment_confidence).toBeCloseTo(0.94, 2);
+    expect(cp.cues[0]!.speaker_id).toBe('guest');
+    expect(cp.cues[0]!.words).toHaveLength(2);
+    expect(cp.cues[0]!.words![0]).toEqual({ start_sec: 10.0, end_sec: 10.5, text: 'the' });
+  });
 });

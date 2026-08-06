@@ -121,6 +121,13 @@ export interface TranscriptCue {
   speakerRole?: 'host' | 'guest' | 'unknown' | null;
   /** Phase 4 (brief §34): resolved speaker display name, when known. */
   speakerName?: string | null;
+  /**
+   * Hardening sprint P0.4: canonical word-level timing, when the transcript
+   * vendor provides it (manual captions / high-confidence ASR). Absent means
+   * only cue timing is available — the renderer must fall back to forced
+   * alignment.
+   */
+  words?: { startSec: number; endSec: number; text: string }[];
 }
 
 export interface Transcript {
@@ -130,6 +137,10 @@ export interface Transcript {
   cues: TranscriptCue[];
   durationSec: number;
   wordCount: number;
+  /** Hardening sprint P0.4: caption provenance. */
+  provider?: string;
+  transcriptVersion?: string;
+  alignmentConfidence?: number;
 }
 
 /* -------------------------------------------------------------------------- */
