@@ -141,6 +141,56 @@ function validateBoundary(
 }
 
 /**
+ * Brief v6 5.1 (M01) — rebuild a FinalRangeValidation for the two-pass
+ * finalizeCandidate call. After a start repair moves the window backward,
+ * the ending/topic-boundary/contamination evidence MUST be recomputed for
+ * the FINAL range; duration limits re-checked against final timestamps.
+ */
+function finalRangeValidationFor(
+  utterances: Utterance[],
+  startSec: number,
+  endSec: number,
+  prevEnding: EndingAnalysis,
+  prevBoundary: TopicBoundary,
+  endUtterance: Utterance | null,
+  nextUtterance: Utterance | null,
+): import('@/lib/moments/finalize-candidate').FinalRangeValidation {
+  const h = config.pipeline.highlight;
+  return {
+    maxDurationSec: h.hardMaxSec,
+    minDurationSec: h.minCompleteDurationSec,
+    topicBoundaryAt: (s, e) => {
+      // Re-detect the next-topic boundary relative to the final end.
+      const endIdx = utteranceAtOrBefore(utterances, e);
+      if (endIdx < 0) return null;
+      const endU = utterances[endIdx]!;
+      const nxt = endIdx + 1 < utterances.length ? utterances[endIdx + 1]! : null;
+      const following = endIdx >= 0 ? utterances.slice(endIdx + 1, endIdx + 1 + h.nextTopicLookaheadSec) : [];
+      const b = nxt
+        ? detectTopicBoundary(endU, nxt, following, h.nextTopicLookaheadSec)
+        : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
+      if (b.nextTopicDetected && b.nextTopicStart !== null && b.nextTopicStart < e) {
+        return b.nextTopicStart;
+      }
+      return null;
+    },
+    validateEndingAndContamination: (s, e) => {
+      const endIdx = utteranceAtOrBefore(utterances, e);
+      if (endIdx < 0) return 'no ending utterance in final range';
+      const endU = utterances[endIdx]!;
+      const nxt = endIdx + 1 < utterances.length ? utterances[endIdx + 1]! : null;
+      const following = endIdx >= 0 ? utterances.slice(endIdx + 1, endIdx + 1 + h.nextTopicLookaheadSec) : [];
+      const ending = classifyEnding(endU, nxt, following);
+      const b = nxt
+        ? detectTopicBoundary(endU, nxt, following, h.nextTopicLookaheadSec)
+        : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
+      const check = validateBoundary(s, e, ending, b);
+      return check.ok ? null : check.reason ?? 'final range validation failed';
+    },
+  };
+}
+
+/**
  * Run the deterministic boundary computation for one rough candidate using the
  * utterance transcript (fallback when the LLM pass is unavailable).
  */
@@ -364,6 +414,8 @@ export async function twoPassHighlightSelection(
         // Brief v5 M-01: slice is now created INSIDE finalizeCandidate AFTER
         // any start repair — the final slice always describes finalStartSec..
         // finalEndSec. Empty final slice -> finalizeCandidate returns null.
+        // Brief v6 M01: the repaired range is FULLY revalidated (duration,
+        // ending, topic contamination) against the final timestamps.
         const finalized = finalizeCandidate(
           rough,
           utterances,
@@ -377,6 +429,15 @@ export async function twoPassHighlightSelection(
           },
           repair.finalStartSec,
           repair.finalEndSec,
+          finalRangeValidationFor(
+            utterances,
+            repair.finalStartSec,
+            repair.finalEndSec,
+            repEnding,
+            repBoundary,
+            repEnd,
+            repNext,
+          ),
         );
         if (finalized === null) {
           rejectedCount += 1;

@@ -36,6 +36,28 @@ export interface FinalizeOptions {
 }
 
 /**
+ * Brief v6 5.1/5.2 (M01) — full final-range validation inputs. After any
+ * start repair, EVERY boundary-sensitive check must run against the FINAL
+ * range, not the proposed range.
+ */
+export interface FinalRangeValidation {
+  /** Hard maximum duration in seconds. Final duration above this rejects. */
+  maxDurationSec?: number;
+  /** Soft minimum duration. Final duration below this rejects. */
+  minDurationSec?: number;
+  /**
+   * Validate ending/topic-boundary/contamination for a given range.
+   * Returns null when the range is valid, else a reason string.
+   */
+  validateEndingAndContamination?: (startSec: number, endSec: number) => string | null;
+  /**
+   * Reject when the final range crosses a next-topic boundary that the
+   * start repair introduced. Returns the boundary time or null when fine.
+   */
+  topicBoundaryAt?: (startSec: number, endSec: number) => number | null;
+}
+
+/**
  * Brief v5 Phase 2 (5.1): finalize boundaries FIRST, THEN slice the canonical
  * transcript for the FINAL range. This fixes M-01 (slice produced before
  * optional start repair) — the slice can no longer describe a different
@@ -63,6 +85,7 @@ export function finalizeCandidate(
   opts: FinalizeOptions,
   candidateStartSec: number,
   candidateEndSec: number,
+  finalValidation?: FinalRangeValidation,
 ): FinalizeOutcome | null {
   // 2. Hard start gate against PRECEDING context.
   const startCheck = validateStartBoundary(utterances, candidateStartSec, candidateEndSec);
@@ -86,6 +109,27 @@ export function finalizeCandidate(
     }
   }
   const finalEndSec = candidateEndSec;
+
+  // Brief v6 5.1/5.2 (M01): FULL final-range validation AFTER any start
+  // repair — duration, ending/contamination, and next-topic boundaries must
+  // be re-checked against the FINAL range before slicing.
+  if (finalValidation) {
+    const finalDuration = finalEndSec - finalStartSec;
+    if (finalValidation.maxDurationSec !== undefined && finalDuration > finalValidation.maxDurationSec) {
+      return null;
+    }
+    if (finalValidation.minDurationSec !== undefined && finalDuration < finalValidation.minDurationSec) {
+      return null;
+    }
+    const topic = finalValidation.topicBoundaryAt?.(finalStartSec, finalEndSec);
+    if (topic !== null && topic !== undefined) {
+      return null;
+    }
+    const endingReason = finalValidation.validateEndingAndContamination?.(finalStartSec, finalEndSec);
+    if (endingReason !== null && endingReason !== undefined) {
+      return null;
+    }
+  }
 
   // 5. Slice ONLY AFTER final timestamps are known (M-01 fix).
   const slice = sliceFn(finalStartSec, finalEndSec);
