@@ -77,8 +77,8 @@ export function topKRecall(labels: GoldenLabel[], preds: Prediction[], k: number
 }
 
 export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], k: number): number {
-  // Brief v4 D3 (F21): rank-aware recall also matches temporally. The score
-  // rank of the PREDICTION that matched each label determines the credit.
+  // Brief v5 8.2 (G-02): iterate labels by EXPECTED rank (not greedy
+  // assignment order), then inspect the rank of the ASSIGNED prediction.
   const labelTop = labels
     .slice()
     .sort((a, b) => b.expectedScore - a.expectedScore)
@@ -88,13 +88,18 @@ export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], 
     .sort((a, b) => b.score - a.score)
     .slice(0, k);
   if (labelTop.length === 0) return 0;
-  const matches = matchByTemporalIoU(labelTop, predTop, 0.5);
+  const assignment = computeAssignmentResult(labelTop, predTop, 0.5);
+  const matchedByLabel = new Map<string, Prediction>();
+  for (const pair of assignment.positive_pairs) {
+    matchedByLabel.set(String(pair.label.clipId), pair.pred);
+  }
   let sum = 0;
-  for (const [rank, m] of matches.entries()) {
-    if (!m.pred) continue;
-    const idx = predTop.indexOf(m.pred);
-    // Full credit at the label's rank, decaying as the matched prediction
-    // falls further below it.
+  for (const [rank, label] of labelTop.entries()) {
+    const pred = matchedByLabel.get(String(label.clipId));
+    if (!pred) continue;
+    const idx = predTop.indexOf(pred);
+    // Full credit at the label's expected rank, decaying as the matched
+    // prediction falls further below it.
     sum += 1 / (1 + Math.abs(idx - rank));
   }
   return sum / labelTop.length;
@@ -199,6 +204,91 @@ export function matchByTemporalIoU(
   return result;
 }
 
+export interface AssignmentMatch {
+  labelId: string;
+  predictionId: string;
+  temporalIou: number;
+  textSimilarity?: number;
+  startErrorSec: number;
+  endErrorSec: number;
+}
+
+export interface HardNegativeOverlap {
+  negativeLabelId: string;
+  predictionId: string;
+  temporalIou: number;
+  predictedScore: number;
+}
+
+export interface AssignmentResult {
+  positive_matches: AssignmentMatch[];
+  /** Brief v5 8.2: raw (pred, label) pairs backing positive_matches — needed
+   * by contamination/binary metrics that read both objects. */
+  positive_pairs: { pred: Prediction; label: GoldenLabel }[];
+  unmatched_positive_labels: GoldenLabel[];
+  unmatched_predictions: Prediction[];
+  hard_negative_overlaps: HardNegativeOverlap[];
+}
+
+/**
+ * Brief v5 8.1/8.2 (G-01): canonical assignment. POSITIVE labels are matched
+ * to predictions (greedy IoU, separate label/prediction namespaces) for
+ * recall/boundary/rank metrics. HARD NEGATIVES are evaluated INDEPENDENTLY:
+ * every prediction overlapping a hard-negative range is reported as an
+ * overlap — a prediction may overlap BOTH a positive and a hard negative,
+ * and both facts are reported (no single shared assignment).
+ */
+export function computeAssignmentResult(
+  labels: GoldenLabel[],
+  preds: Prediction[],
+  threshold = 0.5,
+): AssignmentResult {
+  const positives = labels.filter((l) => (l.type ?? 'positive') === 'positive');
+  const hardNegatives = labels.filter((l) => (l.type ?? 'positive') === 'hard_negative');
+
+  // Positive matching: greedy IoU, separate namespaces.
+  const posMatches = matchByTemporalIoU(positives, preds, threshold);
+  const matched = posMatches.filter((m) => m.pred !== null);
+  const positive_matches: AssignmentMatch[] = matched.map((m) => ({
+    labelId: String(m.label.clipId),
+    predictionId: String(m.pred!.clipId),
+    temporalIou: temporalIoU(
+      m.pred!.startSec, m.pred!.endSec,
+      m.label.expectedStartSec, m.label.expectedEndSec,
+    ),
+    startErrorSec: Math.abs(m.pred!.startSec - m.label.expectedStartSec),
+    endErrorSec: Math.abs(m.pred!.endSec - m.label.expectedEndSec),
+  }));
+  const usedPredIds = new Set(matched.map((m) => m.pred!.clipId));
+
+  // Hard-negative overlaps: INDEPENDENT of the positive assignment.
+  const hard_negative_overlaps: HardNegativeOverlap[] = [];
+  for (const neg of hardNegatives) {
+    for (const p of preds) {
+      const iou = temporalIoU(
+        p.startSec, p.endSec,
+        neg.expectedStartSec, neg.expectedEndSec,
+      );
+      if (iou >= threshold) {
+        hard_negative_overlaps.push({
+          negativeLabelId: String(neg.clipId),
+          predictionId: String(p.clipId),
+          temporalIou: iou,
+          predictedScore: p.score,
+        });
+      }
+    }
+  }
+
+  return {
+    positive_matches,
+    positive_pairs: matched.map((m) => ({ pred: m.pred!, label: m.label })),
+    unmatched_positive_labels: posMatches.filter((m) => m.pred === null).map((m) => m.label),
+    unmatched_predictions: preds.filter((p) => !usedPredIds.has(p.clipId)),
+    hard_negative_overlaps,
+  };
+}
+
 export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: number): GoldenMetrics {
   // Brief v4 D2 (#9): only 'positive' labels (default) participate in recall;
   // 'hard_negative' labels matched by a prediction are false positives (never
@@ -206,34 +296,26 @@ export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: nu
   const positiveLabels = labels.filter((l) => (l.type ?? 'positive') === 'positive');
   const hardNegativeLabels = labels.filter((l) => (l.type ?? 'positive') === 'hard_negative');
   const ignoredLabels = labels.filter((l) => (l.type ?? 'positive') === 'ignore');
-  // Hardening v3 F2 (#32): EVERY boundary-sensitive metric is computed from
-  // the SAME common temporal assignment (matchByTemporalIoU). No metric
-  // silently falls back to a clipId-positional map.
-  const matches = matchByTemporalIoU(labels, preds, 0.5);
-  const matched = matches.filter((m) => m.pred !== null);
-  const positiveMatched = matched.filter((m) => (m.label.type ?? 'positive') === 'positive');
-  const hardNegativeFalsePositives = matched.filter((m) => (m.label.type ?? 'positive') === 'hard_negative');
+  // Brief v5 8.1 (G-01): canonical AssignmentResult — positive matching and
+  // hard-negative overlap are SEPARATE. All metrics consume THIS result.
+  const assignment = computeAssignmentResult(labels, preds, 0.5);
+  const positiveMatched = assignment.positive_matches;
   const temporalRecall = positiveLabels.length === 0 ? 0 : positiveMatched.length / positiveLabels.length;
   const meanTemporalIoU =
     positiveMatched.length === 0
       ? 0
-      : positiveMatched.reduce((s, m) => {
-          const p = m.pred!;
-          return s + temporalIoU(p.startSec, p.endSec, m.label.expectedStartSec, m.label.expectedEndSec);
-        }, 0) / positiveMatched.length;
+      : positiveMatched.reduce((s, m) => s + m.temporalIou, 0) / positiveMatched.length;
 
-  // Boundary errors / contamination / binary accuracy over the COMMON
-  // assignment (matched pairs only, same windows as recall). Ignore labels
-  // never appear here.
-  const activeMatches = matches.filter((m) => (m.label.type ?? 'positive') !== 'ignore');
-  const { start, end } = boundaryErrorFromMatches(activeMatches);
-  const meanContamination = contaminationErrorFromMatches(activeMatches);
-  const startCompleteAcc = binaryAccuracyFromMatches(
-    activeMatches,
+  // Boundary errors / contamination / binary accuracy over the POSITIVE
+  // matches only (brief 8.1: boundary metrics use positive matches only).
+  const { start, end } = boundaryErrorFromAssignment(assignment);
+  const meanContamination = contaminationErrorFromAssignment(assignment);
+  const startCompleteAcc = binaryAccuracyFromAssignment(
+    assignment,
     (p, l) => p.startComplete === l.expectedStartComplete,
   );
-  const endingCompleteAcc = binaryAccuracyFromMatches(
-    activeMatches,
+  const endingCompleteAcc = binaryAccuracyFromAssignment(
+    assignment,
     (p, l) => p.endingComplete === l.expectedEndingComplete,
   );
   return {
@@ -247,13 +329,10 @@ export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: nu
     n: labels.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
-    // Brief v4 D2 (#9): hard-negative false-positive rate and ignore count
-    // are explicit so evaluators reward desired detections and penalize
-    // forbidden ranges.
     hardNegativeFPR: hardNegativeLabels.length === 0
       ? 0
-      : round2(hardNegativeFalsePositives.length / hardNegativeLabels.length),
-    hardNegativeFalsePositives: hardNegativeFalsePositives.length,
+      : round2(assignment.hard_negative_overlaps.length / hardNegativeLabels.length),
+    hardNegativeFalsePositives: assignment.hard_negative_overlaps.length,
     ignoredLabels: ignoredLabels.length,
   };
 }
@@ -301,6 +380,42 @@ export function binaryAccuracyFromMatches(
     n += 1;
   }
   return n === 0 ? 0 : correct / n;
+}
+
+// ── Brief v5 8.2: metrics from the canonical AssignmentResult ──────────────
+
+/** Boundary start/end error from positive matches only (brief 8.1). */
+export function boundaryErrorFromAssignment(a: AssignmentResult): { start: number; end: number } {
+  const n = a.positive_matches.length;
+  if (n === 0) return { start: 0, end: 0 };
+  const start = a.positive_matches.reduce((s, m) => s + m.startErrorSec, 0) / n;
+  const end = a.positive_matches.reduce((s, m) => s + m.endErrorSec, 0) / n;
+  return { start, end };
+}
+
+/** Contamination error from positive matches only (brief 8.1). */
+export function contaminationErrorFromAssignment(a: AssignmentResult): number {
+  const pairs = a.positive_pairs;
+  if (pairs.length === 0) return 0;
+  let sum = 0;
+  for (const { pred, label } of pairs) {
+    sum += Math.abs(pred.contamination - label.expectedContamination);
+  }
+  return sum / pairs.length;
+}
+
+/** Binary accuracy over positive matches only (brief 8.1). */
+export function binaryAccuracyFromAssignment(
+  a: AssignmentResult,
+  pick: (p: Prediction, l: GoldenLabel) => boolean,
+): number {
+  const pairs = a.positive_pairs;
+  if (pairs.length === 0) return 0;
+  let correct = 0;
+  for (const { pred, label } of pairs) {
+    if (pick(pred, label) === true) correct += 1;
+  }
+  return correct / pairs.length;
 }
 
 /** @deprecated clipId-positional variant; kept for legacy callers. */

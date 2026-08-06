@@ -11,6 +11,7 @@ import {
   topKRecall,
   topKRankAwareRecall,
   temporalIoU,
+  computeAssignmentResult,
   type GoldenLabel,
   type Prediction,
 } from '@/lib/golden/metrics';
@@ -226,5 +227,44 @@ describe('golden metrics (Phase 2 golden dataset)', () => {
     // denominator of positive recall).
     expect(m.temporalRecall).toBeCloseTo(1, 5);
     expect(m.n).toBe(2);
+  });
+
+  // ── Brief v5 G-01: positive and hard-negative evaluated independently ──
+  it('a prediction overlapping BOTH positive and hard negative reports both (G-01)', () => {
+    const labels = [
+      { clipId: 'pos', type: 'positive' as const, expectedScore: 90, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'neg', type: 'hard_negative' as const, expectedScore: 0, expectedStartSec: 15, expectedEndSec: 25,
+        expectedContamination: 0.9, expectedStartComplete: false, expectedEndingComplete: false },
+    ];
+    const preds: Prediction[] = [
+      { clipId: 'p0', score: 85, startSec: 12, endSec: 22, contamination: 0.1, startComplete: true, endingComplete: true },
+    ];
+    const a = computeAssignmentResult(labels, preds, 0.5);
+    // Same prediction matches the positive AND overlaps the hard negative.
+    expect(a.positive_matches).toHaveLength(1);
+    expect(a.hard_negative_overlaps).toHaveLength(1);
+    expect(a.hard_negative_overlaps[0]!.predictionId).toBe('p0');
+  });
+
+  // ── Brief v5 G-02: rank-aware metrics use LABEL expected rank ───────────
+  it('rank-aware recall iterates labels by expected rank, not assignment order (G-02)', () => {
+    // label1 has the HIGHEST expected score; label0 lower.
+    const labels = [
+      { clipId: 'l0', expectedScore: 70, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'l1', expectedScore: 95, expectedStartSec: 30, expectedEndSec: 40,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+    ];
+    // The best prediction matches l1 at rank 0 — full credit for label rank 0.
+    const preds: Prediction[] = [
+      { clipId: 'p1', score: 95, startSec: 31, endSec: 39, contamination: 0.05, startComplete: true, endingComplete: true },
+      { clipId: 'p0', score: 60, startSec: 11, endSec: 19, contamination: 0.05, startComplete: true, endingComplete: true },
+    ];
+    const k = 2;
+    // label1 (rank 0) is matched by p1 (rank 0): credit = 1/(1+0) = 1.
+    // label0 (rank 1) is matched by p0 (rank 1): credit = 1/(1+0) = 1.
+    const r = topKRankAwareRecall(labels, preds, k);
+    expect(r).toBeCloseTo(1, 5);
   });
 });
