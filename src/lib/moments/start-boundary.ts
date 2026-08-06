@@ -51,6 +51,14 @@ const REFERENTIAL_OPENERS_RE =
 /** Pronouns with no antecedent inside the window — anchored to START. */
 const PRONOUN_OPENERS_RE =
   /^(he|she|it|they|them|this|that|these|those|dia|mereka|ini|itu)\b/i;
+/**
+ * Brief v5 M-04: ONLY entity evidence resolves a referential opener.
+ * Named entities, proper nouns, explicit roles, concrete noun phrases, or
+ * known entity words. Repeated pronouns (he/she/it/they/this/that) are NOT
+ * included — they are not antecedents.
+ */
+const ENTITY_REFERENT_RE =
+  /\b(Mr|Ms|Mrs|Dr|Prof|guest|coach|customer|friend|host|expert|founder|doctor|investor|investors|company|companies|team|founder|CEO|CTO|startup|business|product|market|customer|user|users|audience|parent|wife|husband|partner|client|clients|government|president|manager|boss|employee|employees|creator|creator|tim|elon|steve|bill|jeff|sarah|john|jane|james|david|michael|daniel|peter|robert|richard|thomas|charles|joseph|christopher|andrew|joshua|jessica|ashley|emily|samantha|amanda|olivia|jadi|ada|orang|pemilik|pendiri|ceo|perusahaan|bisnis|produk|pasar|pelanggan|investor|tim|bos|konsumen|pemerintah)\b/i;
 /** Hook-like signals: numbers, superlatives, contrasts, questions, claims. */
 const HOOK_SIGNAL_RE =
   /\b(\d+|most|best|never|always|only|secret|shocking|crazy|insane|huge|problem|mistake|failed|success|win|won|broke|why|how|what|actually|literally|worst|first|last|percent|million|billion|ribu|juta|miliar|miliaran|paling|terbesar|terbaik|gagal|sukses|rahasia|masalah|kenapa|bagaimana)\b/i;
@@ -118,9 +126,11 @@ export function validateStartBoundary(
   // 2. MISSING_CONTEXT — referential opener with no earlier referent in window.
   const firstText = first.text.trim();
   if (REFERENTIAL_OPENERS_RE.test(firstText)) {
-    // Check if the referent appears later in the window (self-contained).
+    // Brief v5 M-04: repeated pronouns are NOT antecedents. Only a named
+    // entity, proper noun, concrete noun phrase, or explicit role resolves
+    // the opener inside the window. 'They ... They ...' stays unresolved.
     const rest = inside.slice(1).map((u) => u.text).join(' ');
-    const hasLaterReferent = /\b(he|she|it|they|this|that|these|those|the|dia|mereka|ini|itu|yang)\b/i.test(rest);
+    const hasLaterReferent = ENTITY_REFERENT_RE.test(rest);
     // Hardening v3 C2 (#20): a pronoun/opener whose antecedent sits
     // immediately BEFORE the window is NOT missing context — it is resolved.
     const preceding = utterances
@@ -128,7 +138,7 @@ export function validateStartBoundary(
       .slice(-2)
       .map((u) => u.text)
       .join(' ');
-    const hasPrecedingEntity = /\b(Mr|Ms|Dr|guest|coach|customer|friend|host|expert|founder|doctor|dia|beliau|mereka)\b/i.test(preceding);
+    const hasPrecedingEntity = ENTITY_REFERENT_RE.test(preceding);
     if (!hasLaterReferent && !hasPrecedingEntity) {
       issues.push('MISSING_CONTEXT');
     }
@@ -138,16 +148,17 @@ export function validateStartBoundary(
   // Hardening v3 C2 (#20): consult PRECEDING context (noun/entity before the
   // window), not only a repeated pronoun later inside the clip — a pronoun is
   // resolved when its antecedent appears immediately before the window.
+  // Brief v5 M-04: only ENTITY evidence resolves — pronouns do not.
   if (PRONOUN_OPENERS_RE.test(firstText)) {
     const rest = inside.slice(1).map((u) => u.text).join(' ');
-    const hasLaterReferent = /\b(he|she|it|they|this|that|these|those|the|dia|mereka|ini|itu|yang)\b/i.test(rest);
+    const hasLaterReferent = ENTITY_REFERENT_RE.test(rest);
     // Preceding noun/entity context resolves a deictic or referential opener.
     const preceding = utterances
       .filter((u) => u.endSec <= startSec + 0.05)
       .slice(-2)
       .map((u) => u.text)
       .join(' ');
-    const hasPrecedingEntity = /\b(Mr|Ms|Dr|guest|coach|customer|friend|host|expert|founder|doctor|dia|beliau|mereka)\b/i.test(preceding);
+    const hasPrecedingEntity = ENTITY_REFERENT_RE.test(preceding);
     if (!hasLaterReferent && !hasPrecedingEntity) {
       issues.push('UNRESOLVED_REFERENCE');
     }

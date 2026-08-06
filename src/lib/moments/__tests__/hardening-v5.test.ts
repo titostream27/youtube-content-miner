@@ -26,6 +26,7 @@ function utt(id: string, start: number, end: number, text: string, extra: Partia
     endsWithQuestion: false,
     semanticTopicId: null,
     sourceCueStartIndex: 0,
+    sourceCueEndIndex: 0,
     ...extra,
   };
 }

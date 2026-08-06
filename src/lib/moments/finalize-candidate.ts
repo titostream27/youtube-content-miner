@@ -23,6 +23,8 @@ export interface FinalizeOutcome {
   segment: MomentSegment;
   startCheck: StartBoundaryResult;
   repairedStart: boolean;
+  finalStartSec: number;
+  finalEndSec: number;
 }
 
 export interface FinalizeOptions {
@@ -34,31 +36,40 @@ export interface FinalizeOptions {
 }
 
 /**
- * Brief v4 P0-B1/C5 (#18): ONE finalization path for semantic, repaired and
- * fallback candidates. Every candidate:
- *   1. validates its start boundary (hard gate — reject or expand start)
- *   2. slices the canonical transcript at word/cue precision
- *   3. recomputes ALL boundary-sensitive features from the FINAL slice
- *      (never inherits rough salience)
- *   4. stamps identity/lineage metadata.
+ * Brief v5 Phase 2 (5.1): finalize boundaries FIRST, THEN slice the canonical
+ * transcript for the FINAL range. This fixes M-01 (slice produced before
+ * optional start repair) — the slice can no longer describe a different
+ * window than segment.startSec/endSec.
  *
- * Returns the accepted segment or null when the candidate must be rejected.
+ * Contract:
+ *   1. validate proposed end, duration, completeness, contamination (done by
+ *      the caller's validateBoundary before this point).
+ *   2. validate start boundary using preceding context.
+ *   3. if a hard start issue is repairable, move start to the previous
+ *      complete semantic unit.
+ *   4. after any start change, re-run duration/end/contamination validation
+ *      (the caller re-checks via validateBoundary on the final range).
+ *   5. ONLY after timestamps are final, slice the canonical transcript for
+ *      the final range (via sliceFn).
+ *   6. reject when the final slice is empty.
+ *   7. recompute text, word count, WPS, speaker turns, salience from the
+ *      FINAL slice — never from rough values.
+ *   8. build final debug metadata from THIS result only.
  */
 export function finalizeCandidate(
   rough: MomentSegment,
   utterances: EnrichedSentence[],
-  slice: FinalizedSlice,
+  sliceFn: (startSec: number, endSec: number) => TranscriptSlice,
   opts: FinalizeOptions,
   candidateStartSec: number,
   candidateEndSec: number,
 ): FinalizeOutcome | null {
-  // 1. Hard start gate: validate against PRECEDING context, not only inside.
+  // 2. Hard start gate against PRECEDING context.
   const startCheck = validateStartBoundary(utterances, candidateStartSec, candidateEndSec);
   let finalStartSec = candidateStartSec;
   let repairedStart = false;
   if (needsReject(startCheck)) {
-    // Repair by expanding start back to a complete prior utterance, then
-    // re-validate. If still hard-invalid, reject.
+    // 3. Repair: expand start back to a complete prior utterance.
     const expanded = expandStartBackToComplete(utterances, candidateStartSec);
     if (expanded !== null && expanded < candidateStartSec) {
       const recheck = validateStartBoundary(utterances, expanded, candidateEndSec);
@@ -74,9 +85,17 @@ export function finalizeCandidate(
       return null;
     }
   }
+  const finalEndSec = candidateEndSec;
 
-  // 2+3. Recompute metrics from the FINAL slice; never inherit rough values.
-  const durationSec = Math.max(0.5, candidateEndSec - finalStartSec);
+  // 5. Slice ONLY AFTER final timestamps are known (M-01 fix).
+  const slice = sliceFn(finalStartSec, finalEndSec);
+  // 6. Empty final slice -> reject; never recover from rough text.
+  if (slice.empty || slice.wordCount === 0) {
+    return null;
+  }
+
+  // 7. Recompute metrics from the FINAL slice.
+  const durationSec = Math.max(0.5, finalEndSec - finalStartSec);
   const wordCount = slice.wordCount;
   const wordsPerSecond = Number((wordCount / durationSec).toFixed(3));
   const tokens = slice.text.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -87,8 +106,8 @@ export function finalizeCandidate(
   const segment: MomentSegment = {
     ...rough,
     startSec: round(finalStartSec, 2),
-    endSec: round(candidateEndSec, 2),
-    durationSec: round(candidateEndSec - finalStartSec, 2),
+    endSec: round(finalEndSec, 2),
+    durationSec: round(finalEndSec - finalStartSec, 2),
     text: slice.text,
     wordCount,
     wordsPerSecond,
@@ -102,10 +121,16 @@ export function finalizeCandidate(
     boundarySource: opts.boundarySource,
     scoringVersion: SCORING_VERSION,
   };
-  return { segment, startCheck: repairedStart ? validateStartBoundary(utterances, finalStartSec, candidateEndSec) : startCheck, repairedStart };
+  return {
+    segment,
+    startCheck: repairedStart ? validateStartBoundary(utterances, finalStartSec, finalEndSec) : startCheck,
+    repairedStart,
+    finalStartSec,
+    finalEndSec,
+  };
 }
 
-const SCORING_VERSION = 'v4-finalize-1';
+export const SCORING_VERSION = 'v5-finalize-1';
 
 function round(n: number, p = 2): number {
   const m = 10 ** p;
@@ -113,9 +138,24 @@ function round(n: number, p = 2): number {
 }
 
 /**
- * Brief v4 P0-B1 (#18): recompute salience and derived scores from the FINAL
- * transcript slice (kept for callers that only need the rescore without the
- * full gate — e.g. tests).
+ * Recompose a FinalizedSlice view from a TranscriptSlice for callers that
+ * need a plain object (kept for backwards compatibility).
+ */
+export function toFinalizedSlice(slice: TranscriptSlice): FinalizedSlice {
+  return {
+    text: slice.text,
+    wordCount: slice.wordCount,
+    wordsPerSecond: slice.wordsPerSecond,
+    speakerTurns: slice.speakerTurns,
+    timingPrecision: slice.timingPrecision,
+    sliceApproximate: slice.sliceApproximate,
+  };
+}
+
+/**
+ * Legacy helper kept for tests/back-compat: recompute salience and derived
+ * scores from a FINAL transcript slice without the full gate. New code should
+ * use finalizeCandidate() (brief v5 5.1) which slices AFTER the start gate.
  */
 export function rescoreSegmentFromSlice(
   rough: MomentSegment,
@@ -128,7 +168,6 @@ export function rescoreSegmentFromSlice(
   const unique = new Set(tokens).size;
   const lexicalSalience = tokens.length > 0 ? unique / tokens.length : 0;
   const baseSalience = Math.min(1, lexicalSalience + (slice.speakerTurns > 0 ? 0.05 : 0));
-
   return {
     ...rough,
     text: slice.text,

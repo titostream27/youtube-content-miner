@@ -361,37 +361,13 @@ export async function twoPassHighlightSelection(
           boundaryConfidence: round(Math.max(repEnding.endingConfidence, 0.7), 2),
           startComplete: startCheck.startComplete,
         });
-        // Phase 2 (Intelligence correctness): re-slice transcript text and
-        // derived metrics from the FINAL repaired boundary — never reuse the
-        // rough candidate's text/wordCount (they describe a different range).
-        const finalSlice = sliceTranscriptForRange(
-          utterances,
-          repair.finalStartSec,
-          repair.finalEndSec,
-        );
-        // Phase-2 correctness (F13): an empty transcript slice is a real
-        // anomaly, not a reason to fall back to rough text (which described
-        // a DIFFERENT window). Reject the repaired highlight instead.
-        if (finalSlice.empty || finalSlice.wordCount === 0) {
-          rejectedCount += 1;
-          warnings.push(`highlight ${rough.index}: rejected — empty transcript after repair`);
-          console.warn(`[two-pass] reject idx=${rough.index} after repair: empty transcript slice`);
-          continue;
-        }
-        // Brief v4 P0-B1 (#6/#7): repaired candidates go through the SAME
-        // finalization path — hard start gate (repair-or-reject), final-slice
-        // rescoring, identity/lineage — never rough salience inheritance.
+        // Brief v5 M-01: slice is now created INSIDE finalizeCandidate AFTER
+        // any start repair — the final slice always describes finalStartSec..
+        // finalEndSec. Empty final slice -> finalizeCandidate returns null.
         const finalized = finalizeCandidate(
           rough,
           utterances,
-          {
-            text: finalSlice.text,
-            wordCount: finalSlice.wordCount,
-            wordsPerSecond: finalSlice.wordsPerSecond,
-            speakerTurns: finalSlice.speakerTurns,
-            timingPrecision: finalSlice.timingPrecision,
-            sliceApproximate: finalSlice.sliceApproximate,
-          },
+          (startSec, endSec) => sliceTranscriptForRange(utterances, startSec, endSec),
           {
             candidateId: candidateIdOf(rough),
             generationRunId,
@@ -404,8 +380,8 @@ export async function twoPassHighlightSelection(
         );
         if (finalized === null) {
           rejectedCount += 1;
-          warnings.push(`highlight ${rough.index}: repaired but start gate still rejects`);
-          console.warn(`[two-pass] reject idx=${rough.index} after repair: start gate rejects`);
+          warnings.push(`highlight ${rough.index}: repaired but start gate rejects or final slice empty`);
+          console.warn(`[two-pass] reject idx=${rough.index} after repair: finalize rejected`);
           continue;
         }
         segments.push(finalized.segment);
@@ -463,33 +439,13 @@ export async function twoPassHighlightSelection(
       boundaryConfidence: round(ending.endingConfidence, 2),
       startComplete: startCompleteFinal.startComplete,
     });
-    // Phase 2 (Intelligence correctness): the agent's final boundary may
-    // differ from the rough window — re-slice text and metrics from the
-    // actual final range so scoring/captions describe the rendered clip.
-    const finalSlice = sliceTranscriptForRange(utterances, finalStart, finalEnd);
-    // Phase-2 correctness (F13): never fall back to rough text (a different
-    // window); an empty final slice is rejected as an anomaly.
-    if (finalSlice.empty || finalSlice.wordCount === 0) {
-      rejectedCount += 1;
-      warnings.push(`highlight ${rough.index}: rejected — empty transcript slice`);
-      console.warn(`[two-pass] reject idx=${rough.index}: empty transcript slice`);
-      continue;
-    }
-    // Brief v4 P0-B1: the semantic path uses the SAME finalization gates as
-    // the repaired path — start gate re-validated, final-slice rescoring,
-    // identity/lineage. (finalizeCandidate re-checks the start; since the
-    // start already passed above it will not re-expand.)
+    // Brief v5 M-01: slice is created INSIDE finalizeCandidate AFTER the
+    // start gate (finalStart is already final here; finalizeCandidate
+    // re-validates and only then slices). Empty slice -> null.
     const finalized = finalizeCandidate(
       rough,
       utterances,
-      {
-        text: finalSlice.text,
-        wordCount: finalSlice.wordCount,
-        wordsPerSecond: finalSlice.wordsPerSecond,
-        speakerTurns: finalSlice.speakerTurns,
-        timingPrecision: finalSlice.timingPrecision,
-        sliceApproximate: finalSlice.sliceApproximate,
-      },
+      (startSec, endSec) => sliceTranscriptForRange(utterances, startSec, endSec),
       {
         candidateId: candidateIdOf(rough),
         generationRunId,
@@ -502,8 +458,8 @@ export async function twoPassHighlightSelection(
     );
     if (finalized === null) {
       rejectedCount += 1;
-      warnings.push(`highlight ${rough.index}: finalize rejected (start gate)`);
-      console.warn(`[two-pass] reject idx=${rough.index}: finalize start gate rejects`);
+      warnings.push(`highlight ${rough.index}: finalize rejected (start gate or empty slice)`);
+      console.warn(`[two-pass] reject idx=${rough.index}: finalize rejected`);
       continue;
     }
     segments.push(finalized.segment);
