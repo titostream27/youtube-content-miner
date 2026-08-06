@@ -29,13 +29,13 @@ export const RenderRequestV2Schema = z.object({
   source_preferences: z.object({
     max_height: z.number().int().min(0),
     prefer_best_available: z.boolean(),
-  }),
+  }).strict(),
 
   output: z.object({
     width: z.number().int().positive(),
     height: z.number().int().positive(),
     fps: z.number().int().positive().optional(),
-  }),
+  }).strict(),
 
   clips: z
     .array(
@@ -52,7 +52,7 @@ export const RenderRequestV2Schema = z.object({
           ending_type: z.string(),
           hook_end_sec: z.number().nullable(),
           payoff_start_sec: z.number().nullable(),
-        }),
+        }).strict(),
 
         layout_plan: z.object({
           preferred_layout: z.enum([
@@ -66,7 +66,7 @@ export const RenderRequestV2Schema = z.object({
           expected_speakers: z.number().int().min(0).nullable(),
           allow_split: z.boolean(),
           allow_blur_background: z.boolean(),
-        }),
+        }).strict(),
 
         caption_plan: z.object({
           language: z.string().min(1),
@@ -85,25 +85,25 @@ export const RenderRequestV2Schema = z.object({
                     start_sec: z.number().min(0),
                     end_sec: z.number(),
                     text: z.string(),
-                  }),
+                  }).strict(),
                 )
                 .optional(),
-            }),
+            }).strict(),
           ),
           highlight_terms: z.array(z.string()),
-        }),
+        }).strict(),
 
         editing_events: z.array(
           z.object({
             time_sec: z.number().min(0),
             type: z.enum(['emphasis', 'punchline', 'important_number', 'topic_label']),
             intensity: z.number().min(0).max(1),
-          }),
+          }).strict(),
         ),
-      }),
+      }).strict(),
     )
     .min(1, 'at least one clip is required'),
-})
+}).strict()
   // Phase 1 §5.5: cross-field rules shared with the JSON Schema and the
   // Python validator (render_contract.py).
   .superRefine((value, ctx) => {
