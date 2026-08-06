@@ -11,8 +11,8 @@ import {
   cuesToUtterances,
   sliceTranscriptForRange,
   type EnrichedSentence,
-  type TranscriptCue,
 } from '@/lib/moments/utterances';
+import type { TranscriptCue } from '@/lib/domain/types';
 
 function cue(start: number, end: number, text: string, extra: Partial<TranscriptCue> = {}): TranscriptCue {
   return {

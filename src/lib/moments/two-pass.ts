@@ -11,7 +11,7 @@ import { repairBoundary } from '@/lib/moments/boundary-repair';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
 import { startBoundaryNeedsReject, expandStartBackToComplete } from '@/lib/moments/start-gate';
 import { candidateFingerprint } from '@/lib/moments/candidate-identity';
-import { rescoreSegmentFromSlice } from '@/lib/moments/finalize-candidate';
+import { finalizeCandidate } from '@/lib/moments/finalize-candidate';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
 import { round } from '@/lib/scoring/normalize';
 import type { AgentOverrides, UsageLedger } from '@/lib/ai';
@@ -378,24 +378,37 @@ export async function twoPassHighlightSelection(
           console.warn(`[two-pass] reject idx=${rough.index} after repair: empty transcript slice`);
           continue;
         }
-        segments.push({
-          index: rough.index,
-          startSec: round(repair.finalStartSec, 2),
-          endSec: round(repair.finalEndSec, 2),
-          durationSec: round(repair.finalEndSec - repair.finalStartSec, 2),
-          text: finalSlice.text,
-          wordCount: finalSlice.wordCount,
-          wordsPerSecond: finalSlice.wordsPerSecond,
-          salience: rough.salience,
-          // Brief 2 Phase B: repaired boundary -> revision 2.
-          candidateId: candidateIdOf(rough),
-          generationRunId,
-          revision: 2,
-          // Hardening Phase C: lineage + source + scoring version.
-          parentCandidateId: rough.candidateId || undefined,
-          boundarySource: 'repair',
-          scoringVersion: SCORING_VERSION,
-        });
+        // Brief v4 P0-B1 (#6/#7): repaired candidates go through the SAME
+        // finalization path — hard start gate (repair-or-reject), final-slice
+        // rescoring, identity/lineage — never rough salience inheritance.
+        const finalized = finalizeCandidate(
+          rough,
+          utterances,
+          {
+            text: finalSlice.text,
+            wordCount: finalSlice.wordCount,
+            wordsPerSecond: finalSlice.wordsPerSecond,
+            speakerTurns: finalSlice.speakerTurns,
+            timingPrecision: finalSlice.timingPrecision,
+            sliceApproximate: finalSlice.sliceApproximate,
+          },
+          {
+            candidateId: candidateIdOf(rough),
+            generationRunId,
+            revision: 2,
+            boundarySource: 'repair',
+            parentCandidateId: rough.candidateId || undefined,
+          },
+          repair.finalStartSec,
+          repair.finalEndSec,
+        );
+        if (finalized === null) {
+          rejectedCount += 1;
+          warnings.push(`highlight ${rough.index}: repaired but start gate still rejects`);
+          console.warn(`[two-pass] reject idx=${rough.index} after repair: start gate rejects`);
+          continue;
+        }
+        segments.push(finalized.segment);
         warnings.push(`highlight ${rough.index}: ${repair.boundaryStatus} — ${repair.repairReason}`);
         console.warn(`[two-pass] repair idx=${rough.index}: ${repair.repairReason}`);
         continue;
@@ -462,34 +475,38 @@ export async function twoPassHighlightSelection(
       console.warn(`[two-pass] reject idx=${rough.index}: empty transcript slice`);
       continue;
     }
-    // Hardening v3 C5 (#18): recompute salience and boundary-sensitive
-    // metrics from the FINAL slice — never inherit from the rough candidate.
-    const finalized = rescoreSegmentFromSlice(rough, {
-      text: finalSlice.text,
-      wordCount: finalSlice.wordCount,
-      wordsPerSecond: finalSlice.wordsPerSecond,
-      speakerTurns: finalSlice.speakerTurns,
-    });
-    segments.push({
-      index: rough.index,
-      startSec: round(finalStart, 2),
-      endSec: round(finalEnd, 2),
-      durationSec: round(duration, 2),
-      text: finalized.text,
-      wordCount: finalized.wordCount,
-      wordsPerSecond: finalized.wordsPerSecond,
-      salience: finalized.salience,
-      timingPrecision: finalSlice.timingPrecision,
-      sliceApproximate: finalSlice.sliceApproximate,
-      // Brief 2 Phase B: unmodified boundary -> revision 1.
-      candidateId: candidateIdOf(rough),
-      generationRunId,
-      revision: 1,
-      // Hardening Phase C: lineage + source + scoring version.
-      parentCandidateId: rough.candidateId || undefined,
-      boundarySource: 'semantic',
-      scoringVersion: SCORING_VERSION,
-    });
+    // Brief v4 P0-B1: the semantic path uses the SAME finalization gates as
+    // the repaired path — start gate re-validated, final-slice rescoring,
+    // identity/lineage. (finalizeCandidate re-checks the start; since the
+    // start already passed above it will not re-expand.)
+    const finalized = finalizeCandidate(
+      rough,
+      utterances,
+      {
+        text: finalSlice.text,
+        wordCount: finalSlice.wordCount,
+        wordsPerSecond: finalSlice.wordsPerSecond,
+        speakerTurns: finalSlice.speakerTurns,
+        timingPrecision: finalSlice.timingPrecision,
+        sliceApproximate: finalSlice.sliceApproximate,
+      },
+      {
+        candidateId: candidateIdOf(rough),
+        generationRunId,
+        revision: 1,
+        boundarySource: 'semantic',
+        parentCandidateId: rough.candidateId || undefined,
+      },
+      finalStart,
+      finalEnd,
+    );
+    if (finalized === null) {
+      rejectedCount += 1;
+      warnings.push(`highlight ${rough.index}: finalize rejected (start gate)`);
+      console.warn(`[two-pass] reject idx=${rough.index}: finalize start gate rejects`);
+      continue;
+    }
+    segments.push(finalized.segment);
   }
 
   console.log(
