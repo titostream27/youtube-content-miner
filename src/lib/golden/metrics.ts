@@ -14,6 +14,13 @@
 
 export interface GoldenLabel {
   clipId: string;
+  /**
+   * Brief v4 D2 (#9): label type. 'positive' = desired detection (counts
+   * toward recall), 'hard_negative' = forbidden range (a prediction here is
+   * a false positive and never helps recall), 'ignore' = excluded entirely.
+   * Defaults to 'positive' for backward compatibility with existing fixtures.
+   */
+  type?: 'positive' | 'hard_negative' | 'ignore';
   /** 0-100 expected score (for ranking assertions). */
   expectedScore: number;
   expectedStartSec: number;
@@ -46,24 +53,15 @@ export interface GoldenMetrics {
   /** Phase-2 F22: recall@IoU>=threshold over temporal matches. */
   temporalRecall: number;
   meanTemporalIoU: number;
+  /** Brief v4 D2 (#9): hard-negative false-positive rate and counts. */
+  hardNegativeFPR: number;
+  hardNegativeFalsePositives: number;
+  ignoredLabels: number;
 }
 
 export function topKRecall(labels: GoldenLabel[], preds: Prediction[], k: number): number {
-  const labelTop = labels
-    .slice()
-    .sort((a, b) => b.expectedScore - a.expectedScore)
-    .slice(0, k)
-    .map((l) => l.clipId);
-  const predTop = preds
-    .slice()
-    .sort((a, b) => b.score - a.score)
-    .slice(0, k)
-    .map((p) => p.clipId);
-  const hit = labelTop.filter((id) => predTop.includes(id)).length;
-  return labelTop.length === 0 ? 0 : hit / labelTop.length;
-}
-
-export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], k: number): number {
+  // Brief v4 D3 (F21): top-K uses the SAME temporal assignment as recall —
+  // a correct window with a DIFFERENT id still counts as a hit.
   const labelTop = labels
     .slice()
     .sort((a, b) => b.expectedScore - a.expectedScore)
@@ -71,16 +69,33 @@ export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], 
   const predTop = preds
     .slice()
     .sort((a, b) => b.score - a.score)
-    .slice(0, k)
-    .map((p) => p.clipId);
+    .slice(0, k);
   if (labelTop.length === 0) return 0;
+  const matches = matchByTemporalIoU(labelTop, predTop, 0.5);
+  const hit = matches.filter((m) => m.pred !== null).length;
+  return hit / labelTop.length;
+}
+
+export function topKRankAwareRecall(labels: GoldenLabel[], preds: Prediction[], k: number): number {
+  // Brief v4 D3 (F21): rank-aware recall also matches temporally. The score
+  // rank of the PREDICTION that matched each label determines the credit.
+  const labelTop = labels
+    .slice()
+    .sort((a, b) => b.expectedScore - a.expectedScore)
+    .slice(0, k);
+  const predTop = preds
+    .slice()
+    .sort((a, b) => b.score - a.score)
+    .slice(0, k);
+  if (labelTop.length === 0) return 0;
+  const matches = matchByTemporalIoU(labelTop, predTop, 0.5);
   let sum = 0;
-  for (const [rank, label] of labelTop.entries()) {
-    const idx = predTop.indexOf(label.clipId);
-    if (idx >= 0) {
-      // Reciprocal-rank style: full credit at exact position, decaying after.
-      sum += 1 / (1 + Math.abs(idx - rank));
-    }
+  for (const [rank, m] of matches.entries()) {
+    if (!m.pred) continue;
+    const idx = predTop.indexOf(m.pred);
+    // Full credit at the label's rank, decaying as the matched prediction
+    // falls further below it.
+    sum += 1 / (1 + Math.abs(idx - rank));
   }
   return sum / labelTop.length;
 }
@@ -156,6 +171,9 @@ export function matchByTemporalIoU(
 ): { label: GoldenLabel; pred: Prediction | null }[] {
   const result: { label: GoldenLabel; pred: Prediction | null }[] = [];
   // Greedy: highest-IoU assignment first, each label/pred used once.
+  // Brief v4 D1 (#8): label and prediction indices live in SEPARATE
+  // namespaces — a single Set<number> collides (label 0 and pred 0 are the
+  // same number) and silently drops crossing assignments.
   const candidates: { li: number; pi: number; iou: number }[] = [];
   for (let li = 0; li < labels.length; li += 1) {
     for (let pi = 0; pi < preds.length; pi += 1) {
@@ -167,49 +185,60 @@ export function matchByTemporalIoU(
     }
   }
   candidates.sort((x, y) => y.iou - x.iou);
-  const assigned = new Set<number>();
+  const assignedLabels = new Set<number>();
+  const assignedPredictions = new Set<number>();
   for (const c of candidates) {
-    if (assigned.has(c.li) || assigned.has(c.pi)) continue;
-    assigned.add(c.li);
-    assigned.add(c.pi);
+    if (assignedLabels.has(c.li) || assignedPredictions.has(c.pi)) continue;
+    assignedLabels.add(c.li);
+    assignedPredictions.add(c.pi);
     result.push({ label: labels[c.li]!, pred: preds[c.pi]! });
   }
   for (let li = 0; li < labels.length; li += 1) {
-    if (!assigned.has(li)) result.push({ label: labels[li]!, pred: null });
+    if (!assignedLabels.has(li)) result.push({ label: labels[li]!, pred: null });
   }
   return result;
 }
 
 export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: number): GoldenMetrics {
+  // Brief v4 D2 (#9): only 'positive' labels (default) participate in recall;
+  // 'hard_negative' labels matched by a prediction are false positives (never
+  // recall hits), 'ignore' labels are excluded from every metric.
+  const positiveLabels = labels.filter((l) => (l.type ?? 'positive') === 'positive');
+  const hardNegativeLabels = labels.filter((l) => (l.type ?? 'positive') === 'hard_negative');
+  const ignoredLabels = labels.filter((l) => (l.type ?? 'positive') === 'ignore');
   // Hardening v3 F2 (#32): EVERY boundary-sensitive metric is computed from
   // the SAME common temporal assignment (matchByTemporalIoU). No metric
   // silently falls back to a clipId-positional map.
   const matches = matchByTemporalIoU(labels, preds, 0.5);
   const matched = matches.filter((m) => m.pred !== null);
-  const temporalRecall = labels.length === 0 ? 0 : matched.length / labels.length;
+  const positiveMatched = matched.filter((m) => (m.label.type ?? 'positive') === 'positive');
+  const hardNegativeFalsePositives = matched.filter((m) => (m.label.type ?? 'positive') === 'hard_negative');
+  const temporalRecall = positiveLabels.length === 0 ? 0 : positiveMatched.length / positiveLabels.length;
   const meanTemporalIoU =
-    matched.length === 0
+    positiveMatched.length === 0
       ? 0
-      : matched.reduce((s, m) => {
+      : positiveMatched.reduce((s, m) => {
           const p = m.pred!;
           return s + temporalIoU(p.startSec, p.endSec, m.label.expectedStartSec, m.label.expectedEndSec);
-        }, 0) / matched.length;
+        }, 0) / positiveMatched.length;
 
   // Boundary errors / contamination / binary accuracy over the COMMON
-  // assignment (matched pairs only, same windows as recall).
-  const { start, end } = boundaryErrorFromMatches(matches);
-  const meanContamination = contaminationErrorFromMatches(matches);
+  // assignment (matched pairs only, same windows as recall). Ignore labels
+  // never appear here.
+  const activeMatches = matches.filter((m) => (m.label.type ?? 'positive') !== 'ignore');
+  const { start, end } = boundaryErrorFromMatches(activeMatches);
+  const meanContamination = contaminationErrorFromMatches(activeMatches);
   const startCompleteAcc = binaryAccuracyFromMatches(
-    matches,
+    activeMatches,
     (p, l) => p.startComplete === l.expectedStartComplete,
   );
   const endingCompleteAcc = binaryAccuracyFromMatches(
-    matches,
+    activeMatches,
     (p, l) => p.endingComplete === l.expectedEndingComplete,
   );
   return {
-    topKRecall: topKRecall(labels, preds, k),
-    topKRankAwareRecall: topKRankAwareRecall(labels, preds, k),
+    topKRecall: topKRecall(positiveLabels, preds, k),
+    topKRankAwareRecall: topKRankAwareRecall(positiveLabels, preds, k),
     meanBoundaryStartErrorSec: round2(start),
     meanBoundaryEndErrorSec: round2(end),
     meanContaminationError: round2(meanContamination),
@@ -218,6 +247,14 @@ export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: nu
     n: labels.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
+    // Brief v4 D2 (#9): hard-negative false-positive rate and ignore count
+    // are explicit so evaluators reward desired detections and penalize
+    // forbidden ranges.
+    hardNegativeFPR: hardNegativeLabels.length === 0
+      ? 0
+      : round2(hardNegativeFalsePositives.length / hardNegativeLabels.length),
+    hardNegativeFalsePositives: hardNegativeFalsePositives.length,
+    ignoredLabels: ignoredLabels.length,
   };
 }
 
@@ -295,6 +332,9 @@ export function evaluateGoldenLegacy(labels: GoldenLabel[], preds: Prediction[],
     n: labels.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
+    hardNegativeFPR: 0,
+    hardNegativeFalsePositives: 0,
+    ignoredLabels: 0,
   };
 }
 
