@@ -121,16 +121,22 @@ async function main(): Promise<void> {
   }
 
   // 3. Walk the ranked topics until the daily clip target is met.
+  // target <= 0 disables the cap: process every ranked topic, stopping only
+  // when the mined topic list runs out (or maxLoopTopics was reached).
+  const unlimitedTarget = args.target <= 0;
   const outcomes: TopicOutcome[] = [];
   let totalReady = 0;
   let firstRunId: number | null = null;
-  let stoppedReason = 'exhausted topics before reaching target';
+  let stoppedReason = unlimitedTarget
+    ? 'no target set — processed all ranked topics'
+    : 'exhausted topics before reaching target';
 
   for (let i = 0; i < rankedTopics.length; i += 1) {
     const topic = rankedTopics[i];
     if (!topic) continue;
     console.log(
-      `[scheduled-run] topic ${i + 1}/${rankedTopics.length}: "${topic}" (running total ${totalReady}/${args.target})`,
+      `[scheduled-run] topic ${i + 1}/${rankedTopics.length}: "${topic}"` +
+        (unlimitedTarget ? '' : ` (running total ${totalReady}/${args.target})`),
     );
 
     const outcome: TopicOutcome = {
@@ -170,14 +176,19 @@ async function main(): Promise<void> {
 
     outcomes.push(outcome);
 
-    if (totalReady >= args.target) {
+    // Only stop on the target when one is set (target > 0). Unlimited mode
+    // (target <= 0) walks the whole ranked topic list.
+    if (!unlimitedTarget && totalReady >= args.target) {
       stoppedReason = `reached daily target (${totalReady} >= ${args.target})`;
       console.log(`[scheduled-run] ${stoppedReason} — stopping after ${i + 1} topic(s)`);
       break;
     }
   }
 
-  const targetMet = totalReady >= args.target;
+  const targetMet = unlimitedTarget ? outcomes.length > 0 : totalReady >= args.target;
+  if (unlimitedTarget) {
+    stoppedReason = `no target set — processed all ${rankedTopics.length} ranked topics`;
+  }
 
   // 4. Persist + print summary.
   const allClipIds = outcomes.flatMap((o) => o.clipIds);

@@ -337,14 +337,18 @@ export const config = {
     maxTopics: readInt('TRENDING_MAX_TOPICS', 3),
     autoApproval: readBool('TRENDING_AUTO_APPROVAL', false),
     /**
-     * Daily clip target for the multi-topic scheduled loop. The scheduler
-     * mines trending topics ranked by popularity and processes them one by
-     * one until the number of clips that clear every gate (rendered, QC'd,
-     * SEO'd and published) reaches this target, then stops. Because the last
-     * topic that crosses the threshold contributes all of its qualifying
-     * clips, the day's total can slightly exceed this number.
-     */
-    dailyClipTarget: readInt('TRENDING_DAILY_CLIP_TARGET', 15),
+         * Daily clip target for the multi-topic scheduled loop. The scheduler
+         * mines trending topics ranked by popularity and processes them one by
+         * one until the number of clips that clear every gate (rendered, QC'd,
+         * SEO'd and published) reaches this target, then stops. Because the last
+         * topic that crosses the threshold contributes all of its qualifying
+         * clips, the day's total can slightly exceed this number.
+         *
+         * Setting 0 disables the target: the loop processes every ranked topic and
+         * stops only when topics are exhausted (or maxLoopTopics is reached). Set
+         * a positive value to re-enable the cap later — the config key stays.
+         */
+        dailyClipTarget: readInt('TRENDING_DAILY_CLIP_TARGET', 0),
     /**
      * How many popularity-ranked topics the loop may fan out across in a
      * single scheduled run before giving up on hitting the daily target.
