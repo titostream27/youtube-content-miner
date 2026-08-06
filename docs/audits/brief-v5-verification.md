@@ -93,7 +93,39 @@
 ## Summary
 | Status | Count | IDs |
 |---|---|---|
-| CONFIRMED | 15 | R-01..R-06, M-01..M-04, C-01, V-01, G-01, G-02, CI-01 |
+| CONFIRMED (now FIXED in v5 commits) | 15 | R-01..R-06, M-01..M-04, C-01, V-01, G-01, G-02, CI-01 |
 | ALREADY FIXED | 1 | R-07 |
 
-Implementation plan follows the brief's commit sequence 1-14 (Phase 1..6) with RED tests first per finding.
+## Final status after implementation (brief v5 commits 1-14)
+
+| Finding | Status | Commit |
+|---|---|---|
+| R-01 sync orchestration | FIXED | 2 (fe85ac1) |
+| R-02 state machine only mutation path | FIXED | 2/4 |
+| R-03 named persistence + round-trip | FIXED | 2/3 (2a8026d) |
+| R-04 queue admission compensation | FIXED | 3 (2a8026d) |
+| R-05 terminal durability vs memory | FIXED | 2/3 |
+| R-06 caption timing after trim | FIXED | 5 (9f60547) |
+| R-07 multi-clip QC | ALREADY FIXED (v4) | — |
+| M-01 finalize before slicing | FIXED | 7 (02b9f46) |
+| M-02 final debug metadata | FIXED | 7 |
+| M-03 word propagation | FIXED | 8 (9f5e922) |
+| M-04 entity-only referents | FIXED | 7 |
+| C-01 strict cross-language | FIXED | 9 (c9a1082/fd5f324) |
+| V-01 ReframeResult + time-indexed | FIXED | 10 (b743d11) |
+| G-01 separate positive/negative | FIXED | 12 (8ffe282) |
+| G-02 label-rank metrics | FIXED | 12 |
+| CI-01 blocking gates + pinned | FIXED | 13 (3164ad0/7939ac7) |
+
+## Test commands (as run in CI)
+
+Miner (content-miner):
+- `npm ci`
+- `npx tsc --noEmit`
+- `npx vitest run`
+- `npx eslint . --max-warnings 0`
+
+Renderer (AI-Youtube-Shorts-Generator):
+- `pip install -r requirements.txt`
+- `python -m pytest test_render_contract.py test_contract_fixtures.py test_job_lifecycle.py test_render_timeline.py test_hardening_sprint.py test_cache_timeline.py test_hardening_v3.py test_hardening_v4.py test_hardening_v5.py test_visual_behavior.py -q`
+
