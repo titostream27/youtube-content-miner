@@ -174,4 +174,57 @@ describe('golden metrics (Phase 2 golden dataset)', () => {
     expect(contaminationErrorFromMatches(matches)).toBe(0);
     expect(binaryAccuracyFromMatches(matches, (p, l) => p.startComplete === l.expectedStartComplete)).toBe(1);
   });
+
+  // ── Brief v4 D1 (#8): crossing temporal assignment must match BOTH ───────
+  it('crossing assignment label0->pred1 and label1->pred0 matches both (D1)', () => {
+    const labels = [
+      { clipId: 'l0', expectedScore: 90, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'l1', expectedScore: 80, expectedStartSec: 30, expectedEndSec: 40,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+    ];
+    const preds: Prediction[] = [
+      // pred0 overlaps label1 only; pred1 overlaps label0 only.
+      { clipId: 'p0', score: 85, startSec: 31, endSec: 39, contamination: 0.05, startComplete: true, endingComplete: true },
+      { clipId: 'p1', score: 82, startSec: 11, endSec: 19, contamination: 0.05, startComplete: true, endingComplete: true },
+    ];
+    const matches = matchByTemporalIoU(labels, preds, 0.5);
+    // Both labels matched; the old single-Set implementation would skip the
+    // second pair because it reused indices (0 and 1 collided).
+    expect(matches.filter((m) => m.pred !== null)).toHaveLength(2);
+  });
+
+  it('one prediction cannot match two labels (D1)', () => {
+    const labels = [
+      { clipId: 'l0', expectedScore: 90, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'l1', expectedScore: 80, expectedStartSec: 12, expectedEndSec: 22,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+    ];
+    const preds: Prediction[] = [
+      { clipId: 'p0', score: 85, startSec: 13, endSec: 19, contamination: 0.05, startComplete: true, endingComplete: true },
+    ];
+    const matches = matchByTemporalIoU(labels, preds, 0.5);
+    const matched = matches.filter((m) => m.pred !== null);
+    expect(matched.length).toBe(1);
+  });
+
+  // ── Brief v4 D2 (#9): label types ────────────────────────────────────────
+  it('hard negatives and ignores are not counted as recall positives (D2)', () => {
+    const labels = [
+      { clipId: 'pos', type: 'positive' as const, expectedScore: 90, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'neg', type: 'hard_negative' as const, expectedScore: 0, expectedStartSec: 30, expectedEndSec: 40,
+        expectedContamination: 0.95, expectedStartComplete: false, expectedEndingComplete: false },
+    ];
+    const preds: Prediction[] = [
+      { clipId: 'p0', score: 85, startSec: 11, endSec: 19, contamination: 0.05, startComplete: true, endingComplete: true },
+    ];
+    const m = evaluateGolden(labels, preds, 2);
+    // Positive matched -> recall counts it; hard negative has no pred and
+    // must NOT inflate recall either (only positive labels are in the
+    // denominator of positive recall).
+    expect(m.temporalRecall).toBeCloseTo(1, 5);
+    expect(m.n).toBe(2);
+  });
 });
