@@ -44,30 +44,43 @@ function u(
 }
 
 describe('V7-M01: lookahead seconds must not be an utterance count', () => {
-  it('finalRangeValidationFor lookahead window spans TIME, not N utterances', async () => {
-    // This test is satisfied by the exported slice helper contract: the
-    // lookahead used in two-pass must be time-based. We verify the exported
-    // boundary API indirectly by importing the module and checking that the
-    // source uses a duration, not a fixed slice of N utterances.
-    const src = await import('@/lib/moments/two-pass');
-    const text = src.toString();
-    // The function is not exported; assert on the source shape via the
-    // compiled module reference. If the slice-count bug is present, the
-    // follow-up C08 fix will change these lines.
-    expect(typeof text).toBe('string');
+  it('finalRangeValidationFor lookahead is a TIME window, not a slice count', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const srcPath = path.resolve(
+      process.cwd(),
+      'src/lib/moments/two-pass.ts',
+    );
+    const src = fs.readFileSync(srcPath, 'utf8');
+    // Buggy form: utterances.slice(endIdx + 1, endIdx + 1 + lookaheadSec)
+    // uses a SECONDS value as an utterance COUNT.
+    const sliceCount = /slice\(endIdx \+ 1, endIdx \+ 1 \+ h\.nextTopicLookaheadSec\)/.test(src);
+    // Required form: bound the slice by TIME (utterance start before the
+    // lookahead seconds reach past endU) or filter by timestamp.
+    const timeBounded =
+      /slice\(endIdx \+ 1\)\.filter\(\([\w]+\) => / .test(src) ||
+      /\.filter\(\([\w]+\) => [\w]+\.endSec < /.test(src) ||
+      /withinLookaheadSec|\.endSec <= endU\.endSec \+ h\.nextTopicLookaheadSec/.test(src);
+    if (sliceCount) {
+      // Still the buggy slice-count — RED.
+      expect(timeBounded).toBe(true);
+    }
+    // The fixed form must not be the bare slice-count.
+    expect(timeBounded || !sliceCount).toBe(true);
+    expect(sliceCount).toBe(false);
   });
 
-  it('hybrid slicing must treat a long lookahead as time, not count', () => {
-    // Build a transcript with many short utterances inside an 8-second
-    // lookahead: if the code slices by count, it misses real coverage.
-    const manyShort: EnrichedSentence[] = [];
+  it('lookahead spans TIME within candidate: utterances within lookahead seconds', () => {
+    // 30 short utterances, 0.25s apart over a 7.5s window. A time-window
+    // slice (30 * 0.2s = 6s of speech) must include far more than a
+    // handful; a slice-COUNT of ~8 would collapse it.
+    const phrases: EnrichedSentence[] = [];
     for (let i = 0; i < 30; i++) {
-      manyShort.push(u(`m${i}`, 10 + i * 0.25, 10 + i * 0.25 + 0.2, `word ${i}`, null));
+      phrases.push(u(`m${i}`, 10 + i * 0.25, 10 + i * 0.25 + 0.2, `word ${i}`, null));
     }
-    const s = sliceTranscriptForRange(manyShort, 10, 12);
-    // 30 short utterances over 2s = fully covered wall-clock; the slice
-    // must not be empty and must include most utterances.
-    expect(s.wordCount).toBeGreaterThan(20);
+    const s = sliceTranscriptForRange(phrases, 10, 17.5);
+    // Full speech-covered window -> 30 utterances, ~60 words.
+    expect(s.wordCount).toBeGreaterThan(40);
   });
 });
 
