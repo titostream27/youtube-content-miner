@@ -185,7 +185,11 @@ export interface MomentSegment {
     sliceApproximate?: boolean;
     /** Brief v6 5.3 (M02): fraction of the clip window covered by word timing. */
     wordTimingCoverage?: number;
+    /** Brief v11 E2: canonical timing coverage alias. */
+    timingCoverage?: number;
     uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
+    /** Brief v11 E2: text whose timing is uncertain or excluded. */
+    excludedOrUncertainText?: string;
   }
 
 /* -------------------------------------------------------------------------- */

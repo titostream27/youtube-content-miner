@@ -19,7 +19,11 @@ export interface FinalizedSlice {
   sliceApproximate?: boolean;
   /** Brief v6 5.3: fraction of window covered by word timing. */
   wordTimingCoverage?: number;
+  /** Brief v11 E2: canonical timing coverage alias. */
+  timingCoverage?: number;
   uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
+  /** Brief v11 E2: text whose timing is uncertain or excluded. */
+  excludedOrUncertainText?: string;
 }
 
 export interface FinalizeOutcome {
@@ -162,7 +166,9 @@ export function finalizeCandidate(
     sliceApproximate: slice.sliceApproximate,
     // Brief v6 5.3: carry coverage onto the final candidate.
     wordTimingCoverage: slice.wordTimingCoverage,
+    timingCoverage: slice.timingCoverage,
     uncoveredIntervalsSec: slice.uncoveredIntervalsSec,
+    excludedOrUncertainText: slice.excludedOrUncertainText,
     candidateId: opts.candidateId,
     generationRunId: opts.generationRunId,
     revision: opts.revision,
@@ -198,6 +204,10 @@ export function toFinalizedSlice(slice: TranscriptSlice): FinalizedSlice {
     speakerTurns: slice.speakerTurns,
     timingPrecision: slice.timingPrecision,
     sliceApproximate: slice.sliceApproximate,
+    wordTimingCoverage: slice.wordTimingCoverage,
+    timingCoverage: slice.timingCoverage,
+    uncoveredIntervalsSec: slice.uncoveredIntervalsSec,
+    excludedOrUncertainText: slice.excludedOrUncertainText,
   };
 }
 

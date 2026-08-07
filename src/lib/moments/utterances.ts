@@ -280,8 +280,12 @@ export interface TranscriptSlice {
   sliceApproximate: boolean;
   /** Brief v6 5.3 (M02): fraction of the window covered by word timing (0..1). */
   wordTimingCoverage: number;
+  /** Brief v11 E2: canonical alias consumed by final transcript consumers. */
+  timingCoverage: number;
   /** Brief v6 5.3 (M02): untimed intervals inside the window (diagnostics). */
   uncoveredIntervalsSec?: { startSec: number; endSec: number }[];
+  /** Brief v11 E2: source text not backed by trustworthy word timing. */
+  excludedOrUncertainText?: string;
 }
 
 /**
@@ -401,10 +405,24 @@ export function sliceTranscriptForRange(
     activeSpeech += iv.endSec - s;
     spCur = Math.max(spCur, iv.endSec);
   }
-  const windowDuration = Math.max(0.5, endSec - startSec);
-  // coverage >= 0.95 means (almost) every spoken second is word-timed.
-  const coverage =
-    activeSpeech >= 0.5 ? Math.min(1, mergedTimed / activeSpeech) : 0;
+  // Combine duration coverage with explicit token coverage. A partially timed
+  // utterance must never become exact merely because its timed words occupy
+  // most of the clipped wall-clock interval.
+  const sourceTokenTotal = overlapping.reduce(
+    (sum, u) => sum + (u.sourceTokenCount ?? countWords(u.text)),
+    0,
+  );
+  const timedTokenTotal = overlapping.reduce(
+    (sum, u) => sum + (u.timedTokenCount ?? ((u as { words?: unknown[] }).words?.length ?? 0)),
+    0,
+  );
+  const tokenCoverage = sourceTokenTotal > 0
+    ? Math.min(1, timedTokenTotal / sourceTokenTotal)
+    : 0;
+  // coverage >= 0.95 means (almost) every spoken second AND token is timed.
+  const coverage = activeSpeech >= 0.5
+    ? Math.min(1, mergedTimed / activeSpeech, tokenCoverage)
+    : 0;
 
   // Uncovered intervals = untimed utterance spans clipped to the window.
   const uncoveredIntervalsSec = untimedOverlap
@@ -413,6 +431,20 @@ export function sliceTranscriptForRange(
 
   const wordLevelText = wordsInside.map((w) => w.text).join(' ');
   const wordLevelCount = wordsInside.length;
+
+  // Preserve provenance for partial/approximate text. This is diagnostic text,
+  // not a caption payload: consumers can avoid quoting it as exact speech.
+  const uncertainTokens: string[] = [];
+  for (const u of overlapping) {
+    if (classifyTimingCompleteness(u) === 'full') continue;
+    const timed = new Set(
+      ((u as { words?: { text: string }[] }).words ?? []).map((w) => w.text.toLowerCase()),
+    );
+    uncertainTokens.push(
+      ...u.text.split(/\s+/).filter((token) => token && !timed.has(token.toLowerCase())),
+    );
+  }
+  const excludedOrUncertainText = uncertainTokens.join(' ').trim() || undefined;
 
   // Decide precision honestly:
   //   coverage >= 0.95 -> 'word' (exact)
@@ -498,7 +530,9 @@ export function sliceTranscriptForRange(
     sliceApproximate,
     // Brief v6 5.3 (M02): honest coverage + diagnostics.
     wordTimingCoverage: round2(coverage),
+    timingCoverage: round2(coverage),
     uncoveredIntervalsSec,
+    excludedOrUncertainText,
   };
 }
 
