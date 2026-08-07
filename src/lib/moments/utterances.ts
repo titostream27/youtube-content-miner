@@ -46,6 +46,15 @@ export interface EnrichedSentence {
    * words; sliceTranscriptForRange uses these for TRUE word-level slicing.
    */
   words?: { text: string; startSec: number; endSec: number }[];
+  /**
+   * Brief v10 C09 (V10-M02): honest timing provenance. A cue/utterance is
+   * word-timed ONLY when its timed tokens reasonably cover the source text
+   * (>=95% token coverage after normalization). These fields let slicing
+   * preserve untimed speech instead of silently dropping it.
+   */
+  sourceTokenCount?: number;
+  timedTokenCount?: number;
+  wordTimingCompleteness?: 'full' | 'partial' | 'none';
 }
 
 /** Backward-compatible alias used by earlier modules. */
@@ -284,6 +293,36 @@ export interface TranscriptSlice {
  * rendered window. Call this with the final boundaries and the full
  * utterance list; never reuse the rough segment's text/wordCount.
  */
+/**
+ * Brief v10 C09 (V10-M02): classify an utterance's word-timing completeness.
+ *
+ * full    — timed tokens reasonably cover the source (>=95% token coverage).
+ * partial — some tokens timed, but untimed source text must be preserved.
+ * none    — no word timing at all.
+ *
+ * The token coverage is computed on normalized tokens (lowercased), comparing
+ * the timed-words set against the source-text set. When the caller has already
+ * recorded explicit fields (sourceTokenCount / timedTokenCount /
+ * wordTimingCompleteness) those win; otherwise we infer from words.
+ */
+function classifyTimingCompleteness(u: EnrichedSentence): 'full' | 'partial' | 'none' {
+  const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
+  if (!Array.isArray(ws) || ws.length === 0) {
+    return 'none';
+  }
+  if (u.wordTimingCompleteness) {
+    return u.wordTimingCompleteness;
+  }
+  const srcCount = u.sourceTokenCount ?? countWords(u.text);
+  const timedCount = u.timedTokenCount ?? ws.length;
+  if (srcCount <= 0) {
+    return 'none';
+  }
+  const coverage = timedCount / srcCount;
+  return coverage >= 0.95 ? 'full' : 'partial';
+}
+
+
 export function sliceTranscriptForRange(
   utterances: EnrichedSentence[],
   startSec: number,
@@ -336,8 +375,12 @@ export function sliceTranscriptForRange(
   // spoken spans (timed words + untimed utterance spans), so natural pauses
   // and inter-word gaps do not dilute it. A fully word-timed clip with
   // pauses must still score ~1.0.
+  // Brief v10 C09 (V10-M02): an utterance is only "covered" when its word
+  // timing is FULL (>=95% token coverage). A PARTIALLY timed utterance's
+  // untimed tail must count as uncovered speech too — otherwise coverage is
+  // overstated and untimed words are silently treated as covered.
   const untimedOverlap = overlapping.filter(
-    (u) => !((u as { words?: unknown[] }).words && (u as { words: unknown[] }).words.length > 0),
+    (u) => classifyTimingCompleteness(u) !== 'full',
   );
   // Brief v7 M03: only utterances carrying speech text count toward active
   // speech — empty pause markers must not dilute coverage.
@@ -395,8 +438,12 @@ export function sliceTranscriptForRange(
     const segments: { at: number; i: number; text: string }[] = [];
     let order = 0;
     for (const u of overlapping) {
-      const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
-      if (Array.isArray(ws) && ws.length > 0) {
+      // Brief v10 C09 (V10-M02): classify completeness. A 'partial' utterance
+      // must preserve its FULL source text (never only the timed-word subset),
+      // otherwise untimed words silently disappear from the candidate text.
+      const completeness = classifyTimingCompleteness(u);
+      if (completeness === 'full') {
+        const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words!;
         const chunk = ws
           .filter((w) => w.endSec > startSec && w.startSec < endSec)
           .map((w) => w.text)
@@ -405,6 +452,9 @@ export function sliceTranscriptForRange(
           segments.push({ at: u.startSec, i: order++, text: chunk });
         }
       } else {
+        // 'partial' or 'none': keep the FULL source utterance text once so no
+        // in-window speech is dropped. Precision degrades honestly (hybrid /
+        // utterance) while content stays complete.
         const t = u.text.trim();
         if (t) {
           segments.push({ at: u.startSec, i: order++, text: t });
