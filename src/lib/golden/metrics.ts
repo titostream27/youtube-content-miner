@@ -311,9 +311,16 @@ export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: nu
     n: labels.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
+    // Brief v7 E01: hardNegativeFPR is a RATE bounded to [0,1] — the
+    // fraction of distinct hard-negative labels hit by >=1 prediction. A
+    // metric that counts overlap pairs (3 predictions on 1 negative => 3.0)
+    // is not a rate. The raw overlap count stays in hardNegativeFalsePositives.
     hardNegativeFPR: hardNegativeLabels.length === 0
       ? 0
-      : round2(assignment.hard_negative_overlaps.length / hardNegativeLabels.length),
+      : round2(
+          new Set(assignment.hard_negative_overlaps.map((o) => o.negativeLabelId)).size
+          / hardNegativeLabels.length,
+        ),
     hardNegativeFalsePositives: assignment.hard_negative_overlaps.length,
     ignoredLabels: ignoredLabels.length,
   };

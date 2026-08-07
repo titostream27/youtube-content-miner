@@ -229,6 +229,28 @@ describe('golden metrics (Phase 2 golden dataset)', () => {
     expect(m.n).toBe(2);
   });
 
+  // ── Brief v7 E01: hard-negative FPR is a bounded rate ──
+  it('hardNegativeFPR is a rate in [0,1], not an overlap count (E01)', () => {
+    // One hard-negative label hit by THREE predictions must yield FPR = 1.0
+    // (the label is hit), NOT 3.0 (the raw overlap count).
+    const labels = [
+      { clipId: 'pos', type: 'positive' as const, expectedScore: 90, expectedStartSec: 10, expectedEndSec: 20,
+        expectedContamination: 0.05, expectedStartComplete: true, expectedEndingComplete: true },
+      { clipId: 'neg', type: 'hard_negative' as const, expectedScore: 0, expectedStartSec: 30, expectedEndSec: 33,
+        expectedContamination: 0.95, expectedStartComplete: false, expectedEndingComplete: false },
+    ];
+    const preds: Prediction[] = [
+      { clipId: 'p0', score: 85, startSec: 30, endSec: 32.5, contamination: 0.9, startComplete: false, endingComplete: false },
+      { clipId: 'p1', score: 80, startSec: 30, endSec: 33, contamination: 0.9, startComplete: false, endingComplete: false },
+      { clipId: 'p2', score: 75, startSec: 30.5, endSec: 33, contamination: 0.9, startComplete: false, endingComplete: false },
+    ];
+    const m = evaluateGolden(labels, preds, 3);
+    // Raw overlap count = 3; rate must be bounded by the number of negatives.
+    expect(m.hardNegativeFalsePositives).toBe(3);
+    expect(m.hardNegativeFPR).toBeLessThanOrEqual(1);
+    expect(m.hardNegativeFPR).toBeCloseTo(1, 5);
+  });
+
   // ── Brief v5 G-01: positive and hard-negative evaluated independently ──
   it('a prediction overlapping BOTH positive and hard negative reports both (G-01)', () => {
     const labels = [
