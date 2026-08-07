@@ -163,53 +163,115 @@ export function matchByTemporalIoU(
   preds: Prediction[],
   threshold = 0.5,
 ): { label: GoldenLabel; pred: Prediction | null }[] {
-  // Brief v8 E01: maximum-cardinality bipartite matching (augmenting paths)
-  // over edges with IoU >= threshold. Among same-cardinality solutions we
-  // maximise total IoU by ordering augmenting-path candidates by descending
-  // IoU. Greedy highest-first can miss a valid two-match assignment
-  // (L1-P1 .90 / L1-P2 .80 / L2-P1 .85 / L2-P2 <.5).
+  // Brief v8 E01: maximum-cardinality bipartite matching.
+  // Brief v10 C11 (V10-E01): the matching must be LEXICOGRAPHIC — maximise
+  // cardinality FIRST, then the TOTAL IoU sum among all maximum-cardinality
+  // matchings, with a deterministic tie-break. A per-label descending
+  // augmenting-path heuristic does NOT guarantee the global total-IoU maximum
+  // (Section 10.2). We solve it as a min-cost max-flow on the bipartite graph:
+  //   - source -> label    (cap 1, cost 0)
+  //   - label  -> pred     (cap 1, cost = -(BIG + IoU*1e6)) when IoU>=thresh
+  //   - pred   -> sink     (cap 1, cost 0)
+  // BIG dominates the total-IoU term so one EXTRA valid match always beats
+  // any IoU difference (cardinality first). Successive shortest augmenting
+  // paths with SPFA (negative costs) send exactly the optimal flow.
+  //
+  // BIG must exceed max total IoU difference. IoU in [0,1] -> scaled to [0,1e6].
+  // With at most N labels, total IoU*1e6 <= N*1e6. Use BIG = 1e9 >> N*1e6.
   const n_labels = labels.length;
   const n_preds = preds.length;
-  // labelToPred[i] = pred index assigned to label i, or -1.
-  const labelToPred = new Array<number>(n_labels).fill(-1);
-  const predToLabel = new Array<number>(n_preds).fill(-1);
+  const BIG = 1_000_000_000;
 
-  const iou: number[][] = [];
+  // Build the label->pred IoU matrix (only edges >= threshold).
+  const valid: boolean[][] = [];
+  const iouVal: number[][] = [];
   for (let li = 0; li < n_labels; li += 1) {
-    iou.push([]);
+    valid.push([]);
+    iouVal.push([]);
     for (let pi = 0; pi < n_preds; pi += 1) {
-      iou[li]!.push(
-        temporalIoU(
-          preds[pi]!.startSec, preds[pi]!.endSec,
-          labels[li]!.expectedStartSec, labels[li]!.expectedEndSec,
-        ),
+      const v = temporalIoU(
+        preds[pi]!.startSec, preds[pi]!.endSec,
+        labels[li]!.expectedStartSec, labels[li]!.expectedEndSec,
       );
+      valid[li]!.push(v >= threshold);
+      iouVal[li]!.push(v);
     }
   }
 
-  // Try to match each label with an augmenting path. Try predictions in
-  // descending IoU order so, among max-cardinality solutions, total IoU is
-  // preference-ordered (deterministic, tie by pred index).
+  // Min-cost max-flow on a small graph (successive shortest augmenting path,
+  // SPFA for negative edge costs; N is tiny so this is fast + deterministic).
+  // Node layout: 0..nL-1 = labels, nL..nL+nP-1 = preds, plus S and T.
+  const S = n_labels + n_preds;
+  const T = n_labels + n_preds + 1;
+  const N = n_labels + n_preds + 2;
+  const cap: number[][] = Array.from({ length: N }, () => new Array<number>(N).fill(0));
+  const cost: number[][] = Array.from({ length: N }, () => new Array<number>(N).fill(0));
   for (let li = 0; li < n_labels; li += 1) {
-    const seen = new Set<number>();
-    const tryMatch = (labelIdx: number): boolean => {
-      // Prefer the best (highest-IoU) free prediction for this label first.
-      const order = Array.from({ length: n_preds }, (_, k) => k)
-        .filter((pi) => iou[labelIdx]![pi]! >= threshold)
-        .sort((a, b) => iou[labelIdx]![b]! - iou[labelIdx]![a]! || a - b);
-      for (const pi of order) {
-        if (seen.has(pi)) continue;
-        seen.add(pi);
-        const ownerPred = predToLabel[pi] as number; // -1 when unassigned
-        if (ownerPred === -1 || tryMatch(ownerPred)) {
-          predToLabel[pi] = labelIdx;
-          labelToPred[labelIdx] = pi;
-          return true;
+    cap[S]![li] = 1;
+  }
+  for (let pi = 0; pi < n_preds; pi += 1) {
+    cap[n_labels + pi]![T] = 1;
+  }
+  for (let li = 0; li < n_labels; li += 1) {
+    for (let pi = 0; pi < n_preds; pi += 1) {
+      if (!valid[li]![pi]) continue;
+      const c = -(BIG + Math.round((iouVal[li]![pi] || 0) * 1_000_000));
+      cap[li]![n_labels + pi] = 1;
+      cost[li]![n_labels + pi] = c;
+      cost[n_labels + pi]![li] = -c; // reverse edge
+    }
+  }
+
+  // Successive shortest augment while a negative-cost augmenting path exists.
+  // Each augmentation routes 1 unit (label->pred) and is always negative cost.
+  const parent = new Array<number>(N).fill(-1);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const dist = new Array<number>(N).fill(Infinity);
+    const inQueue = new Array<boolean>(N).fill(false);
+    parent.fill(-1);
+    dist[S] = 0;
+    const queue: number[] = [S];
+    inQueue[S] = true;
+    while (queue.length > 0) {
+      const u = queue.shift()!;
+      inQueue[u] = false;
+      for (let v = 0; v < N; v += 1) {
+        if ((cap[u]![v] ?? 0) <= 0) continue;
+        const nd = (dist[u] ?? Infinity) + (cost[u]![v] ?? 0);
+        if (nd < (dist[v] ?? Infinity)) {
+          dist[v] = nd;
+          parent[v] = u;
+          if (!inQueue[v]) {
+            inQueue[v] = true;
+            queue.push(v);
+          }
         }
       }
-      return false;
-    };
-    tryMatch(li);
+    }
+    if (dist[T] === Infinity) break; // no more augmenting path
+    if ((dist[T] ?? 0) >= 0) break; // only add strictly improving paths
+    // Send 1 unit (all capacities on matched edges are 1).
+    let v = T;
+    while (v !== S) {
+      const u = parent[v] ?? -1;
+      if (u < 0) break;
+      cap[u]![v] = (cap[u]![v] ?? 0) - 1;
+      cap[v]![u] = (cap[v]![u] ?? 0) + 1;
+      v = u;
+    }
+  }
+
+  // Extract the assignment: matched edge = label i -> pred j where reverse
+  // capacity (pred->label) is > 0 (i.e. flow was sent li -> pred).
+  const labelToPred = new Array<number>(n_labels).fill(-1);
+  for (let li = 0; li < n_labels; li += 1) {
+    for (let pi = 0; pi < n_preds; pi += 1) {
+      if ((cap[n_labels + pi]![li] ?? 0) > 0) {
+        labelToPred[li] = pi;
+        break;
+      }
+    }
   }
 
   // Build the result with unmatched labels appended (pred = null).
