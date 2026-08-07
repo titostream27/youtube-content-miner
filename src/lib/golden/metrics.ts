@@ -49,7 +49,14 @@ export interface GoldenMetrics {
   meanContaminationError: number;
   startCompleteAccuracy: number;
   endingCompleteAccuracy: number;
+  /** @deprecated ambiguous total label count; use nPositive/nHardNegative/nIgnored */
   n: number;
+  /** Brief v8 E02: explicit metric denominators. */
+  nPositive: number;
+  nHardNegative: number;
+  nIgnored: number;
+  nPredictions: number;
+  nMatchedPositive: number;
   /** Phase-2 F22: recall@IoU>=threshold over temporal matches. */
   temporalRecall: number;
   meanTemporalIoU: number;
@@ -156,32 +163,63 @@ export function matchByTemporalIoU(
   preds: Prediction[],
   threshold = 0.5,
 ): { label: GoldenLabel; pred: Prediction | null }[] {
-  const result: { label: GoldenLabel; pred: Prediction | null }[] = [];
-  // Greedy: highest-IoU assignment first, each label/pred used once.
-  // Brief v4 D1 (#8): label and prediction indices live in SEPARATE
-  // namespaces — a single Set<number> collides (label 0 and pred 0 are the
-  // same number) and silently drops crossing assignments.
-  const candidates: { li: number; pi: number; iou: number }[] = [];
-  for (let li = 0; li < labels.length; li += 1) {
-    for (let pi = 0; pi < preds.length; pi += 1) {
-      const iou = temporalIoU(
-        preds[pi]!.startSec, preds[pi]!.endSec,
-        labels[li]!.expectedStartSec, labels[li]!.expectedEndSec,
+  // Brief v8 E01: maximum-cardinality bipartite matching (augmenting paths)
+  // over edges with IoU >= threshold. Among same-cardinality solutions we
+  // maximise total IoU by ordering augmenting-path candidates by descending
+  // IoU. Greedy highest-first can miss a valid two-match assignment
+  // (L1-P1 .90 / L1-P2 .80 / L2-P1 .85 / L2-P2 <.5).
+  const n_labels = labels.length;
+  const n_preds = preds.length;
+  // labelToPred[i] = pred index assigned to label i, or -1.
+  const labelToPred = new Array<number>(n_labels).fill(-1);
+  const predToLabel = new Array<number>(n_preds).fill(-1);
+
+  const iou: number[][] = [];
+  for (let li = 0; li < n_labels; li += 1) {
+    iou.push([]);
+    for (let pi = 0; pi < n_preds; pi += 1) {
+      iou[li]!.push(
+        temporalIoU(
+          preds[pi]!.startSec, preds[pi]!.endSec,
+          labels[li]!.expectedStartSec, labels[li]!.expectedEndSec,
+        ),
       );
-      if (iou >= threshold) candidates.push({ li, pi, iou });
     }
   }
-  candidates.sort((x, y) => y.iou - x.iou);
-  const assignedLabels = new Set<number>();
-  const assignedPredictions = new Set<number>();
-  for (const c of candidates) {
-    if (assignedLabels.has(c.li) || assignedPredictions.has(c.pi)) continue;
-    assignedLabels.add(c.li);
-    assignedPredictions.add(c.pi);
-    result.push({ label: labels[c.li]!, pred: preds[c.pi]! });
+
+  // Try to match each label with an augmenting path. Try predictions in
+  // descending IoU order so, among max-cardinality solutions, total IoU is
+  // preference-ordered (deterministic, tie by pred index).
+  for (let li = 0; li < n_labels; li += 1) {
+    const seen = new Set<number>();
+    const tryMatch = (labelIdx: number): boolean => {
+      // Prefer the best (highest-IoU) free prediction for this label first.
+      const order = Array.from({ length: n_preds }, (_, k) => k)
+        .filter((pi) => iou[labelIdx]![pi]! >= threshold)
+        .sort((a, b) => iou[labelIdx]![b]! - iou[labelIdx]![a]! || a - b);
+      for (const pi of order) {
+        if (seen.has(pi)) continue;
+        seen.add(pi);
+        const ownerPred = predToLabel[pi] as number; // -1 when unassigned
+        if (ownerPred === -1 || tryMatch(ownerPred)) {
+          predToLabel[pi] = labelIdx;
+          labelToPred[labelIdx] = pi;
+          return true;
+        }
+      }
+      return false;
+    };
+    tryMatch(li);
   }
-  for (let li = 0; li < labels.length; li += 1) {
-    if (!assignedLabels.has(li)) result.push({ label: labels[li]!, pred: null });
+
+  // Build the result with unmatched labels appended (pred = null).
+  const result: { label: GoldenLabel; pred: Prediction | null }[] = [];
+  for (let li = 0; li < n_labels; li += 1) {
+    const pi = labelToPred[li] as number; // -1 when unmatched
+    const predForLabel = pi >= 0 ? preds[pi]! : null;
+    result.push(
+      pi >= 0 ? { label: labels[li]!, pred: predForLabel } : { label: labels[li]!, pred: null },
+    );
   }
   return result;
 }
@@ -309,6 +347,11 @@ export function evaluateGolden(labels: GoldenLabel[], preds: Prediction[], k: nu
     startCompleteAccuracy: round2(startCompleteAcc),
     endingCompleteAccuracy: round2(endingCompleteAcc),
     n: labels.length,
+    nPositive: positiveLabels.length,
+    nHardNegative: hardNegativeLabels.length,
+    nIgnored: ignoredLabels.length,
+    nPredictions: preds.length,
+    nMatchedPositive: positiveMatched.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
     // Brief v7 E01: hardNegativeFPR is a RATE bounded to [0,1] — the
@@ -426,6 +469,14 @@ export function evaluateGoldenLegacy(labels: GoldenLabel[], preds: Prediction[],
     topKRankAwareRecall: topKRankAwareRecall(labels, preds, k),
     meanBoundaryStartErrorSec: round2(start),
     meanBoundaryEndErrorSec: round2(end),
+    n: labels.length,
+    nPositive: labels.filter((l) => (l.type ?? 'positive') === 'positive').length,
+    nHardNegative: labels.filter((l) => (l.type ?? 'positive') === 'hard_negative').length,
+    nIgnored: labels.filter((l) => (l.type ?? 'positive') === 'ignore').length,
+    nPredictions: preds.length,
+    nMatchedPositive: Math.round(
+      temporalRecall * Math.max(1, labels.filter((l) => (l.type ?? 'positive') === 'positive').length),
+    ),
     meanContaminationError: round2(contaminationError(preds, labels)),
     startCompleteAccuracy: round2(
       binaryAccuracy(preds, labels, (p, l) => p.startComplete === l.expectedStartComplete),
@@ -433,7 +484,6 @@ export function evaluateGoldenLegacy(labels: GoldenLabel[], preds: Prediction[],
     endingCompleteAccuracy: round2(
       binaryAccuracy(preds, labels, (p, l) => p.endingComplete === l.expectedEndingComplete),
     ),
-    n: labels.length,
     temporalRecall: round2(temporalRecall),
     meanTemporalIoU: round2(meanTemporalIoU),
     hardNegativeFPR: 0,

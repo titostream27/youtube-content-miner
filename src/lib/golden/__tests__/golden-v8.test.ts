@@ -32,15 +32,16 @@ function P(id: string, s: number, e: number): Prediction {
 
 describe('V8-E01: maximum-cardinality temporal assignment', () => {
   it('crossing assignment produces two matches (greedy counterexample)', () => {
-    // Verified greedy-fail cases (greedy = 1 match, optimal = 2):
-    //   L1=[0,40] L2=[30,70] P1=[2,60] P2=[2,38]
-    //   greedy binds L1->P2 (highest-first) and loses L2; optimal L1->P2,L2->P1
-    const labels = [L('L1', 0, 40), L('L2', 30, 70)];
-    const preds = [P('P1', 2, 60), P('P2', 2, 38)];
-    const matches = matchByTemporalIoU(labels, preds, 0.5);
-    const matched = matches.filter((m) => m.pred !== null);
-    expect(matched.length).toBe(2);
-  });
+      // Verified: greedy (highest-IoU first) returns 1; maximum-cardinality
+      // matching returns 2. Config: L1=[0,35] L2=[25,55] P1=[0,55] P2=[4,25].
+      // Greedy binds L1->P1 (its best) and then cannot match L2; optimal is
+      // L1->P2, L2->P1.
+      const labels = [L('L1', 0, 35), L('L2', 25, 55)];
+      const preds = [P('P1', 0, 55), P('P2', 4, 25)];
+      const matches = matchByTemporalIoU(labels, preds, 0.5);
+      const matched = matches.filter((m) => m.pred !== null);
+      expect(matched.length).toBe(2);
+    });
 
   it('no prediction or label is used more than once', () => {
     const labels = [L('L1', 0, 10), L('L2', 1, 9)];
@@ -66,8 +67,6 @@ describe('V8-E01: maximum-cardinality temporal assignment', () => {
 
 describe('V8-E02: explicit metric denominator counts', () => {
   it('evaluateGolden exposes positive/hard-negative/ignored/prediction counts', () => {
-    // @ts-expect-error — nPositive / nHardNegative / nIgnored / nPredictions
-    // are added in C12; until then the fields are absent and this is RED.
     const m = evaluateGolden(
       [
         L('pos1', 0, 10),
