@@ -1,0 +1,22 @@
+{
+  "contract_version": "2.0",
+  "request_id": "req-result-partial",
+  "episode_id": "ep-result",
+  "job_id": "abc123part",
+  "state": "partial_failure",
+  "error": "1 of 2 clips failed",
+  "source_video": "/out/source.mp4",
+  "clips": [
+    {
+      "clip_id": "1",
+      "status": "ok",
+      "clip_url": "/out/job/short_01.mp4",
+      "duration_sec": 5.0
+    },
+    {
+      "clip_id": "2",
+      "status": "error",
+      "error": "encode failed"
+    }
+  ]
+}

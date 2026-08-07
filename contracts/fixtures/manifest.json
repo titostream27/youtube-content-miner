@@ -4,7 +4,11 @@
     "request": "render-request-v2.schema.json",
     "result": "render-result-v2.schema.json"
   },
-  "validators": ["json_schema", "zod", "pydantic"],
+  "validators": [
+    "json_schema",
+    "zod",
+    "pydantic"
+  ],
   "fixtures": {
     "valid": [
       "request-v1-legacy.json",
@@ -12,7 +16,9 @@
       "request-v2-preview.json",
       "request-v2-single-clip.json",
       "request-v2-word-timing.json",
-      "render-result-v2-single.json"
+      "render-result-v2-single.json",
+      "render-result-v2-failed.json",
+      "render-result-v2-partial.json"
     ],
     "invalid": [
       "request-v2-cue-outside-range.json",
