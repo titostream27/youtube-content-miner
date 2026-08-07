@@ -1,0 +1,36 @@
+{
+  "brief": "Post-v7 Integration & Runtime Closure Brief v8",
+  "date": "2026-08-07",
+  "repos": {
+    "youtube-content-miner": { "head": "5c1c23849ae7c837a85a53377a617ffe99843cca", "worktree": "clean" },
+    "AI-Youtube-Shorts-Generator": { "head": "a36eebf7354b3944b57eb60fd42e83121ba3da2c", "worktree": "clean" }
+  },
+  "test_evidence": {
+    "miner": { "vitest": 218, "files": 29, "tsc": "clean", "failed": 0 },
+    "renderer_windows_run1": { "passed": 147, "subtests": 42, "failed": 0, "seconds": 92.8 },
+    "renderer_windows_run2": { "passed": 147, "subtests": 42, "failed": 0, "seconds": 92.7 }
+  },
+  "media_evidence": {
+    "executed": true,
+    "sources": ["fixtures/visual/dual_speaker.mp4", "fixtures/visual/reaction.mp4", "fixtures/visual/hard_cut.mp4"],
+    "pipeline": [
+      { "output": "evidence_out/render1_final.mp4", "codec": "h264", "resolution": "1080x1920", "bytes": 31804 },
+      { "output": "evidence_out/reaction_final.mp4", "codec": "h264", "resolution": "1080x1920", "bytes": 37790 },
+      { "output": "evidence_out/hard_cut_final.mp4", "codec": "h264", "resolution": "1080x1920", "bytes": 45149 }
+    ],
+    "intermediate": "FFV1 lossless .silent.mkv, 150 frames per source, planner_hold_reason recorded"
+  },
+  "real_episode_eval": { "executed": false, "reason": "no network download of real podcasts / ASR transcripts in this run" },
+  "blocked_inputs": [
+    "network access to download >=10 real podcast episode URLs (YouTube)",
+    "ASR transcript pass (faster-whisper) to produce word-timed transcripts",
+    "approved-candidate render set from the real 10-episode corpus instead of local fixtures"
+  ],
+  "feature_readiness": "READY WITH LIMITS",
+  "runtime_gate": "BLOCKED for full real-media acceptance; pipeline executed on local fixtures",
+  "known_risks": [
+    "Real 10-episode intelligence acceptance not executed (G1)",
+    "Caption word-timing sync on real captions not verified (part of G2)",
+    "Live failure/restart/idempotency scenario battery run as unit/integration tests, not a live server + real download"
+  ]
+}
