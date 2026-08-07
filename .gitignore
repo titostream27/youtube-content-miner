@@ -47,3 +47,8 @@ yarn-error.log*
 !.vscode/extensions.json
 yt_at.txt
 yt_resp.json
+
+# brief v11 real-media eval outputs
+real_media_eval*.out
+real_media_prod_eval*.out
+realtest_one.txt

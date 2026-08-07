@@ -75,7 +75,7 @@ export const AGENT_ROLE_DEFINITIONS: Record<AgentRole, AgentRoleDefinition> = {
     providerEnv: 'AGENT_MOMENT_DETECTION_PROVIDER',
     modelEnv: 'AGENT_MOMENT_DETECTION_MODEL',
     temperature: 0.2,
-    maxOutputTokens: 2_000,
+    maxOutputTokens: 4_000,
     optional: true,
   },
   clip_scoring: {

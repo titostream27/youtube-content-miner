@@ -40,9 +40,13 @@ const BoundarySchema = z.object({
         ]),
         endingComplete: z.boolean(),
         endingConfidence: z.number().min(0).max(1),
-        nextTopicDetected: z.boolean(),
-        nextTopicStart: z.number().min(0).nullable(),
-        nextTopicContamination: z.number().min(0).max(1),
+        // These three fields are part of the canonical boundary contract but
+        // some models omit them when no next topic is detected. They have
+        // unambiguous defaults, so absent values must not fail the parse —
+        // otherwise the whole boundary refinement degrades to heuristic.
+        nextTopicDetected: z.boolean().default(false),
+        nextTopicStart: z.number().min(0).nullable().default(null),
+        nextTopicContamination: z.number().min(0).max(1).default(0),
         reason: z.string().max(300).default(''),
       }),
     )
@@ -120,6 +124,52 @@ function formatUtterance(u: Utterance): string {
   return `[${u.startSec.toFixed(1)}-${u.endSec.toFixed(1)}] ${u.text}`;
 }
 
+/**
+ * The system prompt contracts ~15s of context BEFORE each rough start and
+ * ~20s AFTER each rough end. Sending the whole episode transcript explodes
+ * the prompt (hundreds of utterances) and reasoning models spend their
+ * output budget on hidden reasoning, producing empty/invalid JSON. Filter to
+ * exactly the union of the contracted windows, preserving transcript order.
+ */
+const CONTEXT_BEFORE_SEC = 15;
+const CONTEXT_AFTER_SEC = 20;
+/** Hard cap on context utterances sent to the model. */
+const MAX_CONTEXT_UTTERANCES = 240;
+
+export function contextUtterances(
+  utterances: Utterance[],
+  candidates: { roughStartSec: number; roughEndSec: number }[],
+): Utterance[] {
+  if (candidates.length === 0 || utterances.length === 0) return [];
+  let minStart = Math.max(0, candidates[0]!.roughStartSec - CONTEXT_BEFORE_SEC);
+  let maxEnd = candidates[0]!.roughEndSec + CONTEXT_AFTER_SEC;
+  for (const c of candidates) {
+    minStart = Math.min(minStart, Math.max(0, c.roughStartSec - CONTEXT_BEFORE_SEC));
+    maxEnd = Math.max(maxEnd, c.roughEndSec + CONTEXT_AFTER_SEC);
+  }
+  const windowed = utterances.filter((u) => u.endSec >= minStart && u.startSec <= maxEnd);
+  // When candidates are spread across a long episode the union covers nearly
+  // the whole transcript. 9router's free-tier reasoning model degrades to
+  // empty completions on very large prompts, so cap the context sent to the
+  // model. Keep the window CONTIGUOUS around the candidates (not a sample):
+  // trim from both ends toward the candidates' midpoint.
+  if (windowed.length <= MAX_CONTEXT_UTTERANCES) return windowed;
+  const midStart = minStart + (maxEnd - minStart) / 2;
+  // Find the utterance nearest the midpoint to anchor the trim.
+  let anchor = 0;
+  let best = Infinity;
+  for (let i = 0; i < windowed.length; i += 1) {
+    const dist = Math.abs((windowed[i]!.startSec + windowed[i]!.endSec) / 2 - midStart);
+    if (dist < best) {
+      best = dist;
+      anchor = i;
+    }
+  }
+  const half = Math.floor(MAX_CONTEXT_UTTERANCES / 2);
+  const from = Math.max(0, anchor - half);
+  return windowed.slice(from, from + MAX_CONTEXT_UTTERANCES);
+}
+
 export async function refineBoundaries(
   request: BoundaryRefinementRequest,
 ): Promise<BoundaryRefinementResult> {
@@ -144,6 +194,9 @@ export async function refineBoundaries(
   if (!isAgentActive('moment_detection', request.overrides)) return passthrough;
 
   try {
+    // Send only the contracted context windows, not the whole episode
+    // transcript (see contextUtterances above — production JSON validity).
+    const context = contextUtterances(request.utterances, request.candidates);
     const { data } = await runJsonAgent({
       role: 'moment_detection',
       system: SYSTEM_PROMPT,
@@ -157,8 +210,8 @@ ${request.candidates
   )
   .join('\n')}
 
-Transcript context (utterances):
-${request.utterances.map(formatUtterance).join('\n')}`,
+Transcript context (utterances, ${context.length} total):
+${context.map(formatUtterance).join('\n')}`,
       parse: (value) => BoundarySchema.parse(value),
       overrides: request.overrides,
       ledger: request.ledger,
