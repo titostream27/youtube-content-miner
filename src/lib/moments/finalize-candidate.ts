@@ -88,7 +88,7 @@ export function finalizeCandidate(
   opts: FinalizeOptions,
   candidateStartSec: number,
   candidateEndSec: number,
-  finalValidation?: FinalRangeValidation,
+  finalValidation: FinalRangeValidation,
 ): FinalizeOutcome | null {
   // 2. Hard start gate against PRECEDING context.
   const startCheck = validateStartBoundary(utterances, candidateStartSec, candidateEndSec);
@@ -115,23 +115,22 @@ export function finalizeCandidate(
 
   // Brief v6 5.1/5.2 (M01): FULL final-range validation AFTER any start
   // repair — duration, ending/contamination, and next-topic boundaries must
-  // be re-checked against the FINAL range before slicing.
-  if (finalValidation) {
-    const finalDuration = finalEndSec - finalStartSec;
-    if (finalValidation.maxDurationSec !== undefined && finalDuration > finalValidation.maxDurationSec) {
-      return null;
-    }
-    if (finalValidation.minDurationSec !== undefined && finalDuration < finalValidation.minDurationSec) {
-      return null;
-    }
-    const topic = finalValidation.topicBoundaryAt?.(finalStartSec, finalEndSec);
-    if (topic !== null && topic !== undefined) {
-      return null;
-    }
-    const endingReason = finalValidation.validateEndingAndContamination?.(finalStartSec, finalEndSec);
-    if (endingReason !== null && endingReason !== undefined) {
-      return null;
-    }
+  // be re-checked against the FINAL range before slicing. Brief v10 M03:
+  // finalValidation is REQUIRED — production callers cannot omit it.
+  const finalDuration = finalEndSec - finalStartSec;
+  if (finalValidation.maxDurationSec !== undefined && finalDuration > finalValidation.maxDurationSec) {
+    return null;
+  }
+  if (finalValidation.minDurationSec !== undefined && finalDuration < finalValidation.minDurationSec) {
+    return null;
+  }
+  const topic = finalValidation.topicBoundaryAt?.(finalStartSec, finalEndSec);
+  if (topic !== null && topic !== undefined) {
+    return null;
+  }
+  const endingReason = finalValidation.validateEndingAndContamination?.(finalStartSec, finalEndSec);
+  if (endingReason !== null && endingReason !== undefined) {
+    return null;
   }
 
   // 5. Slice ONLY AFTER final timestamps are known (M-01 fix).
@@ -224,5 +223,30 @@ export function rescoreSegmentFromSlice(
     wordCount,
     wordsPerSecond,
     salience: Number(baseSalience.toFixed(3)),
+  };
+}
+
+
+/**
+ * Brief v10 C02 (V10-M03): EXPLICIT test-only helper to build a permissive
+ * FinalRangeValidation for unit tests. Production paths must supply a real
+ * validator (finalRangeValidationFor); this helper exists so the production
+ * parameter can stay REQUIRED without forcing every unit test to construct a
+ * full boundary/ending pipeline.
+ *
+ * It accepts optional guards so tests can opt into rejecting specific ranges
+ * (e.g. V10-MT01 hardMax). When omitted, everything passes.
+ */
+export function makePermissiveFinalValidationForTest(params?: {
+  maxDurationSec?: number;
+  minDurationSec?: number;
+  topicBoundaryAt?: (startSec: number, endSec: number) => number | null;
+  validateEndingAndContamination?: (startSec: number, endSec: number) => string | null;
+}): import('@/lib/moments/finalize-candidate').FinalRangeValidation {
+  return {
+    maxDurationSec: params?.maxDurationSec,
+    minDurationSec: params?.minDurationSec,
+    topicBoundaryAt: params?.topicBoundaryAt ?? (() => null),
+    validateEndingAndContamination: params?.validateEndingAndContamination ?? (() => null),
   };
 }

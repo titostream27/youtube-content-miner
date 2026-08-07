@@ -520,19 +520,34 @@ export async function twoPassHighlightSelection(
     // semantic path no longer performs an inline repair here — finalization
     // validates and repairs the start, and a rejected start yields null.
     const finalized = finalizeCandidate(
-      rough,
-      utterances,
-      (startSec, endSec) => sliceTranscriptForRange(utterances, startSec, endSec),
-      {
-        candidateId: candidateIdOf(rough),
-        generationRunId,
-        revision: 1,
-        boundarySource: 'semantic',
-        parentCandidateId: rough.candidateId || undefined,
-      },
-      finalStart,
-      finalEnd,
-    );
+          rough,
+          utterances,
+          (startSec, endSec) => sliceTranscriptForRange(utterances, startSec, endSec),
+          {
+            candidateId: candidateIdOf(rough),
+            generationRunId,
+            revision: 1,
+            boundarySource: 'semantic',
+            parentCandidateId: rough.candidateId || undefined,
+          },
+          finalStart,
+          finalEnd,
+          // Brief v10 C02 (V10-M01): the SEMANTIC path must run the SAME final
+          // range validation as the repaired path so a start repair made inside
+          // finalizeCandidate cannot expand past hardMax or cross a next-topic
+          // boundary. ending/boundary/endUtterance/nextUtterance are the pre-final
+          // evidence; finalRangeValidationFor recomputes ending/contamination
+          // against the ACTUAL final timestamps.
+          finalRangeValidationFor(
+            utterances,
+            finalStart,
+            finalEnd,
+            ending,
+            boundary,
+            endUtterance,
+            nextUtterance,
+          ),
+        );
     if (finalized === null) {
       rejectedCount += 1;
       warnings.push(`highlight ${rough.index}: finalize rejected (start gate or empty slice)`);

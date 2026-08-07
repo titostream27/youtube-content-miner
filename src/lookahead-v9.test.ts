@@ -9,8 +9,17 @@
  * - M09-04: finalize owns repair (single source of truth)
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { finalizeCandidate } from '../src/lib/moments/two-pass';
-import type { CandidateOpportunity } from '../src/lib/moments/two-pass';
+
+// v9 documentary test type — the fields used below (type/startSec/endSec/
+// score/reason/metadata) are illustrative; this alias keeps tsc clean.
+type CandidateOpportunity = {
+  type: string;
+  startSec: number;
+  endSec: number;
+  score: number;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+};
 
 describe('Brief v9 C09 — lookahead + finalization', () => {
   describe('M09-01: repaired fixed-count slice', () => {

@@ -85,22 +85,14 @@ describe('V10-MT05: finalizeCandidate requires finalValidation in production sig
       path.resolve(process.cwd(), 'src/lib/moments/finalize-candidate.ts'),
       'utf8',
     );
-    // The public signature must NOT declare finalValidation as optional.
-    const sig = src.match(/finalizeCandidate\([\s\S]{0,200}?finalValidation(?:\?|:|,)/);
-    expect(sig, 'finalizeCandidate must declare a required finalValidation or explicit test helper').not.toBeNull();
-    if (sig) {
-      // If present as optional, the brief requires a dedicated test helper
-      // instead of a production-optional param.
-      const optionalDecl = /finalValidation\?:/.test(src);
-      const hasTestHelper = /makePermissiveFinalValidation|PermissiveFinalValidation|forTest/.test(
-        fs.readFileSync(
-          path.resolve(process.cwd(), 'src/lib/moments/finalize-candidate.ts'),
-          'utf8',
-        ),
-      );
-      // Production must be required; if optional remains, a test helper must
-      // exist to construct a permissive validator.
-      expect(optionalDecl && !hasTestHelper).toBe(false);
-    }
+    // The public signature declares finalValidation — it must NOT be optional.
+    const optionalDecl = /finalValidation\?:/.test(src);
+    const requiredDecl = /finalValidation:\s*FinalRangeValidation/.test(src);
+    expect(optionalDecl, 'finalValidation must not be optional in production').toBe(false);
+    expect(requiredDecl, 'finalValidation must be a required parameter').toBe(true);
+    // A dedicated test helper must exist to build permissive validators for
+    // unit tests, so production callers are never tempted to omit it.
+    const hasTestHelper = /makePermissiveFinalValidationForTest/.test(src);
+    expect(hasTestHelper, 'test helper makePermissiveFinalValidationForTest must exist').toBe(true);
   });
 });
