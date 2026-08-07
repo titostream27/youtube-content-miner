@@ -331,17 +331,38 @@ export function sliceTranscriptForRange(
     mergedTimed += iv.endSec - s;
     cursor = Math.max(cursor, iv.endSec);
   }
-  const windowDuration = Math.max(0.5, endSec - startSec);
-  const coverage = Math.min(1, mergedTimed / windowDuration);
-
-  // Untimed overlapping utterances: their text must NOT be dropped (M02).
+  // Brief v7 M03: coverage is the fraction of ACTIVE SPEECH that is word
+  // timed, NOT words / full wall-clock. The denominator is the union of all
+  // spoken spans (timed words + untimed utterance spans), so natural pauses
+  // and inter-word gaps do not dilute it. A fully word-timed clip with
+  // pauses must still score ~1.0.
   const untimedOverlap = overlapping.filter(
     (u) => !((u as { words?: unknown[] }).words && (u as { words: unknown[] }).words.length > 0),
   );
-  const untimedText = untimedOverlap
-    .map((u) => u.text.trim())
-    .filter(Boolean)
-    .join(' ');
+  // Brief v7 M03: only utterances carrying speech text count toward active
+  // speech — empty pause markers must not dilute coverage.
+  const untimedSpans = untimedOverlap
+    .filter((u) => u.text.trim().length > 0)
+    .map((u) => ({
+      startSec: Math.max(u.startSec, startSec),
+      endSec: Math.min(u.endSec, endSec),
+    }));
+  const spokenSpans = [...timedIntervals, ...untimedSpans]
+    .filter((iv) => iv.endSec > iv.startSec)
+    .sort((a, b) => a.startSec - b.startSec);
+  let activeSpeech = 0;
+  let spCur = startSec;
+  for (const iv of spokenSpans) {
+    if (iv.endSec <= spCur) continue;
+    const s = Math.max(iv.startSec, spCur);
+    activeSpeech += iv.endSec - s;
+    spCur = Math.max(spCur, iv.endSec);
+  }
+  const windowDuration = Math.max(0.5, endSec - startSec);
+  // coverage >= 0.95 means (almost) every spoken second is word-timed.
+  const coverage =
+    activeSpeech >= 0.5 ? Math.min(1, mergedTimed / activeSpeech) : 0;
+
   // Uncovered intervals = untimed utterance spans clipped to the window.
   const uncoveredIntervalsSec = untimedOverlap
     .map((u) => ({ startSec: Math.max(u.startSec, startSec), endSec: Math.min(u.endSec, endSec) }))
@@ -366,9 +387,36 @@ export function sliceTranscriptForRange(
   } else if (coverage > 0) {
     timingPrecision = 'hybrid';
     sliceApproximate = true;
-    // Merge timed words + untimed text; avoid duplicating timed words that
-    // are already inside untimed utterances.
-    text = untimedText ? `${wordLevelText} ${untimedText}`.trim() : wordLevelText;
+    // Brief v7 M04: build hybrid text CHRONOLOGICALLY. Merge per-utterance
+    // timed word spans and untimed utterance text ordered by (startSec,
+    // endSec), so A(timed)->B(untimed)->C(timed) yields "A B C", never
+    // "A C B". Timed words for an utterance already carry that utterance's
+    // text, so we don't double-count.
+    const segments: { at: number; i: number; text: string }[] = [];
+    let order = 0;
+    for (const u of overlapping) {
+      const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
+      if (Array.isArray(ws) && ws.length > 0) {
+        const chunk = ws
+          .filter((w) => w.endSec > startSec && w.startSec < endSec)
+          .map((w) => w.text)
+          .join(' ');
+        if (chunk) {
+          segments.push({ at: u.startSec, i: order++, text: chunk });
+        }
+      } else {
+        const t = u.text.trim();
+        if (t) {
+          segments.push({ at: u.startSec, i: order++, text: t });
+        }
+      }
+    }
+    segments.sort((a, b) => a.at - b.at || a.i - b.i);
+    text = segments
+      .map((s) => s.text)
+      .filter(Boolean)
+      .join(' ')
+      .trim();
     wordCount = countWords(text);
   } else {
     // No word timing — slice at utterance level (NOT cue level).

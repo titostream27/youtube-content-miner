@@ -141,6 +141,30 @@ function validateBoundary(
 }
 
 /**
+ * Brief v7 M01 — collect the utterances following `endIdx` whose START time
+ * falls within `lookaheadSec` of `endSec`. This is a TIME window, never a
+ * slice of N utterances: `nextTopicLookaheadSec` is a seconds value and must
+ * not be used as an Array.slice count.
+ */
+function followingWithinLookaheadSec(
+  utterances: Utterance[],
+  endIdx: number,
+  endSec: number,
+  lookaheadSec: number,
+): Utterance[] {
+  if (endIdx < 0 || endIdx >= utterances.length) return [];
+  const horizon = endSec + lookaheadSec;
+  const out: Utterance[] = [];
+  for (let i = endIdx + 1; i < utterances.length; i++) {
+    const u = utterances[i];
+    if (u === undefined) break;
+    if (u.startSec > horizon) break;
+    out.push(u);
+  }
+  return out;
+}
+
+/**
  * Brief v6 5.1 (M01) — rebuild a FinalRangeValidation for the two-pass
  * finalizeCandidate call. After a start repair moves the window backward,
  * the ending/topic-boundary/contamination evidence MUST be recomputed for
@@ -165,7 +189,9 @@ function finalRangeValidationFor(
       if (endIdx < 0) return null;
       const endU = utterances[endIdx]!;
       const nxt = endIdx + 1 < utterances.length ? utterances[endIdx + 1]! : null;
-      const following = endIdx >= 0 ? utterances.slice(endIdx + 1, endIdx + 1 + h.nextTopicLookaheadSec) : [];
+      const following = followingWithinLookaheadSec(
+        utterances, endIdx, endU.startSec, h.nextTopicLookaheadSec,
+      );
       const b = nxt
         ? detectTopicBoundary(endU, nxt, following, h.nextTopicLookaheadSec)
         : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
@@ -179,7 +205,9 @@ function finalRangeValidationFor(
       if (endIdx < 0) return 'no ending utterance in final range';
       const endU = utterances[endIdx]!;
       const nxt = endIdx + 1 < utterances.length ? utterances[endIdx + 1]! : null;
-      const following = endIdx >= 0 ? utterances.slice(endIdx + 1, endIdx + 1 + h.nextTopicLookaheadSec) : [];
+      const following = followingWithinLookaheadSec(
+        utterances, endIdx, endU.startSec, h.nextTopicLookaheadSec,
+      );
       const ending = classifyEnding(endU, nxt, following);
       const b = nxt
         ? detectTopicBoundary(endU, nxt, following, h.nextTopicLookaheadSec)
@@ -487,22 +515,10 @@ export async function twoPassHighlightSelection(
       finalStart = repairedStart;
     }
     const startCompleteFinal = validateStartBoundary(utterances, finalStart, finalEnd);
-    endingById.set(rough.index, {
-      endingType: ending.endingType,
-      endingConfidence: round(ending.endingConfidence, 2),
-      nextTopicRemoved: boundary.nextTopicDetected,
-      nextTopicStartSec: boundary.nextTopicStart !== null ? round(boundary.nextTopicStart, 2) : null,
-      nextTopicContamination: round(boundary.contamination, 2),
-      boundaryStatus: 'refined',
-      repairReason: undefined,
-      roughStartSec: rough.startSec,
-      roughEndSec: rough.endSec,
-      boundaryConfidence: round(ending.endingConfidence, 2),
-      startComplete: startCompleteFinal.startComplete,
-    });
-    // Brief v5 M-01: slice is created INSIDE finalizeCandidate AFTER the
-    // start gate (finalStart is already final here; finalizeCandidate
-    // re-validates and only then slices). Empty slice -> null.
+    // Brief v7 M02: endingById debug metadata MUST be recorded from the
+    // FINALIZED range. finalizeCandidate can repair start; storing it before
+    // finalize would describe the pre-final range. So finalize FIRST, then
+    // record metadata computed against finalized.finalStartSec/EndSec.
     const finalized = finalizeCandidate(
       rough,
       utterances,
@@ -523,6 +539,33 @@ export async function twoPassHighlightSelection(
       console.warn(`[two-pass] reject idx=${rough.index}: finalize rejected`);
       continue;
     }
+    // Record ending metadata against the ACTUAL final range (M02).
+    const finalEndIdx = utteranceAtOrBefore(utterances, finalized.finalEndSec);
+    const finalEndU = finalEndIdx >= 0 ? utterances[finalEndIdx]! : null;
+    const finalNxt = finalEndIdx >= 0 && finalEndIdx + 1 < utterances.length ? utterances[finalEndIdx + 1]! : null;
+    const finalFollowing = finalEndIdx >= 0
+      ? followingWithinLookaheadSec(utterances, finalEndIdx, finalEndU?.startSec ?? finalized.finalEndSec, config.pipeline.highlight.nextTopicLookaheadSec)
+      : [];
+    const finalEnding = finalEndU
+      ? classifyEnding(finalEndU, finalNxt, finalFollowing)
+      : { endingType: 'UNKNOWN' as const, endingConfidence: 0.3, endingComplete: false };
+    const finalBoundary = finalEndU
+      ? detectTopicBoundary(finalEndU, finalNxt, finalFollowing, config.pipeline.highlight.nextTopicLookaheadSec)
+      : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
+    const startCompleteFinal2 = validateStartBoundary(utterances, finalized.finalStartSec, finalized.finalEndSec);
+    endingById.set(rough.index, {
+      endingType: finalEnding.endingType,
+      endingConfidence: round(finalEnding.endingConfidence, 2),
+      nextTopicRemoved: finalBoundary.nextTopicDetected,
+      nextTopicStartSec: finalBoundary.nextTopicStart !== null ? round(finalBoundary.nextTopicStart, 2) : null,
+      nextTopicContamination: round(finalBoundary.contamination, 2),
+      boundaryStatus: finalized.repairedStart ? 'repaired' : 'refined',
+      repairReason: finalized.repairedStart ? 'finalize start repair' : undefined,
+      roughStartSec: rough.startSec,
+      roughEndSec: rough.endSec,
+      boundaryConfidence: round(finalEnding.endingConfidence, 2),
+      startComplete: startCompleteFinal2.startComplete,
+    });
     segments.push(finalized.segment);
   }
 
