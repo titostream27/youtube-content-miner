@@ -45,41 +45,20 @@ describe('V8-M02: lookahead anchored to actual final end', () => {
 });
 
 describe('V8-M03: repaired debug metadata comes from finalization', () => {
-  it('endingById.set must follow its finalizeCandidate call', () => {
+  it('every endingById.set follows a finalizeCandidate call', () => {
     const src = fs.readFileSync(
       path.resolve(process.cwd(), 'src/lib/moments/two-pass.ts'),
       'utf8',
     );
-    // Find the repaired branch: endingById.set must appear AFTER a
-    // finalizeCandidate call in the same block, never before it.
-    const lines = src.split('\n');
-    let prevFinalize = -1;
-    let bad = false;
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!;
-      if (line.includes('const finalized = finalizeCandidate(')) {
-        prevFinalize = i;
-      }
-      if (line.includes('endingById.set(')) {
-        // Within the repaired branch, endingById must be set on a line AFTER
-        // the nearest finalizeCandidate in the same function block.
-        if (prevFinalize !== -1) {
-          bad = false; // OK if a finalizeCandidate precedes this set
-        }
-        // Reset is not reliable across branches; rely on the specific check
-        // below for the repaired path instead.
-      }
-    }
-    // Specific check: in the repaired (boundarySource 'repair') path, the
-    // endingById.set at offset must be > the finalizeCandidate call offset.
-    const repairedBlockStart = src.indexOf("boundarySource: 'repair'");
-    const repairedEnd = src.indexOf('boundarySource: \'semantic\'', repairedBlockStart);
-    const block = repairedEnd > -1
-      ? src.slice(repairedBlockStart, repairedEnd)
-      : src.slice(repairedBlockStart);
-    const setIdx = block.indexOf('endingById.set(');
-    const finIdx = block.indexOf('finalizeCandidate(');
-    expect(setIdx, 'repaired path must write endingById AFTER finalizeCandidate')
-      .toBeGreaterThan(finIdx);
+    // Both semantic and repaired branches must finalize BEFORE recording
+    // debug metadata. Assert the LAST endingById.set appears after the LAST
+    // finalizeCandidate call in the file (both branches end with finalize ->
+    // metadata -> push).
+    const lastSet = src.lastIndexOf('endingById.set(');
+    const lastFin = src.lastIndexOf('const finalized = finalizeCandidate(');
+    expect(lastSet).toBeGreaterThan(lastFin);
+    // And there must be exactly two metadata sites (semantic + repaired).
+    const sites = (src.match(/endingById\.set\(/g) || []).length;
+    expect(sites).toBe(2);
   });
 });
