@@ -14,7 +14,7 @@
  *   ET03  exact tie -> deterministic across repeated runs.
  */
 import { describe, it, expect } from 'vitest';
-import { matchByTemporalIoU, temporalIoU, GoldenLabel, Prediction } from '../metrics';
+import { computeAssignmentResult, matchByTemporalIoU, temporalIoU, GoldenLabel, Prediction } from '../metrics';
 
 type L = GoldenLabel;
 type P = Prediction;
@@ -106,5 +106,26 @@ describe('V10-E01: lexicographic (max cardinality, then max total IoU)', () => {
     const a = JSON.stringify(matchByTemporalIoU(labels, preds, 0.5));
     const b = JSON.stringify(matchByTemporalIoU(labels, preds, 0.5));
     expect(a).toBe(b);
+  });
+});
+
+describe('EV11-04/05: canonical assignment boundaries and negative isolation', () => {
+  it('EV11-04 — positive assignment and hard-negative FP are independent', () => {
+    const positive = tmp(0, 10);
+    const negative: L = { ...tmp(0, 10), clipId: 'negative-1', type: 'hard_negative' };
+    const prediction = p(0, 10);
+    const result = computeAssignmentResult([positive, negative], [prediction], 0.5);
+    expect(result.positive_matches).toHaveLength(1);
+    expect(result.hard_negative_overlaps).toHaveLength(1);
+    expect(result.hard_negative_overlaps[0]!.predictionId).toBe(prediction.clipId);
+  });
+
+  it('EV11-05 — matching uses temporal boundaries, not candidate IDs', () => {
+    const label = tmp(10, 20);
+    const prediction = { ...p(10, 20), clipId: 'renderer-generated-id' };
+    const result = computeAssignmentResult([label], [prediction], 0.5);
+    expect(result.positive_matches).toHaveLength(1);
+    expect(result.positive_matches[0]!.labelId).toBe(label.clipId);
+    expect(result.positive_matches[0]!.predictionId).toBe(prediction.clipId);
   });
 });
