@@ -405,7 +405,14 @@ export async function twoPassHighlightSelection(
         const repEndIdx = utteranceAtOrBefore(utterances, repair.finalEndSec);
         const repEnd = repEndIdx >= 0 ? utterances[repEndIdx]! : null;
         const repNext = repEndIdx >= 0 && repEndIdx + 1 < utterances.length ? utterances[repEndIdx + 1]! : null;
-        const repFollowing = repEndIdx >= 0 ? utterances.slice(repEndIdx + 1, repEndIdx + 4) : [];
+        const repFollowing = repEndIdx >= 0
+          ? followingWithinLookaheadSec(
+            utterances,
+            repEndIdx,
+            repair.finalEndSec,
+            config.pipeline.highlight.nextTopicLookaheadSec,
+          )
+          : [];
         const repEnding = repEnd
           ? classifyEnding(repEnd, repNext, repFollowing)
           : { endingType: 'UNKNOWN' as const, endingConfidence: 0.3, endingComplete: false };
