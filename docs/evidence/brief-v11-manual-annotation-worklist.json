@@ -1,0 +1,22 @@
+{
+  "schema_version": "brief-v11-manual-annotations-v1",
+  "status": "INCOMPLETE_REQUIRES_MANUAL_REVIEW",
+  "warning": "These are annotation slots, not completed ground truth. No timestamp is injected into production selection or G3 rendering.",
+  "required_publishable": 10,
+  "required_hard_negative": 10,
+  "completed_publishable": 0,
+  "completed_hard_negative": 0,
+  "episodes": [
+    {"episode_index":1,"video_id":"I6wCuvvaRPI","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":2,"video_id":"GOqEl4ADyVk","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":3,"video_id":"2HLGcRpw1hc","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":4,"video_id":"UZ1kCEGjYX0","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":5,"video_id":"Hb2rKGfIOrM","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":6,"video_id":"g2cQ2kD6lzs","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":7,"video_id":"Ive926sC6mc","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":8,"video_id":"3NSC5nps3OM","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":9,"video_id":"376JmatmnaI","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}},
+    {"episode_index":10,"video_id":"XuoqKYxDHVc","publishable":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"hook":null,"topic":null,"payoff":null,"self_contained_reason":null,"ending_complete":null},"hard_negative":{"status":"pending_manual_playback","start_sec":null,"end_sec":null,"reason":null}}
+  ],
+  "gate_verdict": "BLOCKED"
+}
