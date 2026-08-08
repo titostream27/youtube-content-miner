@@ -158,3 +158,5 @@ Correctness recovery itself passed: invalid temporal construction is fixed, the 
 1. G2 systemic low yield: 1 accepted clip across 10 episodes.
 2. Missing 10 publishable + 10 hard-negative human annotations and Top-1/Top-3 comparison.
 3. Missing two genuine speaker-switch production selections and 3/3 full playback reviews.
+
+Reviewer tooling for the manual phase is ready in `docs/brief-v11-g2-g3-continuation-plan.md` and `docs/evidence/brief-v11-manual-annotation-worksheet.md` (10 episodes x top-4 candidates with watch links). The human review itself is intentionally left unfinished; it cannot be automated or fabricated.
