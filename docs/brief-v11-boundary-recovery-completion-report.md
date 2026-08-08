@@ -10,19 +10,20 @@
 |---|---|---|
 | Boundary correctness | BR-01..BR-12, generated invariants, semantic invalid-range regression; post-fix real-media negative duration count = 0 | **PASS** |
 | Miner local CI | `npm ci`; TypeScript 0; Vitest 266 passed; ESLint 0 errors / 0 warnings | **PASS** |
-| Miner GitHub Actions | Final recovery SHA not pushed/run yet | **BLOCKED** |
+| Miner GitHub Actions | Run `31252910568` on `5d7be6f…` (exact recovery SHA): success | **PASS** |
 | G1 | `docs/evidence/brief-v11-g1-corpus.json`: 10 unique usable real episodes, 10 non-empty transcripts | **PASS (10/10)** |
 | G2 production evaluation | `docs/evidence/brief-v11-g2-production-summary.jsonl`: all 10 evaluated; 1 accepted clip; 0 negative durations | **BLOCKED** |
 | G2 manual corpus | Worklist exists, but 0/10 publishable and 0/10 hard-negative annotations have human playback review | **BLOCKED** |
 | Renderer local CI | 205 passed + 44 subtests; required visual suite executed: 4 passed + 16 subtests, 0 skip | **PASS** |
-| Renderer GitHub Actions | Final recovery SHA not pushed/run yet; latest pushed fork run was red | **BLOCKED** |
+| Renderer GitHub Actions | Run `31253140819` on `f3e7f7d…` (exact recovery SHA): success | **PASS** |
 | G3 | Only Iqbal matches current post-fix production selection; no two genuine speaker-switch selections; no 3/3 full playback reviews | **BLOCKED** |
 | Documentation consistency | This report and correction records supersede contradictory acceptance claims | **PASS** |
 
 ## 1. Repository SHAs
 
 - Miner audited baseline: `35de09822132b8f0f4a0fb58633426fd0d202a97`.
-- Miner recovery final SHA: pending commit.
+- Miner recovery final SHA: `5d7be6f93904b9a40156fb912ef0bda990700bdb`.
+- Renderer recovery final SHA: `f3e7f7d70fdbe15f09cc77bd33b67f1a520af605`.
 - Renderer local recovery base: `a93e7813146bf2016812d0c91083681d66b5e589`.
 - Renderer pushed fork `main` at audit: `1a04a5e155a643ac415336dfce4be1d544e0570d`.
 - Renderer upstream `main` at audit: `c30376e94326f8674793c960b482eb532ffbf1f6`.
@@ -50,7 +51,9 @@ Negative duration is therefore classified as a production boundary correctness d
 - `scripts/brief-v11-annotation-candidates.ts`: reviewer aid only; does not inject timestamps into production.
 - `docs/evidence/*`: G1 manifest, G2 machine summary, G3 artifact classification, and manual worklist.
 - Renderer `.github/workflows/ci.yml`: install from correct working directory, generate deterministic visual fixtures, verify `cv2` before pytest.
-- Renderer `requirements.txt`: add `pytest` and `opencv-python-headless` to the single CI dependency set.
+- Renderer `requirements.txt`: add `pytest`, `opencv-python-headless`, `fastapi`, `pydantic`, `uvicorn`, and `httpx` to the single CI dependency set.
+- Renderer `render_service.py`: replace Windows-only `ctypes.windll` free-disk checks in `/readyz` and `/health` with cross-platform `shutil.disk_usage`.
+- Renderer `.github/workflows/ci.yml`: install `ffmpeg` on the runner before pytest.
 - Renderer `test_visual_regression.py`: remove missing-OpenCV skip; import must fail fast.
 
 ## 4. Tests added
@@ -92,10 +95,13 @@ CI-parity environment used only `requirements.txt`.
 
 ## 6. GitHub Actions
 
-- Miner baseline run `31248230891` for `35de098...`: success. No final recovery run exists until push.
-- Renderer latest pushed-fork run inspected: `31205757569` for `1a04a5e...`: failure. No final recovery run exists until push.
+- Miner baseline run `31248230891` for `35de098...`: success.
+- Miner final recovery run `31252910568` for `5d7be6f...`: **success**.
+- Renderer pre-fix pushed-fork run `31205757569` for `1a04a5e...`: failure (missing fastapi/pydantic at collection).
+- Renderer intermediate run `31252990091` for `034ec1a...`: failure (ffmpeg absent; readyz used Windows-only ctypes.windll).
+- Renderer final recovery run `31253140819` for `f3e7f7d...`: **success**.
 
-Both final CI gates remain BLOCKED until final commits are pushed and exact-SHA runs are green.
+Both final exact-SHA CI runs are green.
 
 ## 7. G1
 
@@ -140,16 +146,15 @@ Evidence: `docs/evidence/brief-v11-g3-artifact-manifest.json`.
 
 - ASR cue fragments have no word timing and frequently yield ending confidence 0.78 below the configured 0.82 threshold. Thresholds were not lowered.
 - A classifier adaptation is not justified as a silent follow-up patch in this pass because the brief requires manual listening evidence across at least three usable episodes first. That evidence is not yet complete.
-- GitHub Actions final-SHA evidence requires push access and completed remote runs.
+- GitHub Actions: final miner run `31252910568` and final renderer run `31253140819` are green on the exact recovery SHAs.
 - Manual annotation and full playback require actual human media review; neither is fabricated here.
 
 ## 11. Final verdict
 
 **BLOCKED**
 
-Correctness recovery itself passed: invalid temporal construction is fixed and the 10-episode real run has zero negative durations. Feature readiness is still blocked by:
+Correctness recovery itself passed: invalid temporal construction is fixed, the 10-episode real run has zero negative durations, and both final GitHub Actions runs are green. Feature readiness is still blocked by:
 
 1. G2 systemic low yield: 1 accepted clip across 10 episodes.
 2. Missing 10 publishable + 10 hard-negative human annotations and Top-1/Top-3 comparison.
 3. Missing two genuine speaker-switch production selections and 3/3 full playback reviews.
-4. Missing green GitHub Actions runs tied to the final miner and renderer recovery SHAs.
