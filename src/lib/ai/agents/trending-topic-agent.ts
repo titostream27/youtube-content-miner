@@ -111,7 +111,7 @@ export function fallbackTrendingTopics(videos: VideoItem[], maxTopics = 3): Tren
   }
 
   const ranked = Array.from(phraseCounts.entries())
-    .filter(([phrase, count]) => count >= 2) // shared by >=2 videos = real signal
+    .filter(([, count]) => count >= 2) // shared by >=2 videos = real signal
     .filter(([phrase]) => !shortFormHints.some((hint) => phrase.includes(hint)))
     .sort((a, b) => b[1] - a[1])
     .slice(0, maxTopics)

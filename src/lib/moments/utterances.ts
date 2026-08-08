@@ -346,7 +346,6 @@ export function sliceTranscriptForRange(
   // Compute the union of timed (word) intervals and untimed overlap.
   const wordsInside: { text: string; startSec: number; endSec: number }[] = [];
   const timedIntervals: { startSec: number; endSec: number }[] = [];
-  let timedTotal = 0;
   for (const u of overlapping) {
     const ws = (u as { words?: { text: string; startSec: number; endSec: number }[] }).words;
     if (Array.isArray(ws) && ws.length > 0) {

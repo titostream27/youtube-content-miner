@@ -8,7 +8,7 @@
  * - M09-03: metadata after finalize (not during)
  * - M09-04: finalize owns repair (single source of truth)
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // v9 documentary test type — the fields used below (type/startSec/endSec/
 // score/reason/metadata) are illustrative; this alias keeps tsc clean.

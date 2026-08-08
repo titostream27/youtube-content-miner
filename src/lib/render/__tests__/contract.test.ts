@@ -92,6 +92,12 @@ function makeV2(overrides: Record<string, unknown> = {}): Record<string, unknown
   return { ...valid, ...overrides };
 }
 
+/** First clip of the default valid payload, cast once (avoids `as any[]`). */
+function firstClip(): Record<string, unknown> {
+  const clips = (makeV2().clips ?? []) as unknown as Record<string, unknown>[];
+  return clips[0]!;
+}
+
 describe('buildRenderContract (brief §16-17)', () => {
   it('produces a valid v2.0 contract', () => {
     const contract = buildRenderContract('ep-1', [fakeClip()]);
@@ -183,32 +189,32 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
   });
 
   it('rejects negative start_sec', () => {
-    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: -1 }];
+    const clips = [{ ...firstClip(), start_sec: -1 }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects end_sec <= start_sec', () => {
-    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: 5.0, end_sec: 5.0 }];
+    const clips = [{ ...firstClip(), start_sec: 5.0, end_sec: 5.0 }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects caption cue outside clip range', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       caption_plan: { language: 'en', highlight_terms: [], cues: [{ start_sec: 6.0, end_sec: 7.0, text: 'late' }] },
     }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects duplicate clip_ids', () => {
-    const clip = (makeV2().clips as any[])[0];
+    const clip = firstClip();
     const clips = [clip, { ...clip, start_sec: 6.0, end_sec: 7.0 }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects invalid preferred_layout enum', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       layout_plan: { preferred_layout: 'weird_layout', expected_speakers: null, allow_split: true, allow_blur_background: true },
     }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
@@ -216,7 +222,7 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
 
   it('rejects editing event outside clip range', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       editing_events: [{ time_sec: 9.0, type: 'punchline', intensity: 0.5 }],
     }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
@@ -228,13 +234,13 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
 
   // ── Phase-2 correctness F19: strict cross-field invariants ──────────────
   it('rejects NaN / non-finite start_sec', () => {
-    const clips = [{ ...(makeV2().clips as any[])[0], start_sec: Number.NaN }];
+    const clips = [{ ...firstClip(), start_sec: Number.NaN }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects out-of-order caption cues', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       caption_plan: {
         language: 'en', highlight_terms: [],
         cues: [
@@ -248,7 +254,7 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
 
   it('rejects cue with end_sec <= start_sec', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       caption_plan: {
         language: 'en', highlight_terms: [],
         cues: [{ start_sec: 2.0, end_sec: 2.0, text: 'zero width' }],
@@ -259,14 +265,14 @@ describe('RenderRequestV2Schema contract rules (Phase 1 §5.5)', () => {
 
   it('rejects narrative payoff before hook', () => {
     const clips = [{
-      ...(makeV2().clips as any[])[0],
+      ...firstClip(),
       narrative: { main_topic: 'm', ending_type: 'c', hook_end_sec: 3.0, payoff_start_sec: 2.0 },
     }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 
   it('rejects non-positive numeric clip_id', () => {
-    const clips = [{ ...(makeV2().clips as any[])[0], clip_id: 0 }];
+    const clips = [{ ...firstClip(), clip_id: 0 }];
     expect(() => RenderRequestV2Schema.parse(makeV2({ clips }))).toThrow();
   });
 });

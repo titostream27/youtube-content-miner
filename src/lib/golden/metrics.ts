@@ -225,7 +225,6 @@ export function matchByTemporalIoU(
   // Successive shortest augment while a negative-cost augmenting path exists.
   // Each augmentation routes 1 unit (label->pred) and is always negative cost.
   const parent = new Array<number>(N).fill(-1);
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const dist = new Array<number>(N).fill(Infinity);
     const inQueue = new Array<boolean>(N).fill(false);

@@ -108,11 +108,3 @@ print(json.dumps(out))
     expect(parsed.res).toBe('completed');
   });
 });
-
-function exists(p: string): boolean {
-  try {
-    return existsSync(p);
-  } catch {
-    return false;
-  }
-}

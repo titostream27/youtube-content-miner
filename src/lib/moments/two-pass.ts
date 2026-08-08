@@ -9,7 +9,6 @@ import {
 } from '@/lib/moments/topic-boundary';
 import { repairBoundary } from '@/lib/moments/boundary-repair';
 import { validateStartBoundary } from '@/lib/moments/start-boundary';
-import { startBoundaryNeedsReject, expandStartBackToComplete } from '@/lib/moments/start-gate';
 import { candidateFingerprint } from '@/lib/moments/candidate-identity';
 import { finalizeCandidate } from '@/lib/moments/finalize-candidate';
 import { refineBoundaries } from '@/lib/ai/agents/boundary-refinement-agent';
@@ -172,12 +171,6 @@ function followingWithinLookaheadSec(
  */
 function finalRangeValidationFor(
   utterances: Utterance[],
-  startSec: number,
-  endSec: number,
-  prevEnding: EndingAnalysis,
-  prevBoundary: TopicBoundary,
-  endUtterance: Utterance | null,
-  nextUtterance: Utterance | null,
 ): import('@/lib/moments/finalize-candidate').FinalRangeValidation {
   const h = config.pipeline.highlight;
   return {
@@ -388,8 +381,8 @@ export async function twoPassHighlightSelection(
       boundary,
       config.pipeline.highlight.endGuardSec,
     );
-    let finalEnd = Math.min(info.finalEndSec, guard.end);
-    let finalStart = Math.min(info.finalStartSec, finalEnd - 1);
+    const finalEnd = Math.min(info.finalEndSec, guard.end);
+    const finalStart = Math.min(info.finalStartSec, finalEnd - 1);
 
     const validation = validateBoundary(finalStart, finalEnd, ending, boundary);
     if (!validation.ok) {
@@ -419,14 +412,6 @@ export async function twoPassHighlightSelection(
         const repBoundary = repEnd
           ? detectTopicBoundary(repEnd, repNext, repFollowing, config.pipeline.highlight.nextTopicLookaheadSec)
           : { nextTopicDetected: false, nextTopicStart: null, contamination: 0 };
-
-        // Phase 2 (Start validation): explicit start-boundary checks replace
-        // the assumed startComplete=true.
-        const startCheck = validateStartBoundary(
-          utterances,
-          repair.finalStartSec,
-          repair.finalEndSec,
-        );
 
         // Phase-2 correctness (F12): the repaired boundary must pass the FULL
         // validation (duration, ending, contamination, floors) again — repair
@@ -463,12 +448,6 @@ export async function twoPassHighlightSelection(
                   repair.finalEndSec,
                   finalRangeValidationFor(
                     utterances,
-                    repair.finalStartSec,
-                    repair.finalEndSec,
-                    repEnding,
-                    repBoundary,
-                    repEnd,
-                    repNext,
                   ),
                 );
                 if (finalized === null) {
@@ -522,7 +501,6 @@ export async function twoPassHighlightSelection(
       continue;
     }
 
-    const duration = finalEnd - finalStart;
     // Brief v8 M04: finalizeCandidate is the SOLE owner of start repair. The
     // semantic path no longer performs an inline repair here — finalization
     // validates and repairs the start, and a rejected start yields null.
@@ -547,12 +525,6 @@ export async function twoPassHighlightSelection(
           // against the ACTUAL final timestamps.
           finalRangeValidationFor(
             utterances,
-            finalStart,
-            finalEnd,
-            ending,
-            boundary,
-            endUtterance,
-            nextUtterance,
           ),
         );
     if (finalized === null) {

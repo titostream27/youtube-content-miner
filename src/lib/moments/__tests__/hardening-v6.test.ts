@@ -54,7 +54,6 @@ describe('M01 final range revalidation after start repair', () => {
       utt('u1', 4, 20, 'main point of topic A'),
       utt('u2', 20, 40, 'completely different topic B'),
     ];
-    const proposedStart = 25;  // inside topic B
     const repairedStart = 4;   // start repair lands at u1 start — still inside A
     // The final range [4,40] crosses into topic B at 20 — must be caught.
     const topicBoundary = 20;

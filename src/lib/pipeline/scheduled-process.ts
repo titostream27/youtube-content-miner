@@ -340,7 +340,6 @@ export async function autoProcessScheduled(runId: number): Promise<ScheduledProc
  */
 async function publishScheduledClip(clip: ClipRecord, scheduledAt: string): Promise<boolean> {
   const publishBase = config.publish.baseUrl.replace(/\/$/, '');
-  const renderBase = config.render.baseUrl.replace(/\/$/, '');
   // Base URL yang dipakai untuk file_url/thumbnail_url yang dikirim ke POSTER.
   // Poster jalan di HOST (bukan container), jadi tidak bisa pakai
   // host.docker.internal (hanya resolve dari dalam container). Default ke
