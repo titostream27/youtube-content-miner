@@ -1,0 +1,363 @@
+[two-pass] reject idx=0 after repair: too short (2.9s < 14s)
+[two-pass] reject idx=1 after repair: finalize rejected
+[two-pass] reject idx=2 after repair: too short (4.3s < 14s)
+[two-pass] reject idx=3 after repair: finalize rejected
+[two-pass] reject idx=4 after repair: finalize rejected
+[two-pass] reject idx=5 after repair: too short (7.1s < 14s)
+[two-pass] reject idx=6 after repair: too short (4.7s < 14s)
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8 after repair: too short (12.6s < 14s)
+[two-pass] reject idx=9 after repair: too short (-86.0s < 14s)
+[two-pass] reject idx=10 after repair: too short (5.2s < 14s)
+[two-pass] reject idx=11 after repair: too short (13.7s < 14s)
+[two-pass] reject idx=12: finalize rejected
+[two-pass] reject idx=13 after repair: too short (11.0s < 14s)
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16 after repair: too short (4.4s < 14s)
+[two-pass] reject idx=17 after repair: too short (-4.0s < 14s)
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: finalize rejected
+[two-pass] reject idx=20 after repair: too short (-13.2s < 14s)
+[two-pass] reject idx=21 after repair: too short (13.4s < 14s)
+[two-pass] reject idx=22 after repair: too short (2.9s < 14s)
+[two-pass] reject idx=23 after repair: finalize rejected
+[two-pass] reject idx=24: finalize rejected
+[two-pass] reject idx=25: finalize rejected
+[two-pass] reject idx=26 after repair: finalize rejected
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: too short (3.7s < 14s)
+[two-pass] reject idx=30 after repair: finalize rejected
+[two-pass] reject idx=31 after repair: too short (9.3s < 14s)
+[two-pass] reject idx=32 after repair: too short (-56.6s < 14s)
+[two-pass] reject idx=33 after repair: too short (1.7s < 14s)
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35: finalize rejected
+[two-pass] reject idx=36 after repair: too short (6.3s < 14s)
+[two-pass] reject idx=37 after repair: too short (3.4s < 14s)
+[two-pass] reject idx=38 after repair: too short (5.4s < 14s)
+[two-pass] reject idx=39 after repair: too short (2.0s < 14s)
+[two-pass] episode "Call Her Daddy — Kim Kardashian": 40 rough -> 0 kept, 40 rejected
+{"episodeId":"I6wCuvvaRPI","title":"Call Her Daddy — Kim Kardashian","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: repaired but still invalid — too short (2.9s < 14s)","highlight 1: repaired but start gate rejects or final slice empty","highlight 2: repaired but still invalid — too short (4.3s < 14s)","highlight 3: repaired but start gate rejects or final slice empty"],"topClips":[],"rejectedReasons":["highlight 0: repaired but still invalid — too short (2.9s < 14s)","highlight 1: repaired but start gate rejects or final slice empty","highlight 2: repaired but still invalid — too short (4.3s < 14s)","highlight 3: repaired but start gate rejects or final slice empty","highlight 4: repaired but start gate rejects or final slice empty","highlight 5: repaired but still invalid — too short (7.1s < 14s)"]}
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=2 after repair: too short (10.6s < 14s)
+[two-pass] reject idx=3 after repair: too short (3.9s < 14s)
+[two-pass] reject idx=4 after repair: too short (7.0s < 14s)
+[two-pass] reject idx=5 after repair: too short (12.9s < 14s)
+[two-pass] reject idx=6 after repair: too short (7.4s < 14s)
+[two-pass] reject idx=7 after repair: too short (4.8s < 14s)
+[two-pass] reject idx=8 after repair: too short (5.2s < 14s)
+[two-pass] reject idx=9 after repair: too short (10.3s < 14s)
+[two-pass] reject idx=10: finalize rejected
+[two-pass] reject idx=11 after repair: too short (9.5s < 14s)
+[two-pass] reject idx=12 after repair: too short (2.8s < 14s)
+[two-pass] reject idx=13 after repair: too short (6.8s < 14s)
+[two-pass] reject idx=14 after repair: too short (5.4s < 14s)
+[two-pass] reject idx=15 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=16 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=17 after repair: next-topic contamination 0.22
+[two-pass] reject idx=18 after repair: too short (6.4s < 14s)
+[two-pass] reject idx=19 after repair: too short (9.4s < 14s)
+[two-pass] reject idx=20 after repair: too short (7.5s < 14s)
+[two-pass] reject idx=21 after repair: too short (8.6s < 14s)
+[two-pass] reject idx=22 after repair: too short (6.0s < 14s)
+[two-pass] reject idx=23 after repair: too short (7.1s < 14s)
+[two-pass] reject idx=24 after repair: too short (7.7s < 14s)
+[two-pass] reject idx=25 after repair: too short (10.5s < 14s)
+[two-pass] reject idx=26 after repair: too short (11.4s < 14s)
+[two-pass] reject idx=27 after repair: too short (3.0s < 14s)
+[two-pass] reject idx=28 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=29 after repair: too short (11.8s < 14s)
+[two-pass] reject idx=30 after repair: too short (4.4s < 14s)
+[two-pass] reject idx=31 after repair: too short (11.5s < 14s)
+[two-pass] reject idx=32: finalize rejected
+[two-pass] reject idx=33 after repair: too short (7.5s < 14s)
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: finalize rejected
+[two-pass] reject idx=36 after repair: too short (12.8s < 14s)
+[two-pass] reject idx=37 after repair: too short (3.3s < 14s)
+[two-pass] reject idx=38 after repair: too short (11.9s < 14s)
+[two-pass] reject idx=39 after repair: too short (4.6s < 14s)
+[two-pass] episode "Jay Shetty — Tom Holland": 40 rough -> 0 kept, 40 rejected
+{"episodeId":"GOqEl4ADyVk","title":"Jay Shetty — Tom Holland","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (10.2s < 14s)","highlight 2: repaired but still invalid — too short (10.6s < 14s)","highlight 3: repaired but still invalid — too short (3.9s < 14s)"],"topClips":[],"rejectedReasons":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (10.2s < 14s)","highlight 2: repaired but still invalid — too short (10.6s < 14s)","highlight 3: repaired but still invalid — too short (3.9s < 14s)","highlight 4: repaired but still invalid — too short (7.0s < 14s)","highlight 5: repaired but still invalid — too short (12.9s < 14s)"]}
+[two-pass] reject idx=0 after repair: next-topic contamination 0.27
+[two-pass] reject idx=1 after repair: next-topic contamination 0.27
+[two-pass] reject idx=2 after repair: too short (5.4s < 14s)
+[two-pass] reject idx=3 after repair: too short (-12.7s < 14s)
+[two-pass] reject idx=4 after repair: too short (9.5s < 14s)
+[two-pass] reject idx=5 after repair: too short (4.4s < 14s)
+[two-pass] reject idx=6 after repair: too short (6.7s < 14s)
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: too short (-32.6s < 14s)
+[two-pass] reject idx=10 after repair: too short (8.0s < 14s)
+[two-pass] reject idx=11 after repair: too short (7.2s < 14s)
+[two-pass] reject idx=12 after repair: too short (13.8s < 14s)
+[two-pass] reject idx=13 after repair: finalize rejected
+[two-pass] reject idx=14 after repair: too short (5.0s < 14s)
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: too short (7.8s < 14s)
+[two-pass] reject idx=20: finalize rejected
+[two-pass] reject idx=21 after repair: finalize rejected
+[two-pass] reject idx=22 after repair: too short (3.5s < 14s)
+[two-pass] reject idx=23 after repair: too short (-26.5s < 14s)
+[two-pass] reject idx=24 after repair: too short (10.1s < 14s)
+[two-pass] reject idx=25 after repair: too short (4.8s < 14s)
+[two-pass] reject idx=26 after repair: too short (2.2s < 14s)
+[two-pass] reject idx=27 after repair: too short (4.7s < 14s)
+[two-pass] reject idx=28 after repair: too short (5.2s < 14s)
+[two-pass] reject idx=29 after repair: too short (9.9s < 14s)
+[two-pass] reject idx=30 after repair: too short (7.5s < 14s)
+[two-pass] reject idx=31 after repair: too short (11.5s < 14s)
+[two-pass] reject idx=32: finalize rejected
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34 after repair: too short (1.8s < 14s)
+[two-pass] reject idx=35 after repair: finalize rejected
+[two-pass] episode "Conan — Mick Jagger": 36 rough -> 0 kept, 36 rejected
+{"episodeId":"2HLGcRpw1hc","title":"Conan — Mick Jagger","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: repaired but still invalid — next-topic contamination 0.27","highlight 1: repaired but still invalid — next-topic contamination 0.27","highlight 2: repaired but still invalid — too short (5.4s < 14s)","highlight 3: repaired but still invalid — too short (-12.7s < 14s)"],"topClips":[],"rejectedReasons":["highlight 0: repaired but still invalid — next-topic contamination 0.27","highlight 1: repaired but still invalid — next-topic contamination 0.27","highlight 2: repaired but still invalid — too short (5.4s < 14s)","highlight 3: repaired but still invalid — too short (-12.7s < 14s)","highlight 4: repaired but still invalid — too short (9.5s < 14s)","highlight 5: repaired but still invalid — too short (4.4s < 14s)"]}
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: too short (8.1s < 14s)
+[two-pass] reject idx=2 after repair: finalize rejected
+[two-pass] reject idx=3 after repair: too short (6.9s < 14s)
+[two-pass] reject idx=4: finalize rejected
+[two-pass] reject idx=5: finalize rejected
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: too short (11.2s < 14s)
+[two-pass] reject idx=8 after repair: too short (4.5s < 14s)
+[two-pass] reject idx=9 after repair: too short (1.2s < 14s)
+[two-pass] reject idx=10 after repair: too short (9.8s < 14s)
+[two-pass] reject idx=11 after repair: too short (-3.2s < 14s)
+[two-pass] reject idx=12 after repair: too short (7.0s < 14s)
+[two-pass] reject idx=13 after repair: too short (4.3s < 14s)
+[two-pass] reject idx=14 after repair: too short (3.0s < 14s)
+[two-pass] reject idx=15 after repair: too short (10.6s < 14s)
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18 after repair: too short (1.9s < 14s)
+[two-pass] reject idx=19: finalize rejected
+[two-pass] reject idx=20 after repair: finalize rejected
+[two-pass] reject idx=21 after repair: too short (-80.2s < 14s)
+[two-pass] reject idx=22: finalize rejected
+[two-pass] reject idx=23 after repair: too short (4.4s < 14s)
+[two-pass] reject idx=24 after repair: too short (-21.6s < 14s)
+[two-pass] reject idx=25 after repair: too short (5.7s < 14s)
+[two-pass] reject idx=26 after repair: too short (12.2s < 14s)
+[two-pass] reject idx=27 after repair: too short (0.0s < 14s)
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: too short (7.9s < 14s)
+[two-pass] reject idx=30 after repair: too short (-12.8s < 14s)
+[two-pass] reject idx=31: finalize rejected
+[two-pass] reject idx=32 after repair: too short (11.8s < 14s)
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=36 after repair: too short (12.8s < 14s)
+[two-pass] reject idx=37 after repair: too short (9.5s < 14s)
+[two-pass] reject idx=38: finalize rejected
+[two-pass] episode "Conan — Matt Damon": 39 rough -> 0 kept, 39 rejected
+{"episodeId":"UZ1kCEGjYX0","title":"Conan — Matt Damon","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (8.1s < 14s)","highlight 2: repaired but start gate rejects or final slice empty","highlight 3: repaired but still invalid — too short (6.9s < 14s)"],"topClips":[],"rejectedReasons":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (8.1s < 14s)","highlight 2: repaired but start gate rejects or final slice empty","highlight 3: repaired but still invalid — too short (6.9s < 14s)","highlight 4: finalize rejected (start gate or empty slice)","highlight 5: finalize rejected (start gate or empty slice)"]}
+[two-pass] reject idx=0 after repair: too short (3.9s < 14s)
+[two-pass] reject idx=1 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=2: finalize rejected
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: too short (5.5s < 14s)
+[two-pass] reject idx=5: finalize rejected
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8 after repair: finalize rejected
+[two-pass] reject idx=9 after repair: too short (11.2s < 14s)
+[two-pass] reject idx=10: finalize rejected
+[two-pass] reject idx=11: finalize rejected
+[two-pass] reject idx=12 after repair: too short (-52.2s < 14s)
+[two-pass] reject idx=13 after repair: too short (9.5s < 14s)
+[two-pass] episode "WTF — Barack Obama": 14 rough -> 0 kept, 14 rejected
+{"episodeId":"Hb2rKGfIOrM","title":"WTF — Barack Obama","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: repaired but still invalid — too short (3.9s < 14s)","highlight 1: repaired but still invalid — too short (10.2s < 14s)","highlight 2: finalize rejected (start gate or empty slice)","highlight 3: finalize rejected (start gate or empty slice)"],"topClips":[],"rejectedReasons":["highlight 0: repaired but still invalid — too short (3.9s < 14s)","highlight 1: repaired but still invalid — too short (10.2s < 14s)","highlight 2: finalize rejected (start gate or empty slice)","highlight 3: finalize rejected (start gate or empty slice)","highlight 4: repaired but still invalid — too short (5.5s < 14s)","highlight 5: finalize rejected (start gate or empty slice)"]}
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2: finalize rejected
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: too short (3.6s < 14s)
+[two-pass] reject idx=5 after repair: too short (10.6s < 14s)
+[two-pass] reject idx=6 after repair: too short (5.6s < 14s)
+[two-pass] reject idx=7 after repair: too short (5.7s < 14s)
+[two-pass] reject idx=8 after repair: too short (10.8s < 14s)
+[two-pass] reject idx=9 after repair: too short (2.4s < 14s)
+[two-pass] reject idx=10 after repair: too short (4.8s < 14s)
+[two-pass] reject idx=11 after repair: too short (5.3s < 14s)
+[two-pass] reject idx=12 after repair: too short (6.4s < 14s)
+[two-pass] reject idx=13 after repair: too short (8.6s < 14s)
+[two-pass] reject idx=14 after repair: too short (8.9s < 14s)
+[two-pass] reject idx=15 after repair: too short (9.0s < 14s)
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17 after repair: too short (7.7s < 14s)
+[two-pass] reject idx=18 after repair: too short (7.3s < 14s)
+[two-pass] reject idx=19 after repair: too short (0.8s < 14s)
+[two-pass] reject idx=20 after repair: too short (7.6s < 14s)
+[two-pass] reject idx=21 after repair: too short (9.3s < 14s)
+[two-pass] reject idx=22 after repair: too short (9.4s < 14s)
+[two-pass] reject idx=23 after repair: too short (9.5s < 14s)
+[two-pass] reject idx=24 after repair: too short (7.6s < 14s)
+[two-pass] episode "Jay Shetty — Kobe Bryant": 25 rough -> 1 kept, 24 rejected
+{"episodeId":"g2cQ2kD6lzs","title":"Jay Shetty — Kobe Bryant","ok":true,"engine":"llm","segmentCount":1,"clipCount":0,"allClipsCount":1,"fallbackUsed":false,"warnings":["highlight 1: finalize rejected (start gate or empty slice)","highlight 2: finalize rejected (start gate or empty slice)","highlight 3: finalize rejected (start gate or empty slice)","highlight 4: repaired but still invalid — too short (3.6s < 14s)"],"topClips":[],"rejectedReasons":["highlight 1: finalize rejected (start gate or empty slice)","highlight 2: finalize rejected (start gate or empty slice)","highlight 3: finalize rejected (start gate or empty slice)","highlight 4: repaired but still invalid — too short (3.6s < 14s)","highlight 5: repaired but still invalid — too short (10.6s < 14s)","highlight 6: repaired but still invalid — too short (5.6s < 14s)"]}
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2 after repair: too short (9.7s < 14s)
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=5 after repair: too short (6.6s < 14s)
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: too short (1.9s < 14s)
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: too short (11.0s < 14s)
+[two-pass] reject idx=10 after repair: too short (12.6s < 14s)
+[two-pass] reject idx=11 after repair: too short (5.4s < 14s)
+[two-pass] reject idx=12 after repair: too short (8.4s < 14s)
+[two-pass] reject idx=13 after repair: too short (-5.9s < 14s)
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17 after repair: too short (4.6s < 14s)
+[two-pass] reject idx=18 after repair: too short (3.2s < 14s)
+[two-pass] reject idx=19 after repair: too short (3.7s < 14s)
+[two-pass] reject idx=20 after repair: too short (11.0s < 14s)
+[two-pass] reject idx=22 after repair: too short (6.6s < 14s)
+[two-pass] reject idx=23: finalize rejected
+[two-pass] reject idx=24 after repair: too short (2.4s < 14s)
+[two-pass] reject idx=25 after repair: too short (9.6s < 14s)
+[two-pass] reject idx=26 after repair: too short (11.5s < 14s)
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28 after repair: too short (8.8s < 14s)
+[two-pass] reject idx=29 after repair: finalize rejected
+[two-pass] reject idx=30 after repair: too short (5.3s < 14s)
+[two-pass] reject idx=31 after repair: too short (11.6s < 14s)
+[two-pass] reject idx=32 after repair: too short (6.8s < 14s)
+[two-pass] reject idx=33 after repair: too short (8.2s < 14s)
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: too short (7.3s < 14s)
+[two-pass] reject idx=36 after repair: too short (13.1s < 14s)
+[two-pass] reject idx=37 after repair: too short (9.7s < 14s)
+[two-pass] reject idx=38 after repair: too short (6.7s < 14s)
+[two-pass] reject idx=39 after repair: too short (12.0s < 14s)
+[two-pass] episode "Raditya Dika — Iqbaal Ramadhan": 40 rough -> 1 kept, 39 rejected
+{"episodeId":"Ive926sC6mc","title":"Raditya Dika — Iqbaal Ramadhan","ok":true,"engine":"llm","segmentCount":1,"clipCount":1,"allClipsCount":1,"fallbackUsed":false,"warnings":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: finalize rejected (start gate or empty slice)","highlight 2: repaired but still invalid — too short (9.7s < 14s)","highlight 3: finalize rejected (start gate or empty slice)"],"topClips":[{"startSec":2097.5,"endSec":2138,"durationSec":40.5,"finalScore":73,"confidence":85,"tier":"optional","boundarySource":"semantic","title":"Gen Z Craves Human Connection in a Tech World","suggestedHook":"What do physical goods ultimately become? So sexy again."}],"rejectedReasons":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: finalize rejected (start gate or empty slice)","highlight 2: repaired but still invalid — too short (9.7s < 14s)","highlight 3: finalize rejected (start gate or empty slice)","highlight 4: repaired but still invalid — too short (6.2s < 14s)","highlight 5: repaired but still invalid — too short (6.6s < 14s)"]}
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2 after repair: too short (4.5s < 14s)
+[two-pass] reject idx=3 after repair: finalize rejected
+[two-pass] reject idx=4: finalize rejected
+[two-pass] reject idx=5 after repair: finalize rejected
+[two-pass] reject idx=6 after repair: finalize rejected
+[two-pass] reject idx=7 after repair: too short (5.6s < 14s)
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: too short (5.2s < 14s)
+[two-pass] reject idx=10 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=11 after repair: finalize rejected
+[two-pass] reject idx=12 after repair: too short (4.1s < 14s)
+[two-pass] reject idx=13 after repair: too short (7.2s < 14s)
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16 after repair: finalize rejected
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=19 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=20 after repair: too short (7.2s < 14s)
+[two-pass] reject idx=21: finalize rejected
+[two-pass] reject idx=22 after repair: too short (6.4s < 14s)
+[two-pass] reject idx=23: finalize rejected
+[two-pass] reject idx=24: finalize rejected
+[two-pass] reject idx=25 after repair: finalize rejected
+[two-pass] reject idx=26: finalize rejected
+[two-pass] reject idx=27 after repair: too short (10.7s < 14s)
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: too short (6.2s < 14s)
+[two-pass] reject idx=30: finalize rejected
+[two-pass] reject idx=31 after repair: too short (10.2s < 14s)
+[two-pass] reject idx=32 after repair: too short (1.6s < 14s)
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34 after repair: too short (7.6s < 14s)
+[two-pass] reject idx=35: finalize rejected
+[two-pass] reject idx=36 after repair: finalize rejected
+[two-pass] reject idx=37: finalize rejected
+[two-pass] reject idx=38: finalize rejected
+[two-pass] reject idx=39 after repair: finalize rejected
+[two-pass] episode "Raditya Dika — Idgitaf": 40 rough -> 0 kept, 40 rejected
+{"episodeId":"3NSC5nps3OM","title":"Raditya Dika — Idgitaf","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: finalize rejected (start gate or empty slice)","highlight 2: repaired but still invalid — too short (4.5s < 14s)","highlight 3: repaired but start gate rejects or final slice empty"],"topClips":[],"rejectedReasons":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: finalize rejected (start gate or empty slice)","highlight 2: repaired but still invalid — too short (4.5s < 14s)","highlight 3: repaired but start gate rejects or final slice empty","highlight 4: finalize rejected (start gate or empty slice)","highlight 5: repaired but start gate rejects or final slice empty"]}
+[two-pass] reject idx=0 start=0.6 end=58.5 dur=57.9s ending=TOPIC_TRANSITION conf=0.60 contamination=0.00 next_topic=true reason=ending incomplete (TOPIC_TRANSITION)
+[two-pass] reject idx=1 start=73.3 end=123.6 dur=50.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=2 start=120.7 end=164.7 dur=44.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=3 start=295.8 end=349.2 dur=53.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=4 start=377.9 end=427.3 dur=49.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=5 start=440.4 end=497.8 dur=57.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=6 start=496.2 end=537.7 dur=41.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=7 start=552.8 end=594.2 dur=41.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=8 start=594.4 end=638.7 dur=44.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=9 start=636.5 end=678.0 dur=41.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=10 start=731.0 end=781.1 dur=50.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=11 start=920.0 end=983.9 dur=63.9s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=12 start=1009.8 end=1043.4 dur=33.6s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=13 start=1169.7 end=1213.0 dur=43.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=14 start=1280.2 end=1323.5 dur=43.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=15 start=1321.5 end=1359.8 dur=38.3s ending=TOPIC_TRANSITION conf=0.60 contamination=0.00 next_topic=true reason=ending incomplete (TOPIC_TRANSITION)
+[two-pass] reject idx=16 start=1372.8 end=1415.9 dur=43.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=17 start=1501.1 end=1554.5 dur=53.4s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=18 start=1691.4 end=1751.8 dur=60.4s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=19 start=1910.3 end=1976.7 dur=66.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=20 start=1976.9 end=2019.6 dur=42.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=21 start=2048.2 end=2088.6 dur=40.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=22 start=2113.7 end=2191.8 dur=78.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=23 start=2227.7 end=2274.1 dur=46.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=24 start=2308.6 end=2360.1 dur=51.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=25 start=2443.5 end=2503.8 dur=60.3s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=26 start=2501.8 end=2548.0 dur=46.2s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=27 start=2563.2 end=2616.0 dur=52.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=28 start=2734.4 end=2782.4 dur=48.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=29 start=2794.5 end=2860.8 dur=66.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=30 start=2870.7 end=2952.4 dur=81.7s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=31 start=2989.2 end=3065.7 dur=76.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=32 start=3155.4 end=3214.1 dur=58.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=33 start=3211.9 end=3253.6 dur=41.7s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=34 start=3291.4 end=3339.2 dur=47.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=35 start=3440.0 end=3511.3 dur=71.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=36 start=3509.8 end=3552.6 dur=42.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=37 start=3682.6 end=3746.1 dur=63.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=38 start=3849.6 end=3897.4 dur=47.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=39 start=4013.4 end=4059.1 dur=45.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] episode "Call Her Daddy — Millie Bobby Brown": 40 rough -> 0 kept, 40 rejected
+{"episodeId":"376JmatmnaI","title":"Call Her Daddy — Millie Bobby Brown","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: rejected — ending incomplete (TOPIC_TRANSITION)","highlight 1: rejected — ending incomplete (UNKNOWN)","highlight 2: rejected — ending incomplete (UNKNOWN)","highlight 3: rejected — ending incomplete (UNKNOWN)"],"topClips":[],"rejectedReasons":["highlight 0: rejected — ending incomplete (TOPIC_TRANSITION)","highlight 1: rejected — ending incomplete (UNKNOWN)","highlight 2: rejected — ending incomplete (UNKNOWN)","highlight 3: rejected — ending incomplete (UNKNOWN)","highlight 4: rejected — ending incomplete (UNKNOWN)","highlight 5: rejected — ending incomplete (UNKNOWN)"]}
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: too short (2.2s < 14s)
+[two-pass] reject idx=2 after repair: too short (6.1s < 14s)
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: too short (11.5s < 14s)
+[two-pass] reject idx=5 after repair: too short (12.5s < 14s)
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: too short (11.0s < 14s)
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: too short (4.0s < 14s)
+[two-pass] reject idx=10 after repair: too short (7.2s < 14s)
+[two-pass] reject idx=11 after repair: too short (6.5s < 14s)
+[two-pass] reject idx=12: finalize rejected
+[two-pass] reject idx=13: finalize rejected
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15 after repair: finalize rejected
+[two-pass] reject idx=16 after repair: finalize rejected
+[two-pass] reject idx=17 after repair: finalize rejected
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: too short (6.4s < 14s)
+[two-pass] reject idx=20: finalize rejected
+[two-pass] reject idx=21 after repair: too short (-7.0s < 14s)
+[two-pass] reject idx=22 after repair: too short (6.6s < 14s)
+[two-pass] reject idx=23 after repair: finalize rejected
+[two-pass] reject idx=24 after repair: too short (9.2s < 14s)
+[two-pass] reject idx=25 after repair: too short (1.4s < 14s)
+[two-pass] reject idx=26: finalize rejected
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28 after repair: too short (-0.5s < 14s)
+[two-pass] reject idx=29: finalize rejected
+[two-pass] episode "The Economist — Elon Musk": 30 rough -> 0 kept, 30 rejected
+{"episodeId":"XuoqKYxDHVc","title":"The Economist — Elon Musk","ok":true,"engine":"heuristic","segmentCount":0,"clipCount":0,"allClipsCount":0,"fallbackUsed":false,"warnings":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (2.2s < 14s)","highlight 2: repaired but still invalid — too short (6.1s < 14s)","highlight 3: finalize rejected (start gate or empty slice)"],"topClips":[],"rejectedReasons":["highlight 0: finalize rejected (start gate or empty slice)","highlight 1: repaired but still invalid — too short (2.2s < 14s)","highlight 2: repaired but still invalid — too short (6.1s < 14s)","highlight 3: finalize rejected (start gate or empty slice)","highlight 4: repaired but still invalid — too short (11.5s < 14s)","highlight 5: repaired but still invalid — too short (12.5s < 14s)"]}
+G2_DONE
