@@ -1,6 +1,6 @@
 # Brief V11 Boundary Recovery — Pre-change Audit
 
-**Audit timestamp:** 2026-08-08 15:57 SEAST  
+**Audit timestamp:** 2026-08-08 15:57 SEAST
 **Scope:** correctness recovery first; acceptance evidence only after temporal invariants pass.
 
 ## Repository baselines

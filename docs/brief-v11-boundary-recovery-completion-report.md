@@ -1,7 +1,7 @@
 # Brief V11 Boundary Recovery — Completion Report
 
-**Date:** 2026-08-08  
-**Scope:** correctness recovery and truthful acceptance recovery; not V12 and not a feature sprint.  
+**Date:** 2026-08-08
+**Scope:** correctness recovery and truthful acceptance recovery; not V12 and not a feature sprint.
 **Final verdict:** **BLOCKED**
 
 ## Evidence verdict table
