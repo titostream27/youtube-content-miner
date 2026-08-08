@@ -9,7 +9,7 @@
 | Gate | Evidence | Verdict |
 |---|---|---|
 | Boundary correctness | BR-01..BR-12, generated invariants, semantic invalid-range regression; post-fix real-media negative duration count = 0 | **PASS** |
-| Miner local CI | `npm ci`; TypeScript 0; Vitest 264 passed; ESLint 0 errors / 0 warnings | **PASS** |
+| Miner local CI | `npm ci`; TypeScript 0; Vitest 266 passed; ESLint 0 errors / 0 warnings | **PASS** |
 | Miner GitHub Actions | Final recovery SHA not pushed/run yet | **BLOCKED** |
 | G1 | `docs/evidence/brief-v11-g1-corpus.json`: 10 unique usable real episodes, 10 non-empty transcripts | **PASS (10/10)** |
 | G2 production evaluation | `docs/evidence/brief-v11-g2-production-summary.jsonl`: all 10 evaluated; 1 accepted clip; 0 negative durations | **BLOCKED** |
@@ -78,7 +78,7 @@ At least BR-01 was observed failing before the production fix (`received repaire
 
 - `npm ci`: exit 0; 407 packages installed/audited. npm reported six high-severity dependency audit findings; no automatic major-version upgrade was applied because it is outside this brief.
 - `npx tsc --noEmit`: exit 0, 0 errors.
-- `npx vitest run`: exit 0, **264 passed** after final regressions.
+- `npx vitest run`: exit 0, **266 passed** after final regressions.
 - `npx eslint . --max-warnings 0`: exit 0, 0 errors, 0 warnings.
 - Focused boundary/final-range suites: 26 passed.
 
