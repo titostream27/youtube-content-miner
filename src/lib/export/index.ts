@@ -3,6 +3,18 @@ import { CLIP_DIMENSION_LABELS } from '@/lib/scoring/weights';
 import { CLIP_DIMENSION_KEYS } from '@/lib/domain/types';
 import { tierLabel } from '@/lib/domain/thresholds';
 import { formatTimecode, youtubeTimestampUrl } from '@/lib/youtube/duration';
+import { isDemoVideoId } from '@/lib/youtube/video-id';
+
+/**
+ * A handoff document must not contain links that cannot resolve. An editor who
+ * clicks one and lands on "Video unavailable" has no way to tell a demo row from
+ * a deleted video.
+ */
+function clipLink(videoId: string, startSec: number): string {
+  return isDemoVideoId(videoId)
+    ? 'demo data - no real video'
+    : youtubeTimestampUrl(videoId, startSec);
+}
 
 /**
  * PRD "Export" - CSV and TXT for the MVP.
@@ -94,7 +106,7 @@ export function clipsToCsv(clips: readonly ClipRecord[]): string {
         Math.round(clip.durationSec),
         clip.episodeTitle,
         clip.channelTitle,
-        youtubeTimestampUrl(clip.videoId, clip.startSec),
+        clipLink(clip.videoId, clip.startSec),
         clip.whyThisWorks.join('; '),
         clip.suggestedHook,
         clip.suggestedCaption,
@@ -133,7 +145,13 @@ export function clipsToTxt(clips: readonly ClipRecord[]): string {
     const first = episodeClips[0]!;
     lines.push('='.repeat(78));
     lines.push(first.episodeTitle);
-    lines.push(`${first.channelTitle}  |  https://www.youtube.com/watch?v=${videoId}`);
+    lines.push(
+      `${first.channelTitle}  |  ${
+        isDemoVideoId(videoId)
+          ? 'demo data - no real video'
+          : `https://www.youtube.com/watch?v=${videoId}`
+      }`,
+    );
     lines.push('='.repeat(78));
     lines.push('');
 
@@ -148,7 +166,7 @@ export function clipsToTxt(clips: readonly ClipRecord[]): string {
       lines.push(`  TITLE      ${clip.title}`);
       lines.push(`  CATEGORY   ${clip.category}`);
       lines.push(`  LICENCE    ${clip.license ?? 'unknown'}`);
-      lines.push(`  LINK       ${youtubeTimestampUrl(clip.videoId, clip.startSec)}`);
+      lines.push(`  LINK       ${clipLink(clip.videoId, clip.startSec)}`);
       lines.push(`  WHY        ${clip.whyThisWorks.join(' / ')}`);
       if (clip.suggestedHook) lines.push(`  HOOK       ${clip.suggestedHook}`);
       if (clip.suggestedCaption) lines.push(`  CAPTION    ${clip.suggestedCaption}`);

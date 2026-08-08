@@ -3,6 +3,7 @@ import type { ClipRecord } from '@/lib/db/repositories/clips';
 import { CLIP_DIMENSION_KEYS } from '@/lib/domain/types';
 import { CLIP_DIMENSION_HELP, CLIP_DIMENSION_LABELS } from '@/lib/scoring/weights';
 import { formatTimecode, youtubeTimestampUrl } from '@/lib/youtube/duration';
+import { isDemoVideoId } from '@/lib/youtube/video-id';
 import { Card, Meter, Pill } from '@/components/ui/primitives';
 import { ScoreBadge, TierBadge } from '@/components/tier-badge';
 import { ClipActions } from '@/components/clip-actions';
@@ -86,14 +87,23 @@ export function ClipCard({
           {formatTimecode(clip.startSec)} - {formatTimecode(clip.endSec)}
         </span>
         <span className="numeric text-slate-500">{Math.round(clip.durationSec)}s</span>
-        <a
-          href={youtubeTimestampUrl(clip.videoId, clip.startSec)}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="text-sky-400 hover:text-sky-300 hover:underline"
-        >
-          Open at timecode
-        </a>
+        {isDemoVideoId(clip.videoId) ? (
+          <span
+            className="text-slate-600"
+            title="Synthetic demo clip - there is no real video behind it. Set YOUTUBE_API_KEY to mine real podcasts."
+          >
+            Demo clip · no video
+          </span>
+        ) : (
+          <a
+            href={youtubeTimestampUrl(clip.videoId, clip.startSec)}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-sky-400 hover:text-sky-300 hover:underline"
+          >
+            Open at timecode
+          </a>
+        )}
       </div>
 
       {/* PRD Step 10 - why this clip was chosen. */}
