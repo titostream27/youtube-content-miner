@@ -1,0 +1,788 @@
+{
+  "seed": 20260808,
+  "target_size": 72,
+  "source_pool_size": 344,
+  "sample": [
+    {
+      "candidate_id": "c=3b416b15c9b5",
+      "episode_id": "Ive926sC6mc",
+      "window": {
+        "start_sec": 2097.48,
+        "end_sec": 2138.04
+      },
+      "rejection_stage": null,
+      "kept": true,
+      "accepted": true,
+      "ending_confidence": 0.82,
+      "ending_type": "PUNCHLINE",
+      "rank": null,
+      "stratum": "accepted"
+    },
+    {
+      "candidate_id": "c=181a21d55be6",
+      "episode_id": "g2cQ2kD6lzs",
+      "window": {
+        "start_sec": 0,
+        "end_sec": 35.08
+      },
+      "rejection_stage": "SCORING",
+      "kept": true,
+      "accepted": false,
+      "ending_confidence": 0.82,
+      "ending_type": "PUNCHLINE",
+      "rank": null,
+      "stratum": "kept_non_accepted"
+    },
+    {
+      "candidate_id": "c=74f265367eae",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 11.44,
+        "end_sec": 72.08
+      },
+      "rejection_stage": "NEXT_TOPIC_CONTAMINATION",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "contamination"
+    },
+    {
+      "candidate_id": "c=307b36cbd455",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 229.92,
+        "end_sec": 275.52
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=b15dabd9174b",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 339.29,
+        "end_sec": 383.36
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=444cbf2983a5",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 394.24,
+        "end_sec": 451.68
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=8fb87e3eee31",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 512.16,
+        "end_sec": 561.12
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=94c1d6f70ec3",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1129.76,
+        "end_sec": 1173.36
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=7170e0ea5e66",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2013.76,
+        "end_sec": 2065.92
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=63588cb5a4d5",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2308.16,
+        "end_sec": 2365.12
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=873094e659a8",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2674.88,
+        "end_sec": 2721.04
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=4e72a74a4aef",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2831.36,
+        "end_sec": 2880.96
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=7f0b9ecd2722",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3028,
+        "end_sec": 3056.32
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=4b4140b215e1",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3153.92,
+        "end_sec": 3208.48
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=4802ebe604ca",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3492.48,
+        "end_sec": 3541.84
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=0ddb01423bed",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3858,
+        "end_sec": 3920.4
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=a9454d171520",
+      "episode_id": "3NSC5nps3OM",
+      "window": {
+        "start_sec": 277.44,
+        "end_sec": 344.72
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=0a8930d6547d",
+      "episode_id": "3NSC5nps3OM",
+      "window": {
+        "start_sec": 358.12,
+        "end_sec": 419.36
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=0ea0eec5861d",
+      "episode_id": "3NSC5nps3OM",
+      "window": {
+        "start_sec": 632.08,
+        "end_sec": 682.52
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_0.78_0.82"
+    },
+    {
+      "candidate_id": "c=aff04c395564",
+      "episode_id": "GOqEl4ADyVk",
+      "window": {
+        "start_sec": 753,
+        "end_sec": 806.68
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.72,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_confidence_other"
+    },
+    {
+      "candidate_id": "c=24d31329eab4",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 594.64,
+        "end_sec": 612.56
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=1ee78f21623a",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 802.88,
+        "end_sec": 823.2
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=4ac046c40e8b",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1279.44,
+        "end_sec": 1320.32
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=e7e3a7f65253",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1375.04,
+        "end_sec": 1426.64
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=325250eefc6d",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1646.72,
+        "end_sec": 1734.96
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=bb6c25c3cc97",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1734.48,
+        "end_sec": 1764.08
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=714e622ee615",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1761.04,
+        "end_sec": 1827.52
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=09f3d0ec2e77",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1850.8,
+        "end_sec": 1868.56
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=ff1425ba1aab",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1947.12,
+        "end_sec": 1974.8
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=7d4430531900",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2085.84,
+        "end_sec": 2116.4
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=d5a8d94c2768",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2241.44,
+        "end_sec": 2286.4
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=7fef935268ac",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3252.48,
+        "end_sec": 3287.92
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=6e2a670a1e2b",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3536.48,
+        "end_sec": 3578.64
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=1d3f657a5854",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 3580.64,
+        "end_sec": 3604.96
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "start_gate"
+    },
+    {
+      "candidate_id": "c=28f669e06042",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 84.56,
+        "end_sec": 139.52
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=9291e73da4b7",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 288.24,
+        "end_sec": 308.32
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=9b246945fe8a",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 980.72,
+        "end_sec": 1026.32
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=9a9beca1058c",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 2442.56,
+        "end_sec": 2481.84
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=c410ad997f6c",
+      "episode_id": "376JmatmnaI",
+      "window": {
+        "start_sec": 0.62,
+        "end_sec": 60.96
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=838e8882741c",
+      "episode_id": "376JmatmnaI",
+      "window": {
+        "start_sec": 73.28,
+        "end_sec": 123.56
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=04eb387f9df0",
+      "episode_id": "376JmatmnaI",
+      "window": {
+        "start_sec": 120.68,
+        "end_sec": 164.72
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=3530365d9492",
+      "episode_id": "376JmatmnaI",
+      "window": {
+        "start_sec": 295.76,
+        "end_sec": 349.24
+      },
+      "rejection_stage": "ENDING_COMPLETE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "ending_complete"
+    },
+    {
+      "candidate_id": "c=0993798a6756",
+      "episode_id": "Ive926sC6mc",
+      "window": {
+        "start_sec": 3202.88,
+        "end_sec": 3291.56
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=48144e00ee76",
+      "episode_id": "GOqEl4ADyVk",
+      "window": {
+        "start_sec": 5215.12,
+        "end_sec": 5274.88
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=60ffcb2236cf",
+      "episode_id": "GOqEl4ADyVk",
+      "window": {
+        "start_sec": 1474.64,
+        "end_sec": 1525.56
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=403d1296c942",
+      "episode_id": "I6wCuvvaRPI",
+      "window": {
+        "start_sec": 718.96,
+        "end_sec": 784.08
+      },
+      "rejection_stage": "FINALIZE_START_GATE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=937ad36c16ad",
+      "episode_id": "GOqEl4ADyVk",
+      "window": {
+        "start_sec": 2145.64,
+        "end_sec": 2192.8
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=a71f49296e03",
+      "episode_id": "2HLGcRpw1hc",
+      "window": {
+        "start_sec": 1237.28,
+        "end_sec": 1268.64
+      },
+      "rejection_stage": "MIN_DURATION",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": null,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "random_negative"
+    },
+    {
+      "candidate_id": "c=641d9229f4e8",
+      "episode_id": "Hb2rKGfIOrM",
+      "window": {
+        "start_sec": 94.96,
+        "end_sec": 144.64
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "per_episode"
+    },
+    {
+      "candidate_id": "c=211771226651",
+      "episode_id": "UZ1kCEGjYX0",
+      "window": {
+        "start_sec": 75.12,
+        "end_sec": 143.44
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "per_episode"
+    },
+    {
+      "candidate_id": "c=1e4705b8dfd4",
+      "episode_id": "XuoqKYxDHVc",
+      "window": {
+        "start_sec": 442,
+        "end_sec": 477.6
+      },
+      "rejection_stage": "ENDING_CONFIDENCE",
+      "kept": false,
+      "accepted": false,
+      "ending_confidence": 0.78,
+      "ending_type": null,
+      "rank": null,
+      "stratum": "per_episode"
+    }
+  ],
+  "rationale": [
+    "Strata priority: accepted, kept_non_accepted, contamination, ending_confidence_0.78_0.82, ending_confidence_other, start_gate, ending_complete, top_ranked, random_negative.",
+    "Deterministic PRNG (mulberry32) with fixed seed; ordering within strata is stable across reruns.",
+    "Ending-confidence cluster 0.78-0.82 is the H6 zone; start_gate is the H1 zone."
+  ],
+  "strat_counts": {
+    "accepted": 1,
+    "kept_non_accepted": 1,
+    "contamination": 1,
+    "ending_confidence_0.78_0.82": 16,
+    "ending_confidence_other": 1,
+    "start_gate": 14,
+    "ending_complete": 8,
+    "random_negative": 6,
+    "per_episode": 3
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "clip_id": "c=c410ad997f6c",
+  "status": "ok",
+  "frames_used": 4,
+  "visual_judge": {
+    "face_framing": "PASS",
+    "active_speaker_alignment": "PASS",
+    "switch_smoothness_proxy": "PASS",
+    "ping_pong_risk": "LOW",
+    "caption_face_collision": "NONE",
+    "head_cutoff": "NONE",
+    "layout_stability": "PASS",
+    "notes": [
+      "Still-frame proxy only; no full-motion smoothness claim.",
+      "Speakers remain clearly framed with captions positioned away from faces."
+    ]
+  },
+  "method": "sampled_frames_proxy"
+}

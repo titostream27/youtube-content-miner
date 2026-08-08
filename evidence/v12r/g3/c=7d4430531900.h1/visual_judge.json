@@ -1,0 +1,21 @@
+{
+  "clip_id": "c=7d4430531900.h1",
+  "status": "ok",
+  "frames_used": 4,
+  "visual_judge": {
+    "face_framing": "PASS",
+    "active_speaker_alignment": "REVIEW",
+    "switch_smoothness_proxy": "REVIEW",
+    "ping_pong_risk": "LOW",
+    "caption_face_collision": "NONE",
+    "head_cutoff": "NONE",
+    "layout_stability": "REVIEW",
+    "notes": [
+      "Faces are consistently visible and well framed without head cutoffs.",
+      "The final stacked two-person layout makes active-speaker alignment uncertain from stills alone.",
+      "The abrupt composition change is a switch-smoothness proxy concern; still frames cannot establish full-motion smoothness.",
+      "Captions remain below the faces without visible collision."
+    ]
+  },
+  "method": "sampled_frames_proxy"
+}

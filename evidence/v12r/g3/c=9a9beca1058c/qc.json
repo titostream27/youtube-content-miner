@@ -1,0 +1,36 @@
+{
+  "clip_id": "c=9a9beca1058c",
+  "ok": true,
+  "technical_qc": {
+    "codec": "h264",
+    "resolution": "1080x1920",
+    "pixel_format": "yuv420p",
+    "duration_sec": 39.25,
+    "fps": "2997/125",
+    "audio_streams": [
+      {
+        "codec": "aac",
+        "channels": 2,
+        "sample_rate": "96000"
+      }
+    ],
+    "black_frame_ratio": 0,
+    "black_frame_events": 0,
+    "frozen_frame_ratio": 0,
+    "frozen_frame_events": 0,
+    "caption_coverage": {
+      "lines": 7,
+      "covered_sec": 80.1,
+      "duration_sec": 39.3
+    },
+    "frames_sampled": 4
+  },
+  "passes": {
+    "h264_or_h265": true,
+    "yuv420p": true,
+    "positive_duration": true,
+    "low_black_frames": true,
+    "low_frozen_frames": true,
+    "captions_present": true
+  }
+}

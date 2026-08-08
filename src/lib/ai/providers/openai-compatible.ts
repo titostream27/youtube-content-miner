@@ -65,6 +65,13 @@ export function createOpenAiCompatibleTransport(runtime: ProviderRuntime): ChatT
         body.response_format = { type: 'json_object' };
       }
 
+      // Provider-specific body fields (9router DeepSeek channel needs
+      // `thinking: { type: 'disabled' }` to stop hidden reasoning from
+      // starving the JSON output).
+      if (request.extraBody) {
+        Object.assign(body, request.extraBody);
+      }
+
       let response: Response;
       try {
         response = await fetch(`${runtime.baseUrl}/chat/completions`, {
@@ -84,7 +91,21 @@ export function createOpenAiCompatibleTransport(runtime: ProviderRuntime): ChatT
         });
       }
 
-      const payload = (await response.json().catch(() => null)) as ChatCompletionResponse | null;
+      // Some proxies (the local 9router, observed 2026-08-08) append a
+      // trailing `data: [DONE]` SSE marker even with `stream: false`.
+      // Strip it before parsing so the response body stays valid JSON.
+      const rawText = await response.text().catch(() => '');
+      const cleanedText = rawText
+        .replace(/\r?\ndata: \[DONE\]\s*$/, '')
+        .replace(/}data: \[DONE\]\s*$/, '}')
+        .trim();
+
+      let payload: ChatCompletionResponse | null = null;
+      try {
+        payload = JSON.parse(cleanedText) as ChatCompletionResponse;
+      } catch {
+        payload = null;
+      }
 
       if (!response.ok) {
         throw new AiProviderError({
