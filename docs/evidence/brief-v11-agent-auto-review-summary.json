@@ -1,0 +1,37 @@
+{
+  "schema_version": "brief-v11-agent-auto-review-v1",
+  "reviewed_by": "agent-assistant-v1 (LLM text-window judging)",
+  "reviewed_at": "2026-08-08",
+  "input": "docs/evidence/brief-v11-annotation-candidates.jsonl (10 episodes x top-4 candidates)",
+  "candidates_reviewed": 40,
+  "valid_scores": 39,
+  "model_errors": 1,
+  "score_distribution": {
+    "min": 0,
+    "max": 0.5,
+    "mean": 0.173,
+    "median": 0.15,
+    "count_ge_0.7": 0,
+    "count_ge_0.5": 1,
+    "count_ge_0.3": 4
+  },
+  "per_episode_best": {
+    "I6wCuvvaRPI": 0.2,
+    "GOqEl4ADyVk": 0.3,
+    "2HLGcRpw1hc": 0.4,
+    "UZ1kCEGjYX0": 0.15,
+    "Hb2rKGfIOrM": 0.2,
+    "g2cQ2kD6lzs": 0.4,
+    "Ive926sC6mc": 0.5,
+    "3NSC5nps3OM": 0.25,
+    "376JmatmnaI": 0.2,
+    "XuoqKYxDHVc": 0.2
+  },
+  "pipeline_accepted_crosscheck": {
+    "pipeline_accepted": "Ive926sC6mc 2097.48-2138.04 (pipeline score 0.8)",
+    "agent_auto_score_for_same_window": 0.25,
+    "agent_note": "Starts mid-conversation; ends with unanswered question; no resolution"
+  },
+  "interpretation": "The agent auto-review is CONSISTENT with the pipeline: none of the 40 ASR candidate windows meet short-suitability at 0.7; the single pipeline-accepted clip scores only 0.25 with the agent. This supports the conclusion that the low G2 yield is content-level (ASR fragments are not self-contained), not a calibration bug in one reviewer. This is automated evidence, NOT the human listening corpus required by the brief.",
+  "gate_verdict": "BLOCKED (no human playback corpus; auto-review cannot replace it)"
+}

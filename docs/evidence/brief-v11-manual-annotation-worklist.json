@@ -1,0 +1,552 @@
+{
+  "schema_version": "brief-v11-manual-annotations-v1",
+  "status": "INCOMPLETE_REQUIRES_MANUAL_REVIEW",
+  "warning": "These are annotation slots, not completed ground truth. No timestamp is injected into production selection or G3 rendering.",
+  "required_publishable": 10,
+  "required_hard_negative": 10,
+  "completed_publishable": 0,
+  "completed_hard_negative": 0,
+  "episodes": [
+    {
+      "episode_index": 1,
+      "video_id": "I6wCuvvaRPI",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 2213.12,
+          "end_sec": 2250.48,
+          "duration_sec": 37.36,
+          "salience": 0.52,
+          "text_excerpt": ">> I'm kidding. I'm kidding. >> You're kidding. >> Yeah, I'm doing a podcast. The Call Her Daddy podcast. >> That's me again. >> Oh my god, you guys are [ __ ] "
+        },
+        {
+          "rank": 2,
+          "start_sec": 5794.32,
+          "end_sec": 5854.16,
+          "duration_sec": 59.84,
+          "salience": 0.474,
+          "text_excerpt": "What is going on? >> I am like the best at time management. >> You are. >> I am like, that's my thing. As long as I can take my kids to school, then in between "
+        },
+        {
+          "rank": 3,
+          "start_sec": 528.48,
+          "end_sec": 575.36,
+          "duration_sec": 46.88,
+          "salience": 0.463,
+          "text_excerpt": ">> Okay. Okay. So, I was like, \"Okay, you know what? [ __ ] it. I'm going to send her the picture. I'm going to say, \"Hey, here's the campaign. Here's the runwa"
+        },
+        {
+          "rank": 4,
+          "start_sec": 1801.12,
+          "end_sec": 1854.48,
+          "duration_sec": 53.36,
+          "salience": 0.455,
+          "text_excerpt": ">> I'm I'm doing the Call Her Daddy podcast and I wouldn't answer a private question, so I had to do that. >> We love you, Kylie. >> Like, there's no [ __ ] way"
+        }
+      ]
+    },
+    {
+      "episode_index": 2,
+      "video_id": "GOqEl4ADyVk",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 2070.72,
+          "end_sec": 2115,
+          "duration_sec": 44.28,
+          "salience": 0.579,
+          "text_excerpt": "games with my mates. And that that was really what I enjoyed the most probably. And for me, when I quit, I could just quickly see how it just got me into doing "
+        },
+        {
+          "rank": 2,
+          "start_sec": 6308.92,
+          "end_sec": 6363.12,
+          "duration_sec": 54.2,
+          "salience": 0.571,
+          "text_excerpt": "What is the worst advice you've ever received? Move to LA, get a marijuana license and buy a hot tub. Who told you that? Mark Wahlberg. That's brilliant. No, he"
+        },
+        {
+          "rank": 3,
+          "start_sec": 1814.88,
+          "end_sec": 1861.72,
+          "duration_sec": 46.84,
+          "salience": 0.565,
+          "text_excerpt": "Have you seen The Warrior? I was just about to say I was going to talk about my favorite movie. That movie That The Warrior is one of the most underrated movies"
+        },
+        {
+          "rank": 4,
+          "start_sec": 1700,
+          "end_sec": 1747.52,
+          "duration_sec": 47.52,
+          "salience": 0.555,
+          "text_excerpt": "real boxing. But then I remember watching real boxing when I was growing up, it was Prince Naseem. So, I didn't Yeah, yeah, my dad was a big fan of his, so I'd "
+        }
+      ]
+    },
+    {
+      "episode_index": 3,
+      "video_id": "2HLGcRpw1hc",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 3536.48,
+          "end_sec": 3578.64,
+          "duration_sec": 42.16,
+          "salience": 0.473,
+          "text_excerpt": ">> and and he took his gown off [laughter] and going to the pub and and it was a very small pub and very friendly people and the the band was doing fiddle piece"
+        },
+        {
+          "rank": 2,
+          "start_sec": 2308.16,
+          "end_sec": 2365.12,
+          "duration_sec": 56.96,
+          "salience": 0.446,
+          "text_excerpt": ">> He took me backstage and I got to hang out with Bruce a little bit just after the show and he at one point had been trying to been singing in this falsetto a"
+        },
+        {
+          "rank": 3,
+          "start_sec": 3153.92,
+          "end_sec": 3208.48,
+          "duration_sec": 54.56,
+          "salience": 0.442,
+          "text_excerpt": ">> Yeah. Right. It's always the first time that then Yeah. The more confident you get, the more you just We're doing it, you know? But there's still a limit to "
+        },
+        {
+          "rank": 4,
+          "start_sec": 2831.36,
+          "end_sec": 2880.96,
+          "duration_sec": 49.6,
+          "salience": 0.435,
+          "text_excerpt": ">> I was at the airport waiting in one of those long lines and I kept saying, \"Hey, let me through. I'm Conan O'Brien. And they said, \"Shut up. You'll wait in l"
+        }
+      ]
+    },
+    {
+      "episode_index": 4,
+      "video_id": "UZ1kCEGjYX0",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 481.28,
+          "end_sec": 520.64,
+          "duration_sec": 39.36,
+          "salience": 0.515,
+          "text_excerpt": ">> Because this is going to air when, Adam, >> late December, early January, >> January 5th for most people. >> That's still the holidays. Or is it? This is so "
+        },
+        {
+          "rank": 2,
+          "start_sec": 2298.72,
+          "end_sec": 2338.4,
+          "duration_sec": 39.68,
+          "salience": 0.512,
+          "text_excerpt": "never did that. I never I always thought whatever I was working on had a chance to be great. >> Yeah. >> I was wrong most of the time. [laughter] But but but it"
+        },
+        {
+          "rank": 3,
+          "start_sec": 2737.36,
+          "end_sec": 2781.92,
+          "duration_sec": 44.56,
+          "salience": 0.481,
+          "text_excerpt": "What are they thinking? [laughter] >> What an idiot. >> Uh but and I believe your mom was was she into child psychology. Is that right? >> She was a professor o"
+        },
+        {
+          "rank": 4,
+          "start_sec": 1909.04,
+          "end_sec": 1937.12,
+          "duration_sec": 28.08,
+          "salience": 0.475,
+          "text_excerpt": "joyful thing, they're all in their 20s and then Peter Jackson put this Chiron up and it said, \"This is the last time the Beatles played live together.\" >> Yeah."
+        }
+      ]
+    },
+    {
+      "episode_index": 5,
+      "video_id": "Hb2rKGfIOrM",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 3557.44,
+          "end_sec": 3593.92,
+          "duration_sec": 36.48,
+          "salience": 0.388,
+          "text_excerpt": ">> Correct. >> Yeah. >> But they were never really tested. And so, well, here here's the test. and and and and and I think I think ultimately a lot of people wi"
+        },
+        {
+          "rank": 2,
+          "start_sec": 94.96,
+          "end_sec": 144.64,
+          "duration_sec": 49.68,
+          "salience": 0.381,
+          "text_excerpt": ">> But I guess what I'm saying is at a certain point for you, there's got to be just you had a lot of reps. >> Yeah, >> reps are helpful, man. >> Reps in talkin"
+        },
+        {
+          "rank": 3,
+          "start_sec": 2773.36,
+          "end_sec": 2822.72,
+          "duration_sec": 49.36,
+          "salience": 0.378,
+          "text_excerpt": ">> It could affect whether or not people can make a living where they live as opposed to trying to cross the oceans to migrate to places where they can and and "
+        },
+        {
+          "rank": 4,
+          "start_sec": 4038.4,
+          "end_sec": 4076.32,
+          "duration_sec": 37.92,
+          "salience": 0.371,
+          "text_excerpt": ">> Yeah. Thankfully, >> that that I I think speaks to who we are and yeah, we can't take this stuff for granted. But I my my experience is most people are reall"
+        }
+      ]
+    },
+    {
+      "episode_index": 6,
+      "video_id": "g2cQ2kD6lzs",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 2476.4,
+          "end_sec": 2515.4,
+          "duration_sec": 39,
+          "salience": 0.557,
+          "text_excerpt": "Why not? Yeah. And the more action you take, the more you think it's possible. Yeah, because you realize they're people just like us. They make mistakes just li"
+        },
+        {
+          "rank": 2,
+          "start_sec": 218.48,
+          "end_sec": 242.24,
+          "duration_sec": 23.76,
+          "salience": 0.495,
+          "text_excerpt": "Never, man. I love that, man. I love it how everything evolves naturally. And actually hearing you say that, it reminds me. So, my vision when I was sharing ear"
+        },
+        {
+          "rank": 3,
+          "start_sec": 177.84,
+          "end_sec": 197.88,
+          "duration_sec": 20.04,
+          "salience": 0.445,
+          "text_excerpt": "I love that. When you started writing 17 years ago, did you envision that one day you would move into this storytelling space or was it just something you enjoy"
+        },
+        {
+          "rank": 4,
+          "start_sec": 2009.68,
+          "end_sec": 2045.96,
+          "duration_sec": 36.28,
+          "salience": 0.435,
+          "text_excerpt": "Like for me, and and this is why everyone's different and I think there's such a need for what you're doing because when I was growing up, I never enjoyed ficti"
+        }
+      ]
+    },
+    {
+      "episode_index": 7,
+      "video_id": "Ive926sC6mc",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 3311,
+          "end_sec": 3369.36,
+          "duration_sec": 58.36,
+          "salience": 0.61,
+          "text_excerpt": "What do you do on the weekend? I want to know that side of it. Your side is having fun. What are you doing? I'm sleeping, bro. Critical. Critical. Yes Wake up l"
+        },
+        {
+          "rank": 2,
+          "start_sec": 1680.52,
+          "end_sec": 1739.28,
+          "duration_sec": 58.76,
+          "salience": 0.606,
+          "text_excerpt": "Actually, it's not a fight like a fight because of differences, but more like, in my opinion, I learned a lot from Coess, namely how to be responsible for your "
+        },
+        {
+          "rank": 3,
+          "start_sec": 2661.36,
+          "end_sec": 2721,
+          "duration_sec": 59.64,
+          "salience": 0.577,
+          "text_excerpt": "I want to be someone who can be involved in that change so that it becomes better. So, for example, my nephew, your child seems to be involved here, you don't n"
+        },
+        {
+          "rank": 4,
+          "start_sec": 2097.48,
+          "end_sec": 2135.32,
+          "duration_sec": 37.84,
+          "salience": 0.569,
+          "text_excerpt": "What do physical goods ultimately become? So sexy again. In fact, what's interesting for me is that with the sophistication and acceleration of technology, many"
+        }
+      ]
+    },
+    {
+      "episode_index": 8,
+      "video_id": "3NSC5nps3OM",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 2222.36,
+          "end_sec": 2260.76,
+          "duration_sec": 38.4,
+          "salience": 0.56,
+          "text_excerpt": "Yes And that's it, oh my, what should I do? Does n't it seem like guys also feel that way when they meet a girl who is n't like the others? Is that like that, b"
+        },
+        {
+          "rank": 2,
+          "start_sec": 1376.2,
+          "end_sec": 1429.24,
+          "duration_sec": 53.04,
+          "salience": 0.534,
+          "text_excerpt": "Why is that, bro? Yes, it's already night. [laughs] But what do you mean, why don't you want to stay longer? Kal, if it were me, it would be more because let's "
+        },
+        {
+          "rank": 3,
+          "start_sec": 1490.16,
+          "end_sec": 1533.6,
+          "duration_sec": 43.44,
+          "salience": 0.53,
+          "text_excerpt": "ate it for a long time, it would take even longer, we would take a long time. He was already restless. Hey come on. Hmm. Come on, come on, let's go home. Let us"
+        },
+        {
+          "rank": 4,
+          "start_sec": 954,
+          "end_sec": 991.6,
+          "duration_sec": 37.6,
+          "salience": 0.524,
+          "text_excerpt": "How does he remember Bang Radit? Just say it like that. Yes Calling my name, \"Eh, Dika like that.\" [sighs] This is Dika. Yes Why are you here like that ? Just w"
+        }
+      ]
+    },
+    {
+      "episode_index": 9,
+      "video_id": "376JmatmnaI",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 552.76,
+          "end_sec": 596.96,
+          "duration_sec": 44.2,
+          "salience": 0.566,
+          "text_excerpt": "only thing I do not I cannot I hate going grocery shopping I always say Jake like that is something I really I can't that's fair um okay I want to get to know y"
+        },
+        {
+          "rank": 2,
+          "start_sec": 2048.2,
+          "end_sec": 2090.32,
+          "duration_sec": 42.12,
+          "salience": 0.517,
+          "text_excerpt": "can't I really can't it's so accurate though of them standing there so he fully broke the cycle no he actually did something even worse he picked me up and spam"
+        },
+        {
+          "rank": 3,
+          "start_sec": 120.68,
+          "end_sec": 164.72,
+          "duration_sec": 44.04,
+          "salience": 0.475,
+          "text_excerpt": "you like Jake Jake my husband we I'm on the drive and Jake's like put the next episode on Chelsea so I just recently listened to the Chelsea Handler one I was i"
+        },
+        {
+          "rank": 4,
+          "start_sec": 3033.52,
+          "end_sec": 3077.28,
+          "duration_sec": 43.76,
+          "salience": 0.47,
+          "text_excerpt": "you okay hold on I think that I was good I didn't stress I wasn't stressing I'm just a planner so like that I'm not like yelling at people or anything like I'm "
+        }
+      ]
+    },
+    {
+      "episode_index": 10,
+      "video_id": "XuoqKYxDHVc",
+      "publishable": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "hook": null,
+        "topic": null,
+        "payoff": null,
+        "self_contained_reason": null,
+        "ending_complete": null
+      },
+      "hard_negative": {
+        "status": "pending_manual_playback",
+        "start_sec": null,
+        "end_sec": null,
+        "reason": null
+      },
+      "candidate_shortlist": [
+        {
+          "rank": 1,
+          "start_sec": 4315.08,
+          "end_sec": 4363.52,
+          "duration_sec": 48.44,
+          "salience": 0.452,
+          "text_excerpt": ">> You So so the shoe is on the other foot. They hate you. They hate you far more than they hate me. >> I think there is certainly lots of trust in journalism. "
+        },
+        {
+          "rank": 2,
+          "start_sec": 2203.72,
+          "end_sec": 2225,
+          "duration_sec": 21.28,
+          "salience": 0.435,
+          "text_excerpt": ">> I'm actually I'm perfectly willing to believe that. You may well be right. Yeah, yeah, absolutely. You may well be right. But I'm I'm really hung up on how w"
+        },
+        {
+          "rank": 3,
+          "start_sec": 3773.84,
+          "end_sec": 3822.8,
+          "duration_sec": 48.96,
+          "salience": 0.431,
+          "text_excerpt": ">> I would like to just admonish you >> Do you >> and the media for the absurd characterization of the far right. It is false and misleading and nonsense. Pleas"
+        },
+        {
+          "rank": 4,
+          "start_sec": 4011.36,
+          "end_sec": 4055.4,
+          "duration_sec": 44.04,
+          "salience": 0.424,
+          "text_excerpt": ">> There are problems, but it is not it really is not what you are describing to or suggesting to your 240 million followers it is. And I think there's a proble"
+        }
+      ]
+    }
+  ],
+  "gate_verdict": "BLOCKED"
+}
