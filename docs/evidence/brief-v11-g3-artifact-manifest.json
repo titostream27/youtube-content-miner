@@ -1,0 +1,99 @@
+{
+  "schema_version": "brief-v11-g3-v1",
+  "qualified_production_selected_artifacts": 1,
+  "required": 3,
+  "items": [
+    {
+      "job_id": "62c3238f36",
+      "episode_id": "Ive926sC6mc",
+      "path": "D:\\homelab\\hermes-workspace\\AI-Youtube-Shorts-Generator\\rendered\\62c3238f36\\short_01.mp4",
+      "classification": "historical-single-unverified",
+      "metadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "25/1"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "96000",
+            "channels": 2,
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "40.500000"
+        }
+      }
+    },
+    {
+      "job_id": "7eecc67fb0",
+      "episode_id": "g2cQ2kD6lzs",
+      "path": "D:\\homelab\\hermes-workspace\\AI-Youtube-Shorts-Generator\\rendered\\7eecc67fb0\\short_01.mp4",
+      "classification": "historical-not-currently-selected",
+      "metadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "2997/125"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "96000",
+            "channels": 2,
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "35.200000"
+        }
+      }
+    },
+    {
+      "job_id": "4d96e7197a",
+      "episode_id": "I6wCuvvaRPI",
+      "path": "D:\\homelab\\hermes-workspace\\AI-Youtube-Shorts-Generator\\rendered\\4d96e7197a\\short_01.mp4",
+      "classification": "historical-not-currently-selected",
+      "metadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "2997/125"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "96000",
+            "channels": 2,
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "47.300000"
+        }
+      }
+    }
+  ],
+  "gate_verdict": "BLOCKED",
+  "reason": "Only Iqbal matches the current post-fix production selection; no evidence of two genuine speaker-switch selections or three full playback reviews."
+}

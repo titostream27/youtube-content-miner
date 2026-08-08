@@ -1,0 +1,18 @@
+{
+  "clip_id": "c=9a9beca1058c",
+  "status": "ok",
+  "frames_used": 4,
+  "visual_judge": {
+    "face_framing": "PASS",
+    "active_speaker_alignment": "PASS",
+    "switch_smoothness_proxy": "PASS",
+    "ping_pong_risk": "LOW",
+    "caption_face_collision": "NONE",
+    "head_cutoff": "NONE",
+    "layout_stability": "PASS",
+    "notes": [
+      "Switch smoothness is assessed as a still-frame proxy only."
+    ]
+  },
+  "method": "sampled_frames_proxy"
+}

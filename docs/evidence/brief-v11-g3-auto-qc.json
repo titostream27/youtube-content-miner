@@ -1,0 +1,47 @@
+{
+  "schema_version": "brief-v11-g3-auto-qc-v1",
+  "reviewed_by": "agent-assistant-v1 (frame QC via vision model)",
+  "reviewed_at": "2026-08-08",
+  "limitation": "Frame-level visual QC only. This is NOT a full human playback review; PASS/FAIL/N-A playback checklists remain a human gate.",
+  "items": [
+    {
+      "job_id": "62c3238f36",
+      "episode_id": "Ive926sC6mc",
+      "frame": "docs/evidence/g3-frames/62c3238f36.jpg",
+      "orientation": "9:16 portrait",
+      "content": "Studio interview, person with mic, yellow subtitle text",
+      "observations": [
+        "Large black pillarbox bars left/right and smaller bars top/bottom (letterboxed, not filled canvas)",
+        "No black full-frame, no green frames, no watermark"
+      ],
+      "auto_flag": "letterboxed"
+    },
+    {
+      "job_id": "7eecc67fb0",
+      "episode_id": "g2cQ2kD6lzs",
+      "frame": "docs/evidence/g3-frames/7eecc67fb0.jpg",
+      "orientation": "9:16 vertical (letterboxed)",
+      "subject": "Subject (Kobe Bryant) with mic, white studio background, yellow caption",
+      "observations": [
+        "Heavy letterboxing: original landscape video letterboxed inside 9:16 canvas",
+        "Blurred background fill at top and bottom",
+        "Low-resolution compression artifacts"
+      ],
+      "auto_flag": "letterboxed_lowres"
+    },
+    {
+      "job_id": "4d96e7197a",
+      "episode_id": "I6wCuvvaRPI",
+      "frame": "docs/evidence/g3-frames/4d96e7197a.jpg",
+      "orientation": "9:16 vertical",
+      "subject": "Interview host pink studio, branded mic, yellow subtitle",
+      "observations": [
+        "Visible upscale/AI-artifact on face and hands (warped features, garbled text on hoodie)",
+        "Low-resolution textures, motion blur"
+      ],
+      "auto_flag": "upscale_artifacts"
+    }
+  ],
+  "summary": "All three historical artifacts are 9:16 with H.264/AAC and no full-frame black frames, but none is canvas-clean: letterboxing and/or upscale artifacts are visible. These are auto-QC flags for renderer quality work; G3 verdict stays BLOCKED until full playback reviews exist.",
+  "gate_verdict": "BLOCKED"
+}

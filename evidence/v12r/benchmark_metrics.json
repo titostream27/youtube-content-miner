@@ -1,0 +1,22 @@
+{
+  "sample_size": 51,
+  "pass": 2,
+  "review": 7,
+  "fail": 42,
+  "judge_c_invocation_rate": 0.19607843137254902,
+  "judge_c_invoked_count": 10,
+  "judge_a_ok": 51,
+  "judge_b_ok": 51,
+  "a_b_agreement_rate": 0.803921568627451,
+  "a_b_agree_count": 41,
+  "a_b_both_ok_count": 51,
+  "provider_failure_count": 0,
+  "parser_failure_count": 0,
+  "pass_rate_by_episode": {
+    "2HLGcRpw1hc": 1,
+    "376JmatmnaI": 1
+  },
+  "pass_rate_by_original_failure_reason": {
+    "ending_complete": 2
+  }
+}

@@ -351,6 +351,22 @@ export async function twoPassHighlightSelection(
       utterances,
     );
 
+    // Fail closed before any topic lookup, clamping, or repair fallback. An
+    // invalid semantic range is a contract violation, not a repair candidate.
+    if (
+      !Number.isFinite(info.finalStartSec) ||
+      !Number.isFinite(info.finalEndSec) ||
+      info.finalEndSec <= info.finalStartSec
+    ) {
+      rejectedCount += 1;
+      const reason =
+        `highlight ${rough.index}: rejected invalid semantic range ` +
+        `(${info.finalStartSec.toFixed(2)}-${info.finalEndSec.toFixed(2)})`;
+      warnings.push(reason);
+      console.warn(`[two-pass] ${reason}`);
+      continue;
+    }
+
     // Re-run deterministic topic boundary on the agent's final end for the
     // guard (the agent may have moved the boundary).
     const endIdx = utteranceAtOrBefore(utterances, info.finalEndSec);
@@ -382,7 +398,16 @@ export async function twoPassHighlightSelection(
       config.pipeline.highlight.endGuardSec,
     );
     const finalEnd = Math.min(info.finalEndSec, guard.end);
-    const finalStart = Math.min(info.finalStartSec, finalEnd - 1);
+    const finalStart = info.finalStartSec;
+    if (!Number.isFinite(finalEnd) || finalEnd <= finalStart) {
+      rejectedCount += 1;
+      const reason =
+        `highlight ${rough.index}: rejected invalid guarded range ` +
+        `(${finalStart.toFixed(2)}-${finalEnd.toFixed(2)})`;
+      warnings.push(reason);
+      console.warn(`[two-pass] ${reason}`);
+      continue;
+    }
 
     const validation = validateBoundary(finalStart, finalEnd, ending, boundary);
     if (!validation.ok) {

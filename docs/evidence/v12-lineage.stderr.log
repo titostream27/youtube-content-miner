@@ -1,0 +1,352 @@
+[two-pass] reject idx=0 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=1 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=4 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=5 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=6 after repair: finalize rejected
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=9 start=1112.2 end=1167.5 dur=55.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=12: finalize rejected
+[two-pass] reject idx=13 after repair: finalize rejected
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=17 start=2128.8 end=2172.7 dur=43.9s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20 start=2608.3 end=2633.0 dur=24.7s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=false reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=21 after repair: too short (13.4s < 14s)
+[two-pass] reject idx=22 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=23 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=24: finalize rejected
+[two-pass] reject idx=25: finalize rejected
+[two-pass] reject idx=26 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: too short (3.7s < 14s)
+[two-pass] reject idx=30 after repair: finalize rejected
+[two-pass] reject idx=31 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=32 start=5248.2 end=5290.9 dur=42.7s ending=CONCLUSION conf=0.78 contamination=0.00 next_topic=true reason=ending confidence 0.78 < 0.82
+[two-pass] reject idx=33 after repair: too short (1.7s < 14s)
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35: finalize rejected
+[two-pass] reject idx=36 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=37 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=38 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=39 after repair: too short (2.0s < 14s)
+[two-pass] episode "KIM KARDASHIAN (Full Episode)": 40 rough -> 0 kept, 40 rejected
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3 after repair: finalize rejected
+[two-pass] reject idx=4 after repair: ending confidence 0.72 < 0.82
+[two-pass] reject idx=5 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=6 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=7 after repair: finalize rejected
+[two-pass] reject idx=8 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=9 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=10: finalize rejected
+[two-pass] reject idx=11 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=12 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=13 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=14 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=15 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=16 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=17 after repair: ending confidence 0.80 < 0.82
+[two-pass] reject idx=18 after repair: too short (10.5s < 14s)
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=21 after repair: finalize rejected
+[two-pass] reject idx=22 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=23 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=24 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=25 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=26 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=27 after repair: finalize rejected
+[two-pass] reject idx=28 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=29 after repair: finalize rejected
+[two-pass] reject idx=30 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=31 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=32: finalize rejected
+[two-pass] reject idx=33 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=36 after repair: too short (12.8s < 14s)
+[two-pass] reject idx=37 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=38 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=39 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "TOM HOLLAND interview": 40 rough -> 0 kept, 40 rejected
+[two-pass] reject idx=0 after repair: next-topic contamination 0.27
+[two-pass] reject idx=1 start=84.6 end=139.5 dur=55.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3 start=288.2 end=308.3 dur=20.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=4 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=5 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=6 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 start=980.7 end=1024.4 dur=43.7s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: too short (7.2s < 14s)
+[two-pass] reject idx=12 after repair: finalize rejected
+[two-pass] reject idx=13 after repair: finalize rejected
+[two-pass] reject idx=14 after repair: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20: finalize rejected
+[two-pass] reject idx=21 after repair: finalize rejected
+[two-pass] reject idx=22 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=23 start=2442.6 end=2479.4 dur=36.8s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=24 after repair: too short (13.1s < 14s)
+[two-pass] reject idx=25 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=26 after repair: too short (2.2s < 14s)
+[two-pass] reject idx=27 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=28 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=29 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=30 after repair: finalize rejected
+[two-pass] reject idx=31 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=32: finalize rejected
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34 after repair: too short (1.8s < 14s)
+[two-pass] reject idx=35 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "Mick Jagger (Conan)": 36 rough -> 0 kept, 36 rejected
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=4: finalize rejected
+[two-pass] reject idx=5: finalize rejected
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=8 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=9 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 start=945.0 end=1030.6 dur=85.6s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=true reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=12 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=13 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=14 after repair: too short (9.8s < 14s)
+[two-pass] reject idx=15 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18 after repair: too short (1.9s < 14s)
+[two-pass] reject idx=19: finalize rejected
+[two-pass] reject idx=20 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=21 start=1909.0 end=1937.1 dur=28.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=22: finalize rejected
+[two-pass] reject idx=23 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=24 start=2298.7 end=2338.4 dur=39.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=25 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=26 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=27 start=2545.8 end=2593.6 dur=47.7s ending=CONCLUSION conf=0.78 contamination=0.00 next_topic=true reason=ending confidence 0.78 < 0.82
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=30 start=2871.9 end=2913.4 dur=41.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=31: finalize rejected
+[two-pass] reject idx=32 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=36 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=37 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=38: finalize rejected
+[two-pass] episode "Matt Damon (Conan)": 39 rough -> 0 kept, 39 rejected
+[two-pass] reject idx=0 start=1.5 end=16.0 dur=14.4s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=1 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=2: finalize rejected
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=5: finalize rejected
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7: finalize rejected
+[two-pass] reject idx=8 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=9 after repair: finalize rejected
+[two-pass] reject idx=10: finalize rejected
+[two-pass] reject idx=11: finalize rejected
+[two-pass] reject idx=12 start=3993.3 end=4038.2 dur=44.9s ending=CONCLUSION conf=0.78 contamination=0.00 next_topic=true reason=ending confidence 0.78 < 0.82
+[two-pass] reject idx=13 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "Obama x Maron": 14 rough -> 0 kept, 14 rejected
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2: finalize rejected
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=5 after repair: finalize rejected
+[two-pass] reject idx=6 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=7 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=8 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=9 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=12 after repair: too short (11.1s < 14s)
+[two-pass] reject idx=13 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=14 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=15 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=18 after repair: finalize rejected
+[two-pass] reject idx=19 after repair: too short (0.8s < 14s)
+[two-pass] reject idx=20 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=21 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=22 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=23 after repair: too short (13.2s < 14s)
+[two-pass] reject idx=24 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "KOBE x Jay Shetty": 25 rough -> 1 kept, 24 rejected
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: finalize rejected
+[two-pass] reject idx=5 after repair: too short (7.9s < 14s)
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: too short (5.4s < 14s)
+[two-pass] reject idx=12 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=13 start=1057.0 end=1104.5 dur=47.5s ending=CONCLUSION conf=0.78 contamination=0.00 next_topic=true reason=ending confidence 0.78 < 0.82
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16: finalize rejected
+[two-pass] reject idx=17 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=18 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=22 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=23: finalize rejected
+[two-pass] reject idx=24 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=25 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=26 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=29 after repair: finalize rejected
+[two-pass] reject idx=30 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=31 after repair: finalize rejected
+[two-pass] reject idx=32 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=33 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=34: finalize rejected
+[two-pass] reject idx=35 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=36 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=37 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=38 after repair: finalize rejected
+[two-pass] reject idx=39 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "Sisi Lain Iqbaal Ramadhan": 40 rough -> 1 kept, 39 rejected
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1: finalize rejected
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=4: finalize rejected
+[two-pass] reject idx=5 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=6 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=7 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=12 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=13 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15: finalize rejected
+[two-pass] reject idx=16 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=17: finalize rejected
+[two-pass] reject idx=18 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=21: finalize rejected
+[two-pass] reject idx=22 after repair: finalize rejected
+[two-pass] reject idx=23: finalize rejected
+[two-pass] reject idx=24: finalize rejected
+[two-pass] reject idx=25 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=26: finalize rejected
+[two-pass] reject idx=27 after repair: finalize rejected
+[two-pass] reject idx=28: finalize rejected
+[two-pass] reject idx=29 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=30: finalize rejected
+[two-pass] reject idx=31 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=32 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=33: finalize rejected
+[two-pass] reject idx=34 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=35: finalize rejected
+[two-pass] reject idx=36 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=37: finalize rejected
+[two-pass] reject idx=38: finalize rejected
+[two-pass] reject idx=39 after repair: ending confidence 0.78 < 0.82
+[two-pass] episode "Cerita Cinta Idgitaf": 40 rough -> 0 kept, 40 rejected
+[two-pass] reject idx=0 start=0.6 end=58.5 dur=57.9s ending=TOPIC_TRANSITION conf=0.60 contamination=0.00 next_topic=true reason=ending incomplete (TOPIC_TRANSITION)
+[two-pass] reject idx=1 start=73.3 end=123.6 dur=50.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=2 start=120.7 end=164.7 dur=44.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=3 start=295.8 end=349.2 dur=53.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=4 start=377.9 end=427.3 dur=49.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=5 start=440.4 end=497.8 dur=57.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=6 start=496.2 end=537.7 dur=41.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=7 start=552.8 end=594.2 dur=41.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=8 start=594.4 end=638.7 dur=44.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=9 start=636.5 end=678.0 dur=41.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=10 start=731.0 end=781.1 dur=50.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=11 start=920.0 end=983.9 dur=63.9s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=12 start=1009.8 end=1043.4 dur=33.6s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=13 start=1169.7 end=1213.0 dur=43.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=14 start=1280.2 end=1323.5 dur=43.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=15 start=1321.5 end=1359.8 dur=38.3s ending=TOPIC_TRANSITION conf=0.60 contamination=0.00 next_topic=true reason=ending incomplete (TOPIC_TRANSITION)
+[two-pass] reject idx=16 start=1372.8 end=1415.9 dur=43.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=17 start=1501.1 end=1554.5 dur=53.4s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=18 start=1691.4 end=1751.8 dur=60.4s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=true reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=19 start=1910.3 end=1976.7 dur=66.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=20 start=1976.9 end=2019.6 dur=42.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=21 start=2048.2 end=2088.6 dur=40.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=22 start=2113.7 end=2191.8 dur=78.1s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=23 start=2227.7 end=2274.1 dur=46.4s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=24 start=2308.6 end=2360.1 dur=51.6s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=25 start=2443.5 end=2503.8 dur=60.3s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=26 start=2501.8 end=2548.0 dur=46.2s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=true reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=27 start=2563.2 end=2616.0 dur=52.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=28 start=2734.4 end=2782.4 dur=48.0s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=29 start=2794.5 end=2860.8 dur=66.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=30 start=2870.7 end=2952.4 dur=81.7s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=31 start=2989.2 end=3065.7 dur=76.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=32 start=3155.4 end=3214.1 dur=58.7s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=33 start=3211.9 end=3253.6 dur=41.6s ending=INCOMPLETE_SENTENCE conf=0.30 contamination=0.00 next_topic=false reason=ending incomplete (INCOMPLETE_SENTENCE)
+[two-pass] reject idx=34 start=3291.4 end=3339.2 dur=47.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=35 start=3440.0 end=3511.3 dur=71.3s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=36 start=3509.8 end=3552.6 dur=42.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=37 start=3682.6 end=3746.1 dur=63.5s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=38 start=3849.6 end=3897.4 dur=47.8s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] reject idx=39 start=4013.4 end=4059.1 dur=45.6s ending=UNKNOWN conf=0.45 contamination=0.00 next_topic=false reason=ending incomplete (UNKNOWN)
+[two-pass] episode "Millie Bobby Brown": 40 rough -> 0 kept, 40 rejected
+[two-pass] reject idx=0: finalize rejected
+[two-pass] reject idx=1 after repair: too short (2.2s < 14s)
+[two-pass] reject idx=2 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=3: finalize rejected
+[two-pass] reject idx=4 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=5 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=6: finalize rejected
+[two-pass] reject idx=7 after repair: ending confidence 0.80 < 0.82
+[two-pass] reject idx=8: finalize rejected
+[two-pass] reject idx=9 after repair: too short (4.0s < 14s)
+[two-pass] reject idx=10 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=11 after repair: too short (6.5s < 14s)
+[two-pass] reject idx=12: finalize rejected
+[two-pass] reject idx=13: finalize rejected
+[two-pass] reject idx=14: finalize rejected
+[two-pass] reject idx=15 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=16 after repair: finalize rejected
+[two-pass] reject idx=17 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=18: finalize rejected
+[two-pass] reject idx=19 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=20: finalize rejected
+[two-pass] reject idx=21 start=4214.9 end=4235.4 dur=20.6s ending=QUESTION_START conf=0.50 contamination=0.00 next_topic=false reason=ending incomplete (QUESTION_START)
+[two-pass] reject idx=22 after repair: finalize rejected
+[two-pass] reject idx=23 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=24 after repair: ending confidence 0.78 < 0.82
+[two-pass] reject idx=25 after repair: too short (1.4s < 14s)
+[two-pass] reject idx=26: finalize rejected
+[two-pass] reject idx=27: finalize rejected
+[two-pass] reject idx=28 start=4940.4 end=4954.0 dur=13.6s ending=CONCLUSION conf=0.78 contamination=0.00 next_topic=true reason=too short (13.6s < 14s)
+[two-pass] reject idx=29: finalize rejected
+[two-pass] episode "Elon Musk interview": 30 rough -> 0 kept, 30 rejected
