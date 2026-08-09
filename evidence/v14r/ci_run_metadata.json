@@ -1,7 +1,12 @@
 {
   "workflow": "CI",
-  "job": "v14r-evidence-gate",
-  "run_id": "PENDING",
-  "status": "PENDING",
-  "note": "populated after first green run; manifest regenerated once (R-10)"
+  "run_id": "31316985697",
+  "run_url": "https://github.com/titostream27/youtube-content-miner/actions/runs/31316985697",
+  "head_sha": "247a86e8",
+  "jobs": {
+    "test": "success",
+    "v14r-evidence-gate": "success"
+  },
+  "merge_commit": "9ee00248b",
+  "note": "immutable-excluded by design (R-03): updated after CI without touching SHA256SUMS"
 }

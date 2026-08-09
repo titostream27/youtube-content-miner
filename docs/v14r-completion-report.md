@@ -6,7 +6,7 @@
 ## Baseline / final SHA
 - Baseline: `557aaa7037a246b3636662d93bc5460d5826f369` (main after PR #9)
 - Branch: `fix/brief-v14r-evidence-reproducibility-closure`
-- Final SHA: (filled after merge, see §CI proof)
+- Final SHA: merged as `9ee00248b1e` (merge commit of PR #10; CI head `247a86e8`)
 
 ## Original defects (F-01..F-08)
 | ID | Priority | Status | Evidence |
@@ -80,8 +80,8 @@ Holdout **NOT evaluated**. `policy_lock.locked_variant == null`; variant runs
 contain no holdout rows (V14R-SAF assert); no retuning occurred.
 
 ## CI proof
-- Workflow `CI`, job `v14r-evidence-gate`, run URL/ID: (filled after push)
-- Status: green (blocking) — G9.
+- Workflow `CI`, run **31316985697** (https://github.com/titostream27/youtube-content-miner/actions/runs/31316985697): jobs `test` + `v14r-evidence-gate` = **success** (blocking G9).
+- Windows local: same numbers in `test_report.json` (48 files/343 tests; verifier 12/12; checksums 76/76).
 
 ## Remaining limitations (honest)
 - The FAIL audit judge (C) contradicted A/B on 4/7 cases — those became
