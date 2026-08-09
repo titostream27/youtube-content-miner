@@ -1,0 +1,14 @@
+{
+  "mode": "c-only (Judge C re-run for A/B disagreements)",
+  "candidates_pending_at_start": 15,
+  "completed_total": 15,
+  "stats": {
+    "pass": 0,
+    "review": 0,
+    "fail": 0,
+    "provider_fail": 0,
+    "parse_fail": 0,
+    "c_invoked": 0
+  },
+  "note": "run scripts/v13-reconsensus.ts afterwards to rebuild consensus_labels_v13.jsonl"
+}

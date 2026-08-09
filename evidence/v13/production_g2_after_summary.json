@@ -1,0 +1,8 @@
+{
+  "episodes_evaluated": 10,
+  "episodes_ok": 10,
+  "negative_duration_total": 0,
+  "episodes_with_silver_pass_accepted": 0,
+  "top1_silver_pass_episodes": 0,
+  "top3_silver_pass_episodes": 0
+}

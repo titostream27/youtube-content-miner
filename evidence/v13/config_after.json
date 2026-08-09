@@ -1,0 +1,177 @@
+{
+  "benchmark_version": "v13.0",
+  "selector_version": "clip-score-v2",
+  "generated_at": "2026-08-09T02:01:31.400Z",
+  "candidate_generation_config": {
+    "min_duration_sec": 15,
+    "max_duration_sec": 90,
+    "target_duration_sec": 45,
+    "max_scored_segments_per_episode": 40,
+    "min_salience": 0.3,
+    "proposal_source": "detectMoments (salience windows, greedy non-overlapping)"
+  },
+  "duration_limits": {
+    "hard_min_sec": 14,
+    "hard_max_sec": 90,
+    "min_complete_duration_sec": 14,
+    "preferred_min_sec": 25,
+    "preferred_max_sec": 50,
+    "allow_short_complete_clip": true
+  },
+  "start_gate_config": {
+    "hard_issues": [
+      "MID_SENTENCE",
+      "MISSING_CONTEXT",
+      "UNRESOLVED_REFERENCE"
+    ],
+    "late_hook_sec": 12,
+    "repair": "expandStartBackToComplete (bounded, H1 experimental only)",
+    "notes": "LATE_HOOK is a scoring penalty, not a hard reject"
+  },
+  "ending_complete_config": {
+    "classifier": "classifyEnding (topic-boundary)",
+    "hard_fail_types": [
+      "INCOMPLETE_SENTENCE",
+      "FILLER",
+      "TOPIC_TRANSITION",
+      "QUESTION_START",
+      "UNKNOWN"
+    ],
+    "repair": "repairBoundary before reject (boundary-repair)"
+  },
+  "ending_confidence_config": {
+    "min_ending_confidence": 0.82,
+    "gate_semantics": "reject when confidence < 0.82 AND duration >= preferred_min_sec (25s)",
+    "boundary_confidence_min": 0.82
+  },
+  "contamination_gate": {
+    "max_next_topic_contamination": 0.18,
+    "next_topic_lookahead_sec": 12,
+    "end_guard_sec": 0.2,
+    "topic_change_threshold": 0.58
+  },
+  "scoring_weights": {
+    "clip_gate_weights": {
+      "standalone": 0.4,
+      "clarity": 0.3,
+      "hook": 0.3
+    },
+    "clip_driver_keys": [
+      "hook",
+      "curiosity",
+      "emotion",
+      "storytelling",
+      "shareability",
+      "controversy",
+      "teachingValue",
+      "entertainment"
+    ],
+    "clip_driver_share": 0.55,
+    "clip_gate_share": 0.45,
+    "clip_driver_top_n": 2,
+    "episode_factor_weights": {
+      "topicRelevance": 0.22,
+      "durationFit": 0.09,
+      "engagement": 0.12,
+      "viewVelocity": 0.1,
+      "recency": 0.06,
+      "channelQuality": 0.1,
+      "discussionDensity": 0.08,
+      "expectedClipDensity": 0.08,
+      "channelRelativeVelocity": 0.05,
+      "momentum": 0.03,
+      "personalFit": 0.03,
+      "processingCostEfficiency": 0.04
+    },
+    "scoring_engine": "heuristic (deterministic fallback; LLM agent when provider available)"
+  },
+  "acceptance": {
+    "clip_score_threshold": 70,
+    "library_min_score": 70,
+    "episode_score_threshold": 60,
+    "priority_tiers": [
+      "publish_immediately",
+      "high_priority",
+      "good_candidate",
+      "optional",
+      "archive"
+    ]
+  },
+  "dedupe_config": {
+    "identity": "candidateFingerprint (videoId + start + end + first4 + last4 words)",
+    "overlap_resolution": "greedy non-overlapping by rank at proposal time"
+  },
+  "ranking_config": {
+    "order": "final clip score descending",
+    "tie_break": "stable insertion order"
+  },
+  "fallback_config": {
+    "llm_unavailable": "heuristic engine (judgeSegmentHeuristically + computeClipScore)",
+    "boundary_refinement_unavailable": "deterministicBoundary (two-pass)"
+  },
+  "llm_provider_identifiers": {
+    "production_default": "deepseek",
+    "agent_roles": {
+      "discovery": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "episode_triage": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "moment_detection": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "clip_scoring": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "clip_metadata": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "clip_seo": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "clip_hook": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "clip_variants": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      },
+      "trending_topic": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash"
+      }
+    },
+    "judge_tiers": {
+      "A": {
+        "provider": "deepseek",
+        "model": "ds/deepseek-v4-flash",
+        "endpoint": "9router 127.0.0.1:20128/v1"
+      },
+      "B": {
+        "provider": "openrouter",
+        "model": "google/gemini-2.5-flash-lite",
+        "endpoint": "api.openrouter.ai"
+      },
+      "C": {
+        "provider": "openai(channel=9router)",
+        "model": "cx/gpt-5.6-luna",
+        "endpoint": "9router 127.0.0.1:20128/v1"
+      }
+    },
+    "confidence_floor": "0.5 (default)"
+  },
+  "provenance": {
+    "brief": "Brief_V13_Production_Selector_Alignment_Silver_Pass_Recall.pdf",
+    "baseline_sha": "1f58c6f3",
+    "baseline_branch": "fix/brief-v12r-silver-gold-judge"
+  },
+  "note": "IDENTICAL to config_before: no production configuration change was evidence-backed in this sprint (0 silver positives; all ablations leak FAILs). SA-23 persists old/new == same."
+}

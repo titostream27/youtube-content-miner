@@ -1,0 +1,28 @@
+{
+  "strategy": "hash-episode-70/30",
+  "benchmark_version": "v13.0",
+  "split_before_tuning": true,
+  "calibration_episodes": [
+    "2HLGcRpw1hc",
+    "3NSC5nps3OM",
+    "GOqEl4ADyVk",
+    "Hb2rKGfIOrM",
+    "Ive926sC6mc",
+    "XuoqKYxDHVc",
+    "g2cQ2kD6lzs"
+  ],
+  "holdout_episodes": [
+    "376JmatmnaI",
+    "I6wCuvvaRPI",
+    "UZ1kCEGjYX0"
+  ],
+  "calibration_episode_count": 7,
+  "holdout_episode_count": 3,
+  "calibration_pass_count": 3,
+  "holdout_pass_count": 5,
+  "fallback_reason": null,
+  "leave_one_episode_out": null,
+  "episodes_total": 10,
+  "candidates_total": 344,
+  "pass_total": 8
+}
