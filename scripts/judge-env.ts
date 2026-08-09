@@ -27,6 +27,47 @@ export interface JudgeEnvResult {
   openrouter_base_url: string;
   gateway: string;
   warnings: string[];
+  model_status?: Record<string, { ok: boolean; detail: string }>;
+}
+
+/** Probe a concrete model route; returns {ok, detail} — never throws. */
+export async function modelAvailable(base: string, apiKey: string, model: string, timeoutMs = 45_000): Promise<{ ok: boolean; detail: string }> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`${base.replace(/\/$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'ping' }],
+        max_tokens: 1,
+        temperature: 0,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (res.ok) return { ok: true, detail: 'reachable' };
+    const text = (await res.text()).slice(0, 200);
+    if (text.includes('429') || /RATE_LIMITED|rate.limit/i.test(text)) {
+      return { ok: false, detail: 'RATE_LIMITED (429) — retry after upstream quota reset' };
+    }
+    if (/no active credentials/i.test(text)) {
+      return { ok: false, detail: 'NO_CREDENTIALS — provider route disabled upstream' };
+    }
+    return { ok: false, detail: `HTTP ${res.status}: ${text.slice(0, 120)}` };
+  } catch (error) {
+    return { ok: false, detail: `unreachable: ${error instanceof Error ? error.message : String(error)}` };
+  }
+}
+
+/** Probe every judge tier's effective model; returns { tier: {ok, detail} }. */
+export async function checkJudgeModels(base: string, apiKey: string, models: Record<string, string>): Promise<Record<string, { ok: boolean; detail: string }>> {
+  const out: Record<string, { ok: boolean; detail: string }> = {};
+  for (const [tier, model] of Object.entries(models)) {
+    out[tier] = await modelAvailable(base, apiKey, model);
+  }
+  return out;
 }
 
 export function loadEnvFile(envFile: string): void {
@@ -97,8 +138,16 @@ export async function resolveBases(apiKey: string, fromEnv: {
   };
 }
 
+/** Effective judge models (mirrors src/lib/v12r/judge-runner.ts defaults,
+ *  honoring V12R_JUDGE_<TIER>_MODEL overrides). */
+export function judgeModelFor(tier: 'A' | 'B' | 'C'): string {
+  const env = process.env[`V12R_JUDGE_${tier}_MODEL`]?.trim();
+  if (env) return env;
+  return { A: 'ds/deepseek-v4-flash', B: 'tr/moonshotai/kimi-k3-free', C: 'cx/gpt-5.6-luna' }[tier];
+}
+
 /** Idempotent judge-environment bootstrap. Call once at script entry. */
-export async function ensureJudgeEnv(opts?: { envFile?: string; probe?: boolean }): Promise<JudgeEnvResult> {
+export async function ensureJudgeEnv(opts?: { envFile?: string; probe?: boolean; checkModels?: boolean }): Promise<JudgeEnvResult> {
   const warnings: string[] = [];
   const envFile = opts?.envFile ?? process.env.JUDGE_ENV_FILE ?? '';
   if (envFile) loadEnvFile(envFile);
@@ -126,6 +175,18 @@ export async function ensureJudgeEnv(opts?: { envFile?: string; probe?: boolean 
 
   if (openaiKey) process.env.OPENAI_API_KEY = openaiKey;
 
+  let modelStatus: Record<string, { ok: boolean; detail: string }> | undefined;
+  if (opts?.checkModels === true && bases.openai && openaiKey) {
+    modelStatus = await checkJudgeModels(bases.openai, openaiKey, {
+      A: judgeModelFor('A'),
+      B: judgeModelFor('B'),
+      C: judgeModelFor('C'),
+    });
+    for (const [tier, st] of Object.entries(modelStatus)) {
+      if (!st.ok) warnings.push(`tier ${tier} model unavailable: ${st.detail}`);
+    }
+  }
+
   if (opts?.probe === true && bases.openai) {
     await probeCompletion(bases.openai, openaiKey);
   }
@@ -137,6 +198,7 @@ export async function ensureJudgeEnv(opts?: { envFile?: string; probe?: boolean 
     openrouter_base_url: bases.openrouter ?? '',
     gateway: bases.openai ?? '',
     warnings,
+    model_status: modelStatus,
   };
 }
 
@@ -162,13 +224,14 @@ export async function probeCompletion(base: string, apiKey: string): Promise<voi
   console.log(`judge probe OK: ${base} (model ${model})`);
 }
 
-// CLI mode: node --import tsx scripts/judge-env.ts [--env-file ...] [--probe]
+// CLI mode: node --import tsx scripts/judge-env.ts [--env-file ...] [--probe] [--check-models]
 if (require.main === module) {
   const i = process.argv.indexOf('--env-file');
   const envFile = i >= 0 ? process.argv[i + 1] : process.env.JUDGE_ENV_FILE ?? '';
   const probe = process.argv.includes('--probe');
-  void ensureJudgeEnv({ envFile, probe }).then((r) => {
-    console.log(JSON.stringify({ openai_base_url: r.openai_base_url, openai_key_set: r.openai_key_set, gateway: r.gateway, warnings: r.warnings }));
+  const checkModels = process.argv.includes('--check-models');
+  void ensureJudgeEnv({ envFile, probe, checkModels }).then((r) => {
+    console.log(JSON.stringify({ openai_base_url: r.openai_base_url, openai_key_set: r.openai_key_set, gateway: r.gateway, model_status: r.model_status, warnings: r.warnings }, null, 1));
     if (!r.openai_key_set || r.warnings.length > 0) process.exitCode = 1;
   });
 }

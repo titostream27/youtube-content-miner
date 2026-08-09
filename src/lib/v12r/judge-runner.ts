@@ -34,11 +34,11 @@ const DEFAULT_TIER_CONFIG: Record<JudgeTier, JudgeTierConfig> = {
     extraBody: { thinking: { type: 'disabled' } },
   },
   B: {
-    provider: 'openrouter',
-    model: 'google/gemini-2.5-flash-lite',
-    maxOutputTokens: 1500,
-    temperature: 0.2,
-  },
+      provider: 'openrouter',
+      model: 'tr/moonshotai/kimi-k3-free',
+      maxOutputTokens: 1500,
+      temperature: 0.2,
+    },
   C: {
     provider: 'openai',
     model: 'cx/gpt-5.6-luna',
