@@ -16,6 +16,7 @@ import path from 'node:path';
 import { getTranscript } from '../src/lib/db/repositories/transcripts';
 import { buildJudgeInput } from '../src/lib/v12r/judge-input';
 import { callJudge } from '../src/lib/v12r/judge-runner';
+import { ensureJudgeEnv } from './judge-env';
 import { needsJudgeC } from '../src/lib/v12r/consensus';
 import { decideConsensusV13 } from '../src/lib/v13r/consensus-v2';
 import type { JudgeCall } from '../src/lib/v12r/judge-types';
@@ -83,6 +84,7 @@ function loadCompleted(outDir: string, judgeFile: string): Set<string> {
 }
 
 async function main(): Promise<void> {
+  await ensureJudgeEnv({ envFile: process.env.JUDGE_ENV_FILE });
   const manifestPath = arg('manifest') ?? 'evidence/v14/new_manifest.json';
   const outDir = arg('out-dir') ?? 'evidence/v14';
   const judgeFile = arg('judge-output') ?? 'judge_outputs_v14.jsonl';

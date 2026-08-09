@@ -24,7 +24,9 @@
     "audit:fail": "tsx scripts/v14r-fail-audit.ts",
     "reconcile:v14r": "tsx scripts/v14r-reconcile.ts",
     "checksums:v14r": "tsx scripts/v14r-build-checksums.ts",
-    "verify:checksums": "tsx scripts/v14r-check-checksums.ts"
+    "verify:checksums": "tsx scripts/v14r-check-checksums.ts",
+    "judge:env": "tsx scripts/judge-env.ts",
+    "judge:probe": "tsx scripts/judge-env.ts --probe"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.1",
