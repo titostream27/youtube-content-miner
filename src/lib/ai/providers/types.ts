@@ -13,6 +13,12 @@ export interface ChatRequest {
   /** Ask the provider to guarantee syntactically valid JSON where supported. */
   jsonMode: boolean;
   signal?: AbortSignal;
+  /**
+   * Provider-specific body fields (e.g. `{ thinking: { type: 'disabled' } }`
+   * for the local 9router DeepSeek channel). Optional and non-destructive:
+   * absent keeps the exact legacy body.
+   */
+  extraBody?: Record<string, unknown>;
 }
 
 export interface ChatUsage {

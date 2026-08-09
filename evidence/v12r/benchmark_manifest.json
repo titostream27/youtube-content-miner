@@ -1,0 +1,74 @@
+{
+  "brief": "Brief_V12R_Automated_Quality_Judge_Recovery.pdf",
+  "generated_at": "2026-08-08T15:54:16.572Z",
+  "judge_independence_tier": "Good+ (three model families, two provider endpoints)",
+  "judges": {
+    "A": {
+      "provider": "deepseek",
+      "endpoint": "9router 127.0.0.1:20128/v1",
+      "model": "ds/deepseek-v4-flash",
+      "family": "DeepSeek"
+    },
+    "B": {
+      "provider": "openrouter",
+      "endpoint": "api.openrouter.ai",
+      "model": "google/gemini-2.5-flash-lite",
+      "family": "Google"
+    },
+    "C": {
+      "provider": "openai(channel=9router)",
+      "endpoint": "9router 127.0.0.1:20128/v1",
+      "model": "cx/gpt-5.6-luna",
+      "family": "OpenAI GPT"
+    }
+  },
+  "confidence_floor": "0.5 (default)",
+  "sampling": {
+    "seed": 20260808,
+    "target": 72,
+    "sample_count": 51,
+    "source_pool": 344,
+    "strat_counts": {
+      "accepted": 1,
+      "kept_non_accepted": 1,
+      "contamination": 1,
+      "ending_confidence_0.78_0.82": 16,
+      "ending_confidence_other": 1,
+      "start_gate": 14,
+      "ending_complete": 8,
+      "random_negative": 6,
+      "per_episode": 3
+    }
+  },
+  "metrics": {
+    "sample_size": 51,
+    "pass": 2,
+    "review": 7,
+    "fail": 42,
+    "judge_c_invocation_rate": 0.19607843137254902,
+    "judge_c_invoked_count": 10,
+    "judge_a_ok": 51,
+    "judge_b_ok": 51,
+    "a_b_agreement_rate": 0.803921568627451,
+    "a_b_agree_count": 41,
+    "a_b_both_ok_count": 51,
+    "provider_failure_count": 0,
+    "parser_failure_count": 0,
+    "pass_rate_by_episode": {
+      "2HLGcRpw1hc": 1,
+      "376JmatmnaI": 1
+    },
+    "pass_rate_by_original_failure_reason": {
+      "ending_complete": 2
+    }
+  },
+  "evidence_files": [
+    "evidence/v12r/sample_manifest.json",
+    "evidence/v12r/judge_outputs.jsonl",
+    "evidence/v12r/consensus_labels.jsonl",
+    "evidence/v12r/h6_counterfactual.jsonl",
+    "evidence/v12r/h1_counterfactual.jsonl",
+    "evidence/v12r/combined_counterfactual.jsonl",
+    "evidence/v12r/production_g2.jsonl"
+  ]
+}

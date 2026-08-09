@@ -52,3 +52,7 @@ yt_resp.json
 real_media_eval*.out
 real_media_prod_eval*.out
 realtest_one.txt
+
+# brief v12r rendered media (evidence layout keeps json/frames only)
+evidence/v12r/g3/**/clip.mp4
+evidence/v12r/g3/**/thumbnail.jpg

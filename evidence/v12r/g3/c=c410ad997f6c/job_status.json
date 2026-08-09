@@ -1,0 +1,44 @@
+{
+  "job_id": "8e985b4897",
+  "request_id": "",
+  "state": "completed",
+  "mode": "final",
+  "attempt": 1,
+  "parent_job_id": null,
+  "error": "",
+  "response": {
+    "job_id": "8e985b4897",
+    "status": "completed",
+    "source_video": "D:\\Homelab\\hermes-workspace\\AI-Youtube-Shorts-Generator\\rendered\\source\\source_376JmatmnaI_720p.mp4",
+    "rendered": [
+      {
+        "clip_id": "c=c410ad997f6c",
+        "status": "ok",
+        "video_url": "8e985b4897/short_01.mp4",
+        "thumbnail_url": "8e985b4897/thumbnail.jpg",
+        "publishable": true,
+        "qc_status": "passed",
+        "error": null
+      }
+    ],
+    "artifacts": [
+      {
+        "clip_id": "c=c410ad997f6c",
+        "status": "ok",
+        "video_url": "8e985b4897/short_01.mp4",
+        "thumbnail_url": "8e985b4897/thumbnail.jpg",
+        "publishable": true,
+        "qc_status": "passed",
+        "error": null
+      }
+    ],
+    "mode": "final",
+    "source": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "persistence_degraded": false,
+  "runtime_error": null,
+  "worker_attached": false
+}
