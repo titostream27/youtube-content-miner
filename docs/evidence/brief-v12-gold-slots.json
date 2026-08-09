@@ -1,0 +1,331 @@
+{
+  "schema_version": "brief-v12-gold-v1",
+  "status": "PENDING_HUMAN_REVIEW",
+  "required_publishable": 10,
+  "required_hard_negative": 10,
+  "completed_publishable": 0,
+  "completed_hard_negative": 0,
+  "episodes": [
+    {
+      "episode_index": 1,
+      "episode_id": "I6wCuvvaRPI",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 2,
+      "episode_id": "GOqEl4ADyVk",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 3,
+      "episode_id": "2HLGcRpw1hc",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 4,
+      "episode_id": "UZ1kCEGjYX0",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 5,
+      "episode_id": "Hb2rKGfIOrM",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 6,
+      "episode_id": "g2cQ2kD6lzs",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 7,
+      "episode_id": "Ive926sC6mc",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 8,
+      "episode_id": "3NSC5nps3OM",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 9,
+      "episode_id": "376JmatmnaI",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    },
+    {
+      "episode_index": 10,
+      "episode_id": "XuoqKYxDHVc",
+      "publishable": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      },
+      "hard_negative": {
+        "status": "pending",
+        "manual_start_sec": null,
+        "manual_end_sec": null,
+        "hook_present": null,
+        "setup_sufficient": null,
+        "payoff_present": null,
+        "ending_complete": null,
+        "next_topic_contamination": null,
+        "context_dependency": null,
+        "speaker_turn_pattern": null,
+        "why_publishable_or_negative": null,
+        "annotator_notes": null
+      }
+    }
+  ],
+  "gate_verdict": "BLOCKED"
+}
