@@ -1,0 +1,71 @@
+{
+  "schema_version": 3,
+  "suite": "v14r-evidence-gate",
+  "checks": [
+    {
+      "id": "V14R-LEGACY",
+      "status": "PASS",
+      "detail": "v14-verify child suite exited 0"
+    },
+    {
+      "id": "V14R-DAT-001",
+      "status": "PASS",
+      "detail": "all 8 variants: 424 unique candidates each"
+    },
+    {
+      "id": "V14R-DAT-002",
+      "status": "PASS",
+      "detail": "expected variant run census fully present"
+    },
+    {
+      "id": "V14R-DAT-003",
+      "status": "PASS",
+      "detail": "episode disjoint: legacy=10 calibration=2 holdout=2"
+    },
+    {
+      "id": "V14R-AUD-001",
+      "status": "PASS",
+      "detail": "sampled 7 candidates at offsets 20,40,60,80,100,120,140"
+    },
+    {
+      "id": "V14R-AUD-002",
+      "status": "PASS",
+      "detail": "7 audit outputs present; zero provider/parse gaps"
+    },
+    {
+      "id": "V14R-REC-001",
+      "status": "PASS",
+      "detail": "E3 raw new FAIL/HN/leak counts reconcile (2/2/2): c=9e121d6b7221,c=fb53d482602c"
+    },
+    {
+      "id": "V14R-REC-002",
+      "status": "PASS",
+      "detail": "all report_claims pass"
+    },
+    {
+      "id": "V14R-SAF-001",
+      "status": "PASS",
+      "detail": "safety recomputed per variant and matches policy_lock"
+    },
+    {
+      "id": "V14R-CHK-001",
+      "status": "PASS",
+      "detail": "76 entries exist and match (LF-normalized)"
+    },
+    {
+      "id": "V14R-CHK-002",
+      "status": "PASS",
+      "detail": "manifest excludes itself and mutable run_summary outputs"
+    },
+    {
+      "id": "V14R-PRD-001",
+      "status": "PASS",
+      "detail": "defaults floor=0.82 threshold=70; no production import of v14/v14r (offenders=0)"
+    }
+  ],
+  "summary": {
+    "pass": 12,
+    "fail": 0,
+    "not_evaluable": 0
+  }
+}

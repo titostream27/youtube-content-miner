@@ -1,0 +1,69 @@
+{
+  "note": "computed from artifacts; never hand-typed",
+  "claims": [
+    {
+      "claim_id": "REC-E3-FAIL",
+      "metric": "E3 new silver-FAIL accepted",
+      "value": "2",
+      "numerator": 2,
+      "denominator": null,
+      "source": "runs/E3/E3/variant_results.jsonl",
+      "candidate_ids": [
+        "c=9e121d6b7221",
+        "c=fb53d482602c"
+      ],
+      "pass": true
+    },
+    {
+      "claim_id": "REC-E3-HN",
+      "metric": "E3 new hard-negative accepted",
+      "value": "2",
+      "numerator": 2,
+      "denominator": null,
+      "source": "runs/E3/E3/variant_results.jsonl",
+      "candidate_ids": [
+        "c=9e121d6b7221",
+        "c=fb53d482602c"
+      ],
+      "pass": true
+    },
+    {
+      "claim_id": "REC-E3-LK",
+      "metric": "E3 new next-topic leakage accepted",
+      "value": "2",
+      "numerator": 2,
+      "denominator": null,
+      "source": "runs/E3/E3/variant_results.jsonl",
+      "candidate_ids": [
+        "c=9e121d6b7221",
+        "c=fb53d482602c"
+      ],
+      "pass": true
+    },
+    {
+      "claim_id": "POLICY-REC",
+      "metric": "all variants reconcile with policy_lock",
+      "value": "true",
+      "numerator": null,
+      "denominator": null,
+      "source": "policy_lock.json + runs/*/variant_results.jsonl",
+      "candidate_ids": [],
+      "pass": true
+    },
+    {
+      "claim_id": "V14R-LBL-001",
+      "metric": "every sampled candidate carries original+audit lineage",
+      "value": "160 originals; 7 audited; 4 changed",
+      "numerator": 160,
+      "denominator": 160,
+      "source": "silver_labels_v14.jsonl + consensus_labels_v14r.jsonl",
+      "candidate_ids": [
+        "c=f389b51fbb63",
+        "c=8824a0c3a18f",
+        "c=293b9b02dca0",
+        "c=417a9ce3c85c"
+      ],
+      "pass": true
+    }
+  ]
+}

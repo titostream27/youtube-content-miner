@@ -1,0 +1,64 @@
+# Brief V14R — Protocol Addendum (evidence recovery closure)
+# Frozen BEFORE the deterministic FAIL audit is invoked or its outputs are viewed.
+# Addendum to protocol.yaml (V14); the original protocol.yaml is NOT edited.
+
+protocol_version: v14r.1
+date: 2026-08-09
+baseline: 557aaa7037a246b3636662d93bc5460d5826f369
+supersedes_claims: "docs/v14-completion-report.md is superseded by docs/v14r-completion-report.md for any claim that contradicts artifacts; see docs/v14r-errata.md"
+
+scope:
+  allowed: "offline tooling, evidence, verification, CI, documentation only"
+  forbidden:
+    - "production selector semantics / defaults / thresholds (HIGHLIGHT_MIN_ENDING_CONFIDENCE=0.82, CLIP_SCORE_THRESHOLD=70, gate order, boundary repair, START_GATE, scoring, ranking, dispatch)"
+    - "renderer / AI-Youtube-Shorts-Generator changes"
+    - "holdout evaluation (locked_variant stays null; holdout sealed)"
+    - "candidate-ID exceptions, relabeling to improve metrics, denominator changes, silent evidence overwrite"
+
+fail_audit:
+  purpose: "deterministic every-20th FAIL independent audit required by frozen V14 protocol"
+  population: "the 150 V14 silver-FAIL candidates (silver_labels_v14.jsonl)"
+  sampling_rule: "sort the 150 candidate_id values ascending (byte order); select 1-indexed positions 20, 40, 60, 80, 100, 120, 140 => exactly 7 candidates"
+  judge: "independent audit judge = Judge C tier (cx/gpt-5.6-luna via 9router openai channel), invoked for ALL 7 even when A and B agree"
+  blinding: "input = PRE/CANDIDATE/POST transcript windows only (buildJudgeInput); MUST NOT include selector scores, gates, variants, current label, or acceptance outcome"
+  recording: "provider, model, prompt version, input hash, raw output, parsed output, parsing status, latency, attempts per call"
+  label_rules:
+    - "audit agrees with A/B FAIL => retain FAIL"
+    - "audit contradicts A/B consensus or output is unparseable/unavailable => V14R label = REVIEW with erratum record"
+    - "never force PASS/FAIL to preserve metrics"
+  lineage: "consensus_labels_v14r.jsonl links every V14R label to original V14 label + audit row; label_errata_v14r.jsonl records old/new/reason/evidence"
+
+labels:
+  v14_labels_immutable: true
+  corrections: "only via versioned V14R label artifacts + old-to-new lineage; original evidence/v14/* never edited"
+
+integrity:
+  checksum_model: "non-circular immutable manifest evidence/v14r/SHA256SUMS; repository-relative POSIX paths; LF text"
+  excluded_from_manifest:
+    - "SHA256SUMS itself"
+    - "mutable runtime metadata (run_summary.json written_at, verification_report.json generated_at, census acquired_at)"
+  canonical_bytes: "text evidence LF, UTF-8, no BOM; .gitattributes narrow rules for evidence text and scripts"
+
+paths:
+  canonical_map: "src/lib/v14/artifact-paths.ts V14_RUN_DIR { C0:'c0', E1:'E1', E2:'E2', E3:'E3', E4:'E4', S1:'S1', S2:'S2', NEGATIVE_CONTROL:'NEGATIVE_CONTROL' }"
+  fail_closed: "missing/empty/malformed/duplicate/case-mismatched required inputs => non-zero exit; no empty-array fallback; no guessed casing"
+
+verifier:
+  entry: "npm run verify:v14r (offline, deterministic, blocking)"
+  checks: "schemas, required paths, counts, candidate uniqueness, split isolation, sealed holdout, policy lock, report claims, checksums, production invariance, no production imports"
+
+ci:
+  gate: "job v14r-evidence-gate on ubuntu-latest; must run npm ci, npm test, typecheck, lint, verify:v14r, checksum validation; failure blocks merge"
+  secrets: "none uploaded; no provider calls in CI (provider evidence committed)"
+
+stop_conditions:
+  - "origin/main != expected baseline with overlapping changes => record new SHA; never reset/overwrite user work"
+  - "V14 source evidence cannot be reconstructed without altering history"
+  - "FAIL audit provider cannot be invoked reliably => mark rows REVIEW/provider_error; never invent output"
+  - "holdout data accidentally accessed => mark experiment contaminated and report immediately"
+  - "proposed fix requires changing production selector semantics => belongs to V15, separate authorization"
+
+acceptance:
+  verdict: "BLOCKED — evidence closure complete; production activation NOT authorized"
+  partial: "any blocking gate failure => 'V14R BLOCKED - EVIDENCE CLOSURE INCOMPLETE'"
+  next: "V15 brief for START semantics (restated-question detection, referent restoration, discriminative evidence for 0.78-0.82 cluster); must not view sealed holdout until exactly one policy is locked"

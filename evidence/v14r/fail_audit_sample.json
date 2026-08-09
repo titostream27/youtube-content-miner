@@ -1,0 +1,70 @@
+{
+  "offsets": [
+    20,
+    40,
+    60,
+    80,
+    100,
+    120,
+    140
+  ],
+  "sampled_candidates": [
+    {
+      "candidate_id": "c=293b9b02dca0",
+      "episode_id": "hb7Oqrj3F3k",
+      "window": {
+        "start_sec": 592.28,
+        "end_sec": 619.32
+      }
+    },
+    {
+      "candidate_id": "c=417a9ce3c85c",
+      "episode_id": "hb7Oqrj3F3k",
+      "window": {
+        "start_sec": 1464.88,
+        "end_sec": 1507.24
+      }
+    },
+    {
+      "candidate_id": "c=6745883eb40b",
+      "episode_id": "e1WM_JEmP-Q",
+      "window": {
+        "start_sec": 596.36,
+        "end_sec": 641.52
+      }
+    },
+    {
+      "candidate_id": "c=8824a0c3a18f",
+      "episode_id": "hb7Oqrj3F3k",
+      "window": {
+        "start_sec": 153.96,
+        "end_sec": 200.4
+      }
+    },
+    {
+      "candidate_id": "c=ab244e1f7fb9",
+      "episode_id": "vs6x8VUGXCw",
+      "window": {
+        "start_sec": 6823.6,
+        "end_sec": 6870.48
+      }
+    },
+    {
+      "candidate_id": "c=db382577df0a",
+      "episode_id": "LAmGfokvgzA",
+      "window": {
+        "start_sec": 4012.08,
+        "end_sec": 4056.32
+      }
+    },
+    {
+      "candidate_id": "c=f389b51fbb63",
+      "episode_id": "LAmGfokvgzA",
+      "window": {
+        "start_sec": 4606.04,
+        "end_sec": 4650.72
+      }
+    }
+  ],
+  "count": 7
+}

@@ -1,0 +1,12 @@
+# Brief V14R R-05 — canonical bytes: text evidence and tooling stay LF, UTF-8.
+# Narrow scope; binary media under evidence/ is NOT normalized.
+evidence/**/*.md        text eol=lf
+evidence/**/*.txt       text eol=lf
+evidence/**/*.json      text eol=lf
+evidence/**/*.jsonl     text eol=lf
+evidence/**/*.csv       text eol=lf
+scripts/**/*.ts         text eol=lf
+src/lib/v14/**/*.ts     text eol=lf
+protocol-v14r.yaml      text eol=lf
+docs/**/*.md            text eol=lf
+*.yaml                  text eol=lf

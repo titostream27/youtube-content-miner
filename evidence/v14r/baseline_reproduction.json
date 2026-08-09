@@ -1,0 +1,50 @@
+{
+  "brief": "V14R evidence recovery — P0 baseline capture",
+  "date": "2026-08-09",
+  "starting_sha": "557aaa7037a246b3636662d93bc5460d5826f369",
+  "merged_pr": 9,
+  "v14_baseline": "bf7381e2",
+  "defects": {
+    "F-01": {
+      "priority": "P0",
+      "verified": true,
+      "detail": "docs/v14-completion-report.md row 'Next-topic leakage accepted (new)' = 0 while evidence/v14/policy_lock.json E3 new_leakage_accepted = 2 (c=9e121d6b7221, c=fb53d482602c)"
+    },
+    "F-02": {
+      "priority": "P0",
+      "verified": true,
+      "detail": "sha256sum -c fails for 7/90 on Linux checkout (git blob hash differs); causes CRLF where python-written"
+    },
+    "F-03": {
+      "priority": "P0",
+      "verified": true,
+      "detail": "scripts/v14-verify.ts constructs runs/e3/E3 (lowercase base) while committed dir is runs/E3/E3 -> ENOENT on case-sensitive FS"
+    },
+    "F-04": {
+      "priority": "P0",
+      "verified": true,
+      "detail": "scripts/v14-select.ts hardcodes 'c0' and loadOutcomes returns [] on missing files (no fail-closed)"
+    },
+    "F-05": {
+      "priority": "P1",
+      "verified": true,
+      "detail": ".github/workflows/ci.yml runs only test job; no verify:v14r/checksum gate"
+    },
+    "F-06": {
+      "priority": "P1",
+      "verified": true,
+      "detail": "frozen protocol requires deterministic every-20th FAIL audit; no implementation/artifacts exist"
+    },
+    "F-07": {
+      "priority": "P1",
+      "verified": true,
+      "detail": "v14-verify.ts passes V14-SAF-001 unconditionally; no checksum/report-claims reconciliation"
+    },
+    "F-08": {
+      "priority": "P1",
+      "verified": true,
+      "detail": "immutable manifest includes mutable outputs: run_summary.json (written_at), verification_report.json (generated_at), census_new.jsonl (acquired_at)"
+    }
+  },
+  "old_checksum_failures_count": 7
+}

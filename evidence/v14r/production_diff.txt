@@ -1,0 +1,7 @@
+=== Brief V14R production invariance proof ===
+baseline_sha: 557aaa7037a246b3636662d93bc5460d5826f369
+--- changed production-protected paths (must be empty) ---
+(none)
+--- src diff summary head ---
+A	src/lib/v14/__tests__/artifact-paths.test.ts
+A	src/lib/v14/artifact-paths.ts

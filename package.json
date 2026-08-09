@@ -18,7 +18,13 @@
     "pipeline": "tsx scripts/run-pipeline.ts",
     "scheduled": "tsx scripts/scheduled-run.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:v14r": "tsx scripts/v14r-verify.ts",
+    "verify:v14": "tsx scripts/v14-verify.ts",
+    "audit:fail": "tsx scripts/v14r-fail-audit.ts",
+    "reconcile:v14r": "tsx scripts/v14r-reconcile.ts",
+    "checksums:v14r": "tsx scripts/v14r-build-checksums.ts",
+    "verify:checksums": "tsx scripts/v14r-check-checksums.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.1",

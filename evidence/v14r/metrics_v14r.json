@@ -1,0 +1,19 @@
+{
+  "label_counts_before": {
+    "FAIL": 150,
+    "REVIEW": 2,
+    "PASS": 8
+  },
+  "label_counts_after": {
+    "FAIL": 146,
+    "REVIEW": 6,
+    "PASS": 8
+  },
+  "changed_candidates": [
+    "c=f389b51fbb63",
+    "c=8824a0c3a18f",
+    "c=293b9b02dca0",
+    "c=417a9ce3c85c"
+  ],
+  "note": "label changes only FAIL->REVIEW from the blinded audit; never forced PASS"
+}

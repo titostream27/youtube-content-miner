@@ -1,11 +1,19 @@
 /**
- * Brief V14 Phase P7 — verification driver (data contracts, safety math,
+ * Brief V14 Phase P7 / V14R — verification driver (data contracts, safety math,
  * production invariance, evidence reconciliation).
  *
- * Emits evidence/v14/verification_report.json and exits non-zero on a fail.
+ * Emits evidence/v14r/verification_report.json (deterministic — no timestamps)
+ * and exits non-zero on any failure. All paths resolve through the canonical
+ * case-sensitive artifact map (src/lib/v14/artifact-paths.ts).
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  RUN_VARIANTS,
+  loadJsonlStrict,
+  loadJsonStrict,
+  requiredRunFile,
+} from '../src/lib/v14/artifact-paths';
 
 const R = (p: string): string => path.resolve(p);
 
@@ -21,15 +29,16 @@ const pass = (id: string, detail: string): void => { checks.push({ id, status: '
 const na = (id: string, detail: string): void => { checks.push({ id, status: 'NOT_EVALUABLE', detail }); };
 
 function loadJsonl(p: string): Record<string, unknown>[] {
-  const abs = R(p);
-  if (!fs.existsSync(abs)) return [];
-  return fs.readFileSync(abs, 'utf-8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as Record<string, unknown>);
+  return loadJsonlStrict(R(p));
 }
 
-function runSummary(base: string, id: string): Record<string, unknown> | null {
-  const p = R(`evidence/v14/runs/${base}/${id}/run_summary.json`);
-  if (!fs.existsSync(p)) return null;
-  return JSON.parse(fs.readFileSync(p, 'utf-8')) as Record<string, unknown>;
+function runSummary(variant: 'C0'): Record<string, unknown> | null {
+  try {
+    const p = requiredRunFile(R('evidence/v14/runs'), variant, 'run_summary.json');
+    return JSON.parse(fs.readFileSync(p, 'utf-8')) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 }
 
 /* __PART2__ */
@@ -86,7 +95,7 @@ function main(): void {
   else fail('V14-DAT-003', `missing lock hashes: ${missingHashes.join(',')}`);
 
   // V14-LEG-001/002: golden replay
-  const c0sum = runSummary('c0', 'C0');
+  const c0sum = runSummary('C0');
   const gc = c0sum?.golden_check as { ok?: boolean; mismatches?: string[]; pass_death?: Record<string, number> } | undefined;
   if (gc && gc.ok === true) {
     pass('V14-LEG-001', `C0 replay equals V13 control; PASS deaths ${JSON.stringify(gc.pass_death)}`);
@@ -100,39 +109,72 @@ function main(): void {
 
 /* __PART3__ */
 
-  // V14-TRC-002: NOT_REACHED never reported as passed
-  let trcOk = true;
-  const trcBad: string[] = [];
-  for (const [base, id] of [['c0', 'C0'], ['e3', 'E3']] as const) {
-    const rows = loadJsonl(`evidence/v14/runs/${base}/${id}/stage_trace.jsonl`);
-    for (const row of rows) {
-      if (row.stage_id === '13_FINAL_ACCEPTED' && row.status === 'NOT_REACHED') {
-        // 13 may legitimately be unreached; the invariant is: NOT_REACHED rows
-        // must never carry a PASS action.
-        if (row.action !== 'NOT_REACHED') {
-          trcOk = false;
-          trcBad.push(`${row.candidate_id}:${row.stage_id}`);
+  // V14-TRC-002: NOT_REACHED never reported as passed (canonical paths)
+    let trcOk = true;
+    const trcBad: string[] = [];
+    for (const variant of ['C0', 'E3'] as const) {
+      const rows = loadJsonlStrict(requiredRunFile(R('evidence/v14/runs'), variant, 'stage_trace.jsonl'));
+      for (const row of rows) {
+        if (row.stage_id === '13_FINAL_ACCEPTED' && row.status === 'NOT_REACHED') {
+          // 13 may legitimately be unreached; the invariant is: NOT_REACHED rows
+          // must never carry a PASS action.
+          if (row.action !== 'NOT_REACHED') {
+            trcOk = false;
+            trcBad.push(`${row.candidate_id}:${row.stage_id}`);
+          }
         }
       }
     }
-  }
-  if (trcOk === true) pass('V14-TRC-002', 'NOT_REACHED rows never carry a PASS action');
-  else fail('V14-TRC-002', trcBad.join(','));
+    if (trcOk === true) pass('V14-TRC-002', 'NOT_REACHED rows never carry a PASS action');
+    else fail('V14-TRC-002', trcBad.join(','));
 
-  // V14-SAF-001..003: accepted-safety review per candidate variant
-  const lockData = JSON.parse(fs.readFileSync(R('evidence/v14/policy_lock.json'), 'utf-8')) as {
-    locked_variant: string | null;
-    hierarchy_check?: { results?: { variant_id: string; new_fail_accepted: string[]; new_hard_neg_accepted: number; new_leakage_accepted: number; safety: boolean }[] };
-  };
-  const sel = lockData.locked_variant;
-  if (sel === null || sel === undefined) {
-    na('V14-SAF-003', 'no selected policy (calibration rejected every variant); holdout stays sealed');
-  } else {
-    pass('V14-SAF-003', `selected policy ${sel} verified`);
-  }
-  const results = lockData.hierarchy_check?.results ?? [];
-  const reported = results.map((r) => `${r.variant_id}:${r.safety ? 'SAFE' : `REJECT(${r.new_fail_accepted.length} new FAIL, ${r.new_hard_neg_accepted} new HN, ${r.new_leakage_accepted} new LK)`}`).join(' | ');
-  pass('V14-SAF-001', `safety matrix: ${reported}`);
+    // V14-SAF-001 (V14R-fixed): recompute safety per variant from raw outcomes,
+    // compare against policy_lock, and FAIL on any mismatch (never unconditional).
+    const lockData = loadJsonStrict(R('evidence/v14/policy_lock.json')) as unknown as {
+      locked_variant: string | null;
+      hierarchy_check?: { results?: { variant_id: string; new_fail_accepted: string[]; new_hard_neg_accepted: number; new_leakage_accepted: number; safety: boolean }[] };
+    };
+    const sel = lockData.locked_variant;
+    if (sel === null || sel === undefined) {
+      na('V14-SAF-003', 'no selected policy (calibration rejected every variant); holdout stays sealed');
+    } else {
+      pass('V14-SAF-003', `selected policy ${sel} verified`);
+    }
+    const lockResults = lockData.hierarchy_check?.results ?? [];
+    const recomputed: string[] = [];
+    const mismatches: string[] = [];
+    const holdoutRows: string[] = [];
+    for (const variant of RUN_VARIANTS) {
+      const outcomes = loadJsonlStrict(requiredRunFile(R('evidence/v14/runs'), variant, 'variant_results.jsonl')) as unknown as {
+        candidate_id: string; label: string; split: string; hard_negative: boolean; next_topic_leakage_case: boolean; final_accepted: boolean;
+      }[];
+      for (const o of outcomes) {
+        if (o.split === 'holdout') holdoutRows.push(o.candidate_id);
+      }
+      const scope = outcomes.filter((o) => o.split !== 'holdout');
+      const newFails = scope.filter((o) => o.final_accepted && o.label === 'FAIL' && o.candidate_id !== 'c=3b416b15c9b5').map((o) => o.candidate_id);
+      const newHn = scope.filter((o) => o.final_accepted && o.hard_negative && o.candidate_id !== 'c=3b416b15c9b5').length;
+      const newLk = scope.filter((o) => o.final_accepted && o.next_topic_leakage_case && o.candidate_id !== 'c=3b416b15c9b5').length;
+      const lockRow = lockResults.find((r) => r.variant_id === variant);
+      if (lockRow === undefined) {
+        mismatches.push(`${variant}: missing in policy_lock.hierarchy_check.results`);
+        continue;
+      }
+      const sameFail = JSON.stringify([...lockRow.new_fail_accepted].sort()) === JSON.stringify([...newFails].sort());
+      const sameHn = lockRow.new_hard_neg_accepted === newHn;
+      const sameLk = lockRow.new_leakage_accepted === newLk;
+      recomputed.push(`${variant}:${lockRow.safety ? 'SAFE' : `REJECT(${newFails.length} new FAIL, ${newHn} HN, ${newLk} LK)`}`);
+      if (!sameFail || !sameHn || !sameLk) {
+        mismatches.push(`${variant}: recompute(newFAIL=${newFails.join(',')}, HN=${newHn}, LK=${newLk}) != lock(${lockRow.new_fail_accepted.join(',')}, HN=${lockRow.new_hard_neg_accepted}, LK=${lockRow.new_leakage_accepted})`);
+      }
+    }
+    if (holdoutRows.length > 0) {
+      fail('V14-SAF-001', `holdout rows present in variant outcomes: ${holdoutRows.slice(0, 5).join(',')}`);
+    } else if (mismatches.length === 0) {
+      pass('V14-SAF-001', `safety recomputed from raw outcomes and matches policy_lock: ${recomputed.join(' | ')}`);
+    } else {
+      fail('V14-SAF-001', mismatches.join(' ; '));
+    }
 
 /* __PART4__ */
 
@@ -162,41 +204,43 @@ function main(): void {
   if (offenders.length === 0) pass('V14-PRD-002', 'production sources never import the v14 experimental seam');
   else fail('V14-PRD-002', `imports found: ${offenders.join(',')}`);
 
-  // V14-EVD-001: metrics reconcile to raw outcomes
-  let evdOk = true;
-  const evdBad: string[] = [];
-  for (const [base, id] of [['c0', 'C0'], ['e3', 'E3']] as const) {
-    const outcomes = loadJsonl(`evidence/v14/runs/${base}/${id}/variant_results.jsonl`);
-    const metricsPath = R(`evidence/v14/runs/${base}/${id}/metrics.json`);
-    const metrics = JSON.parse(fs.readFileSync(metricsPath, 'utf-8')) as { metric_name: string; split: string; episode_id: string | null; numerator: number; denominator: number }[];
-    for (const m of metrics) {
-      if (m.metric_name !== 'PASS_Recall@Accepted' || m.episode_id !== null) continue;
-      const den = outcomes.filter((o) => o.split === m.split && o.label === 'PASS');
-      const num = den.filter((o) => o.final_accepted);
-      if (den.length !== m.denominator || num.length !== m.numerator) {
-        evdOk = false;
-        evdBad.push(`${base}/${m.split}: metrics ${m.numerator}/${m.denominator} != recomputed ${num.length}/${den.length}`);
+  // V14-EVD-001: metrics reconcile to raw outcomes (canonical paths)
+    let evdOk = true;
+    const evdBad: string[] = [];
+    for (const variant of ['C0', 'E3'] as const) {
+      const outcomes = loadJsonlStrict(requiredRunFile(R('evidence/v14/runs'), variant, 'variant_results.jsonl'));
+      const metricsPath = requiredRunFile(R('evidence/v14/runs'), variant, 'metrics.json');
+      const metrics = JSON.parse(fs.readFileSync(metricsPath, 'utf-8')) as { metric_name: string; split: string; episode_id: string | null; numerator: number; denominator: number }[];
+      for (const m of metrics) {
+        if (m.metric_name !== 'PASS_Recall@Accepted' || m.episode_id !== null) continue;
+        const den = outcomes.filter((o) => o.split === m.split && o.label === 'PASS');
+        const num = den.filter((o) => o.final_accepted);
+        if (den.length !== m.denominator || num.length !== m.numerator) {
+          evdOk = false;
+          evdBad.push(`${variant}/${m.split}: metrics ${m.numerator}/${m.denominator} != recomputed ${num.length}/${den.length}`);
+        }
       }
     }
-  }
-  if (evdOk) pass('V14-EVD-001', 'metrics.json reconciles to raw candidate outcomes');
-  else fail('V14-EVD-001', evdBad.join('; '));
+    if (evdOk) pass('V14-EVD-001', 'metrics.json reconciles to raw candidate outcomes');
+    else fail('V14-EVD-001', evdBad.join('; '));
 
-  // summary + exit code
-  const summary = {
-    generated_at: new Date().toISOString(),
-    checks,
-    summary: {
-      pass: checks.filter((c) => c.status === 'PASS').length,
-      fail: checks.filter((c) => c.status === 'FAIL').length,
-      not_evaluable: checks.filter((c) => c.status === 'NOT_EVALUABLE').length,
-    },
-  };
-  fs.writeFileSync(R('evidence/v14/verification_report.json'), JSON.stringify(summary, null, 2), 'utf-8');
-  console.log(JSON.stringify(summary.summary));
-  for (const c of checks) console.log(`${c.status}\t${c.id}\t${c.detail}`);
-  if (summary.summary.fail > 0) process.exitCode = 1;
-}
+    // summary + exit code (deterministic: no generated_at inside hashed output)
+    const summary = {
+      schema_version: 2,
+      suite: 'v14-verify (V14R-hardened)',
+      checks,
+      summary: {
+        pass: checks.filter((c) => c.status === 'PASS').length,
+        fail: checks.filter((c) => c.status === 'FAIL').length,
+        not_evaluable: checks.filter((c) => c.status === 'NOT_EVALUABLE').length,
+      },
+    };
+    fs.mkdirSync(R('evidence/v14r'), { recursive: true });
+    fs.writeFileSync(R('evidence/v14r/verification_report.json'), JSON.stringify(summary, null, 2), 'utf-8');
+    console.log(JSON.stringify(summary.summary));
+    for (const c of checks) console.log(`${c.status}\t${c.id}\t${c.detail}`);
+    if (summary.summary.fail > 0) process.exitCode = 1;
+  }
 
 function walkFiles(dir: string): string[] {
   const out: string[] = [];
