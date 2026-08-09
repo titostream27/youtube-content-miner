@@ -1,36 +1,36 @@
 {
-  "candidates_ablated": 344,
-  "calibration_episode_strategy": "all-episodes (LOEO fallback)",
+  "candidates_ablated": 225,
+  "calibration_episode_strategy": "episodes=2HLGcRpw1hc,3NSC5nps3OM,GOqEl4ADyVk,Hb2rKGfIOrM,Ive926sC6mc,XuoqKYxDHVc,g2cQ2kD6lzs",
   "per_stage": {
     "03_START_GATE": {
       "recovered": 0,
-      "leaked": 11,
-      "rows": 344
+      "leaked": 14,
+      "rows": 225
     },
     "04_ENDING_COMPLETE": {
       "recovered": 0,
       "leaked": 0,
-      "rows": 344
+      "rows": 225
     },
     "05_ENDING_CONFIDENCE": {
       "recovered": 0,
       "leaked": 1,
-      "rows": 344
+      "rows": 225
     },
     "06_CONTAMINATION_GATE": {
       "recovered": 0,
       "leaked": 0,
-      "rows": 344
+      "rows": 225
     },
     "07_DURATION_GATE": {
       "recovered": 0,
-      "leaked": 1,
-      "rows": 344
+      "leaked": 0,
+      "rows": 225
     },
     "12_ACCEPTANCE_THRESHOLD": {
       "recovered": 0,
       "leaked": 4,
-      "rows": 344
+      "rows": 225
     }
   },
   "notes": "One gate bypassed at a time; all downstream stages active. Threshold variants tested: ending_conf_0.80, ending_conf_0.78, contamination_0.25"

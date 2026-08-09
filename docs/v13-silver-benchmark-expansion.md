@@ -17,13 +17,14 @@ persisted judge outputs are reused (resume) so no duplicate LLM spend.
 |---|---|---|---|
 | A | deepseek ds/deepseek-v4-flash (9router) | **unchanged** | works |
 | B | openrouter google/gemini-2.5-flash-lite | **ag/gemini-3.5-flash-low via 9router** | the OpenRouter key in this environment carries **no credits** (verified `auth/key` → "never purchased credits", all 344 B calls in the first attempt returned provider_error); no other provider keys exist in the environment (GROQ/MISTRAL/XAI/TOGETHER/ANTHROPIC/GOOGLE all empty) |
-| C | openai cx/gpt-5.6-luna (9router) | **unchanged** | works |
+| C | openai cx/gpt-5.6-luna (9router) | **FIXED** — gateway accepts the DEEPSEEK_API_KEY value on the openai channel; `OPENAI_API_KEY` must carry that value (hermes/.env's OPENAI key is NOT a gateway key) | GPT family now reachable |
 
 Independence tier: **Good** (three model families — DeepSeek, Google Gemini,
 OpenAI GPT — through one gateway endpoint, materially different judge
 prompts). V12R documented "Good+ (three families, two endpoints)"; the loss
-of the OpenRouter endpoint downgrades the tier to Good. This is recorded in
-`evidence/v13/benchmark_manifest.json` and the completion report (§24).
+of the OpenRouter endpoint downgrades the tier to Good. Judges remain
+independent of the production selector (R3): they read PRE/CANDIDATE/POST
+windows only.
 
 Judges remain independent of the production selector (R3): they read
 PRE/CANDIDATE/POST windows only, never production scores or acceptance.

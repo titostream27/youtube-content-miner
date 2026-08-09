@@ -2,12 +2,12 @@
   "candidates_rejudged": 344,
   "pass": {
     "old": 2,
-    "new": 0,
+    "new": 8,
     "lost": 2
   },
-  "review": 15,
-  "fail": 329,
-  "label_changes": 10,
+  "review": 3,
+  "fail": 333,
+  "label_changes": 9,
   "changes": [
     {
       "candidate_id": "c=48144e00ee76",
@@ -19,12 +19,6 @@
       "candidate_id": "c=74f265367eae",
       "before": "REVIEW",
       "after": "FAIL",
-      "veto": null
-    },
-    {
-      "candidate_id": "c=24d31329eab4",
-      "before": "FAIL",
-      "after": "REVIEW",
       "veto": null
     },
     {
@@ -60,7 +54,7 @@
     {
       "candidate_id": "c=c410ad997f6c",
       "before": "PASS",
-      "after": "REVIEW",
+      "after": "FAIL",
       "veto": null
     },
     {

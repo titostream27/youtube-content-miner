@@ -36,20 +36,20 @@ Totals: 10/10 episodes OK, **0 negative durations**, 0 accepted clips,
 
 ## Selector-recovery metrics (same benchmark v13.0, BEFORE == AFTER)
 
-| Metric | BEFORE (baseline) | AFTER | Target | Status |
+| Metric | BEFORE | AFTER | Target | Status |
 |---|---|---|---|---|
-| Silver-PASS Recall@Eligible | 0/0 (undefined) | 0/0 (undefined) | ≥80% | not evaluable (0 positives) |
-| Silver-PASS Recall@Accepted | 0/0 | 0/0 | ≥70% | not evaluable |
-| Silver-FAIL Leakage@Accepted | 0/0 | 0/0 | ≤10% | trivially met |
+| Silver-PASS Recall@Eligible | 0/8 (0%) | 0/8 (0%) | ≥80% | ✗ — 7/8 die at 05 (conf 0.78 class-constant), 1/8 at 04 |
+| Silver-PASS Recall@Accepted | 0/8 (0%) | 0/8 (0%) | ≥70% | ✗ — no clip reaches scoring |
+| Silver-FAIL Leakage@Accepted | 0/0 | 0/0 | ≤10% | ✓ (0 accepted clips in G2) |
 | Hard-negative acceptance | 0 | 0 | 0 | ✓ |
 | Next-topic leakage acceptance | 0 | 0 | 0 | ✓ |
-| Top-1 silver recall | n/a | n/a | ≥60% | not evaluable |
+| Top-1 silver recall | n/a | n/a | ≥60% | not evaluable (no accepted clip) |
 | Top-3 silver recall | n/a | n/a | ≥80% | not evaluable |
-| Episodes with ≥1 accepted PASS | 0 | 0 | ≥3 | ✗ |
+| Episodes with ≥1 accepted PASS | 0/10 | 0/10 | ≥3 | ✗ |
 
-No production code path changed in V13 — the BEFORE/AFTER selector is
-identical by design (evidence-backed tuning was impossible with zero
-positives; per §5.1/§28 the sprint stops downstream calibration).
+No production code path changed in V13 (evidence-backed tuning impossible
+below the sufficiency gate: 8 PASS across 3 episodes, §5.1; single-gate
+ablations recover nothing — see `v13-gate-ablation.md`).
 
 ## Replay-side note
 

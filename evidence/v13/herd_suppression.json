@@ -4,16 +4,16 @@
     "suppressed_candidate_id": "c=863e40f6ff3c",
     "suppressed_by_candidate_id": "c=89f5f2623db5",
     "overlap_sec": 1.6,
-    "suppressed_silver": "REVIEW",
-    "suppressor_silver": "REVIEW"
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "PASS"
   },
   {
     "episode_id": "GOqEl4ADyVk",
     "suppressed_candidate_id": "c=89f5f2623db5",
     "suppressed_by_candidate_id": "c=863e40f6ff3c",
     "overlap_sec": 1.6,
-    "suppressed_silver": "REVIEW",
-    "suppressor_silver": "REVIEW"
+    "suppressed_silver": "PASS",
+    "suppressor_silver": "FAIL"
   },
   {
     "episode_id": "GOqEl4ADyVk",

@@ -1,24 +1,24 @@
 {
   "silver_benchmark": {
-    "pass": 0,
-    "fail": 329,
-    "review": 15,
-    "episodes_with_pass": 0
+    "pass": 8,
+    "fail": 333,
+    "review": 3,
+    "episodes_with_pass": 3
   },
   "recall_at_eligible": {
     "numerator": 0,
-    "denominator": 0,
-    "rate": null
+    "denominator": 8,
+    "rate": 0
   },
   "recall_at_accepted": {
     "numerator": 0,
-    "denominator": 0,
-    "rate": null
+    "denominator": 8,
+    "rate": 0
   },
   "fail_leakage_at_accepted": {
     "numerator": 1,
-    "denominator": 329,
-    "rate": 0.00303951367781155
+    "denominator": 333,
+    "rate": 0.003003003003003003
   },
   "g2_production": {
     "episodes": 10,
@@ -30,15 +30,18 @@
   },
   "top1_silver_recall": {
     "numerator": 0,
-    "denominator": 0,
-    "rate": null
+    "denominator": 3,
+    "rate": 0
   },
   "top3_silver_recall": {
     "numerator": 0,
-    "denominator": 0,
-    "rate": null
+    "denominator": 3,
+    "rate": 0
   },
-  "pass_first_death_distribution": {},
+  "pass_first_death_distribution": {
+    "05_ENDING_CONFIDENCE": 7,
+    "04_ENDING_COMPLETE": 1
+  },
   "notes": [
     "traces.jsonl = deterministic production stage replay over the frozen lineage",
     "g2 = real production pipeline re-run (detectMoments + twoPassHighlightSelection + heuristic scoring)",

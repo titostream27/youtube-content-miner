@@ -1,158 +1,126 @@
 # V13 Completion Report — Production Selector Alignment / Silver-PASS Recall
 
-**Date:** 2026-08-09
+**Date:** 2026-08-09 (rev. 2 — Judge C fixed & integrated)
 **Brief:** `Brief_V13_Production_Selector_Alignment_Silver_Pass_Recall.pdf`
 **Branch:** `fix/brief-v13-selector-alignment` (base `1f58c6f3` V12R, PR #7)
 
-## Final verdict: **BLOCKED**
+## Final verdict: **BLOCKED** (with full attribution; fix path identified)
 
-V13 closes with a selector-alignment verdict of **BLOCKED** under the brief's
-vocabulary (§27/§28): the silver benchmark, after full-pool expansion, does
-not contain enough silver-PASS candidates to calibrate selector gates, and
-every tested gate relaxation leaks silver-FAIL candidates without recovering
-a single positive. All evidence produced is additive, deterministic and
-preserved; no production behavior was changed on weak evidence (R1, R6, R8).
+The selector alignment was traced end-to-end and the failure layers are now
+proven — but the benchmark does not satisfy the predeclared sufficiency gate
+(≥8 silver-PASS across **≥4 distinct episodes**; we have 8 across 3, five of
+which come from a single episode), so per §5.1/§28 the sprint stops before
+aggressive gate tuning. No production threshold/weight/prompt was changed.
 
 ---
 
-## 1. Mandatory completion-report questions
+## 1. Judge configuration — FIXED during the sprint
 
-**Q1 — How many silver PASS candidates exist after consensus hardening and
-expansion?** Zero (0). Hardened 51-candidate re-consensus: PASS 2 → 2 (0
-label changes, hardening safe). Full 344-pool expansion (Judge A + B): 329
-FAIL, 15 REVIEW (unresolved disagreements — Judge C unreachable), **0 PASS**.
+| Tier | Model | Channel | Status |
+|---|---|---|---|
+| A | `ds/deepseek-v4-flash` | 9router gateway | ✅ 344/344 |
+| B | `ag/gemini-3.5-flash-low` | 9router gateway (Google family) | ✅ 344/344 |
+| C | `cx/gpt-5.6-luna` | 9router gateway (OpenAI family) | ✅ **fixed**: the gateway accepts the **DEEPSEEK_API_KEY value** on the "openai" provider channel — `OPENAI_API_KEY` must be set to that value (the hermes/.env OPENAI key is NOT a gateway key). All 15 C verdicts obtained. |
 
-#2 — Across how many distinct episodes are those positives distributed?
-N/A — zero positives (0 episodes).
+Three model families (DeepSeek / Gemini / GPT) via one gateway endpoint —
+independence tier **Good** (single endpoint, three families, distinct
+prompts), downgrade from V12R's "Good+" documented.
 
-#3 — Was the full 344-candidate pool judged? If not, what cost-aware strategy?
-Yes — full census: Judge A (deepseek-v4-flash) + Judge B
-(ag/gemini-3.5-flash-low, Google family) over ALL 344 candidates,
-deterministic, persisted in `evidence/v13/judge_outputs.jsonl`. Judge C
-(cx/gpt-5.6-luna) was invoked on the 15 A/B disagreements, but the gateway
-rejects every available key for the OpenAI channel ("Invalid API key"), so C
-produced no verdicts. False-negative audit: not needed (full census, no
-A-screen); the unresolved cases are kept REVIEW, never fabricated (R6/R7).
+## 2. Benchmark (final, v13.0, hardened consensus + C)
 
-#4 — First-death counts for silver PASS at every production stage?
-N/A — zero positives; exact fallback: first-death counts per stage for the
-FAIL cohort are in `evidence/v13/first_death_matrix.csv` and
-`tracer_summary.json` (04:27, 05:143, 06:1, 03:83, 07:85, 12:4, SURVIVED 1 —
-totals reproduce the V12 funnel exactly, see `docs/v13-tracer-analysis.md`).
+- **8 silver-PASS** (all via `C_2OF3_PASS`: A/B disagreed, C sided)
+- **333 FAIL**, **3 REVIEW** (majority critical veto — cannot PASS by rule)
+- Episodes with PASS: I6wCuvvaRPI ×5, GOqEl4ADyVk ×1, g2cQ2kD6lzs ×2
+- Sufficiency gate §5.1: **8 PASS / 3 episodes — NOT met** (need ≥4 episodes)
 
-#5 — Worst positive-loss / negative-removal tradeoff stage?
-Undefined on the positive side (0 positives). Best measured precision side:
-START_GATE removes the most FAILs (83 first deaths; bypassing it leaks 11
-FAILs while recovering 0).
+## 3. The alignment finding (trace + attribution staircase)
 
-#6 — Stages changed in production, and those deliberately left unchanged?
-CHANGED in this sprint: **none** (no threshold, no weight, no prompt, no
-production function — the trace/hardening/sampling additions are additive
-tooling under `src/lib/v13r/` + `scripts/v13-*`). Deliberately unchanged:
-all gates (START_GATE, ENDING gates), scoring weights, acceptance
-threshold 70, contamination gate, dedupe, ranking, renderer.
+With the production config, all 8 silver-PASS die **before scoring**:
 
-#7 — For each changed gate: old behavior, new behavior, calibration, holdout?
-N/A — no gate changed. Counterfactual evidence exists for every candidate
-(calibration = all episodes under LOEO fallback): no beneficial change was
-found (see #5, #23-#25, `v13-gate-ablation.md`).
-
-#8 — Hard thresholds changed? Exact before/after?
-No. `HIGHLIGHT_MIN_ENDING_CONFIDENCE` stays 0.82, `CLIP_SCORE_THRESHOLD` 70,
-contamination 0.18, durations 14/60, `LIBRARY_MIN_SCORE` 70
-(`evidence/v13/config_before.json` == `config_after.json`).
-
-#9 — Scoring weights changed?
-No (weights unchanged; recorded in config_before).
-
-#10 — Prompts changed?
-No. Judge prompts unchanged (V12R design).
-
-#11 — ENDING_CONFIDENCE/H6 reopened?
-No. H6 stays per V12R (§Phase J: "do not reopen 0.82→0.78 merely because a
-positive is near the threshold"); with 0 positives there is no such positive.
-
-#12 — H1 bounded expansion became production behavior?
-No. H1 variants are kept as a separate repaired-variant cohort; no holdout
-benefit exists (0 positives), and the one H1-repaired Jagger candidate is
-now REVIEW/FAIL under the current judges.
-
-#13 — Silver-PASS Recall@Eligible before and after?
-before: 0/0 (undefined). after: 0/0 (undefined). (Denominator = 0 —
-exact numerators reported per §20.)
-
-#14 — Recall@Accepted before/after?
-before 0/0, after 0/0 (undefined — same reason).
-
-#15 — Silver-FAIL Leakage@Accepted before/after?
-before: 0/0 in G2; after: 0/0 in G2 (0 accepted clips). Replay-side
-1/329 = 0.30% (the single lineage-accepted FAIL).
-
-#16 — Hard negatives accepted?
-0. #17 — Next-topic leakage accepted?
-0.
-
-#18 — Top-1 / Top-3 silver recall?
-Not evaluable (0 PASS; exact 0/0 reported).
-
-#19 — Episodes producing ≥1 silver PASS?
-0/10.
-
-#20 — Production-selected silver PASS clips available for G3?
-0 (G3 stays blocked; speaker-switch downstream blocker documented in V12R).
-
-#21 — Renderer production code changed?
-No (R9 honored; renderer untouched).
-
-#22 — What remains blocked after V13?
-(i) Silver benchmark third judge family (Judge C / OpenRouter / Google) —
-unavailable credentials in this environment; (ii) any positive-side
-calibration — zero positives in the frozen corpus; (iii) G3 speaker-switch —
-no diarization in transcripts (documented downstream blocker).
-
-## 2. Definition-of-Done checklist (binary)
-
-| Item | Required | Status |
+| First-death | Count | Detail |
 |---|---|---|
-| V12/V12R artifacts reused, not redone | PASS | ✓ |
-| Consensus critical vetoes hardened | PASS | ✓ (SA-06/07/08/22 tests) |
-| V12R 51-candidate labels re-evaluated | PASS | ✓ 0 changes |
-| Benchmark expanded or 344 pool exhausted | PASS | ✓ full 344 census |
-| ≥8 PASS / ≥4 episodes OR scarcity proven | PASS | ✓ scarcity PROVEN (0) |
-| Tracer cohorts versioned | PASS | ✓ |
-| Production stage replay implemented | PASS | ✓ trace.ts |
-| First-death matrix produced | PASS | ✓ |
-| Stage-level PASS survival / FAIL leakage metrics | PASS-PRECISION | ✓ (P side = exact 0/0) |
-| Episode-disjoint split or LOEO established | PASS | ✓ LOEO fallback documented |
-| Each changed stage isolated counterfactual | PASS | ✓ (no stage changed; all ablated) |
-| No threshold gaming | PASS | ✓ |
-| No negative-duration regression | PASS | ✓ (borders) |
-| No next-topic contamination regression | PASS | ✓ |
-| No hard-negative acceptance | PASS | ✓ |
-| Scoring/ranking/dedupe lineage auditable | PASS | ✓ |
-| Holdout Recall@Eligible target met or justified | PASS-justified | ✓ (impossible: 0 positives) |
-| Holdout Recall@Accepted target met or justified | PASS-justified | ✓ (idem) |
-| Holdout leak target met | PASS | ✓ (0) |
-| Top-1/Top-3 reported | PASS | ✓ reported as undefined |
-| >=3 accepted PASS clips across >=3 episodes | FAIL | ✗ (0) — BLOCKER |
-| Full miner CI green | PASS | ✓ 321 tests / tsc 0 / eslint 0 ✓ |
-| GitHub Actions green | PASS | see PR |
-| Renderer untouched | PASS | ✓ |
-| Verdict vocabulary correct | PASS | BLOCKED |
+| 05_ENDING_CONFIDENCE | 7 | ending_confidence = **0.78** — a *classifier constant* for complete-ending classes (ANSWER_COMPLETE/CONCLUSION), i.e. the floor 0.82 rejects a semantically-complete class by its label-mapped constant |
+| 04_ENDING_COMPLETE | 1 | ending classified UNKNOWN at the window end (boundary/repair issue) |
 
-## 3. Evidence inventory (all under `evidence/v13/` + `docs/v13-*`)
+Attribution staircase (`evidence/v13/attribution_staircase.jsonl`):
+- bypass 05 only → dies at **03_START_GATE**
+- bypass 03 only → dies at **05**
+- bypass 03+05 → dies at **12_ACCEPTANCE_THRESHOLD** (heuristic scores 63–69, floor 70)
+- bypass 03+05+12 → **accepted**
 
-benchmark_manifest.json · judges/gate consensus_labels_v13.jsonl ·
-judge_outputs.jsonl · consensus_label_changes.jsonl · hardening_summary.json ·
-config_before.json · config_after.json (same file, no change) · tracer_manifest.jsonl ·
-traces.jsonl · first_death_matrix.csv · stage_metrics.json · tracer_summary.json ·
-split_manifest.json · counterfactuals.jsonl · gate_ablation_summary.json ·
-alignment_metrics.json · production_g2_after.jsonl · herd_suppression.json ·
-judge_run_summary.json. Docs: v13-baseline-bridge, consensus-hardening,
-silver-benchmark-expansion, tracer-analysis, gate-ablation, g2-evidence,
-completion-report (this file). V12R evidence untouched in `evidence/v12r/`.
+So the failure chain is: ENDING_CONFIDENCE floor (classifier-constant artifact)
+→ START_GATE strictness → acceptance threshold 70 vs scores 63–69. The
+earliest causal layer (R6) is **05_ENDING_CONFIDENCE**: its hard reject
+contradicts its own classifier, which marks these endings *complete*.
 
-**Done — the honest end-state: the selector is high-precision, zero-positive;
-the missing ingredient is judge-family availability and/or candidate-
-generation recall, not a threshold. The brief was carried to its evidence
-boundary without weakening any rule.**
+## 4. Metrics (same benchmark version, BEFORE == AFTER — no change made)
+
+| Metric | BEFORE | AFTER | Target | Status |
+|---|---|---|---|---|
+| Silver-PASS Recall@Eligible | 0/8 (0%) | 0/8 | ≥80% | ✗ (attributed) |
+| Silver-PASS Recall@Accepted | 0/8 (0%) | 0/8 | ≥70% | ✗ (attributed) |
+| Silver-FAIL Leakage@Accepted | 1/333 (0.3%) | 1/333 | ≤10% | ✓ |
+| Hard-negative acceptance | 0 | 0 | 0 | ✓ |
+| Next-topic leakage acceptance | 0 | 0 | 0 | ✓ |
+| Top-1 / Top-3 silver recall | 0/0 | 0/0 | — | not evaluable (no accepted clip) |
+| Episodes with ≥1 accepted PASS | 0/10 | 0/10 | ≥3 | ✗ |
+
+## 5. Why no production change was made
+
+1. Sufficiency gate not met (3 episodes, 5/8 from one episode) → §5.1
+   explicitly forbids aggressive tuning; R8 (no overfit to known positives).
+2. The 05-fix alone does not recover a single clip (start gate still kills);
+   multi-gate changes would violate R6 (fix earliest causal stage) and R1
+   (no threshold gaming) without episode-disjoint evidence.
+3. The 0.78-class candidates' heuristic scores (63–69) sit below the 70
+   acceptance floor — recall recovery also requires scoring alignment,
+   which is beyond a gate relaxation.
+
+**Recommended next sprint (Phase J, per brief):** (a) separate "low evidence"
+from "evidence of incompleteness" — complete-ending classes must not hard-
+reject; (b) audit the START_GATE penalties for complete windows; (c) score-
+alignment for the 0.78 cluster; all three gated on a benchmark with ≥4
+PASS episodes (extend corpus or restore a second provider endpoint).
+
+## 6. Mandatory completion questions (answers)
+
+Q1: 8 PASS (after C fix). Q2: 3 episodes. Q3: full 344 judged (A+B+C; C
+initially blocked — gateway key issue — fixed with DEEPSEEK key value on the
+openai channel; false-negative audit not needed, full census). Q4: 7@05, 1@04.
+Q5: ENDING_CONFIDENCE (7/8 positives, removes 153 FAILs). Q6: no stage
+changed in production; all tooling additive. Q7: n/a. Q8: no threshold
+changed (0.82/70/0.18/14-60). Q9: no weights changed. Q10: no prompts changed.
+Q11: H6 not reopened — the evidence is reported, the change is deferred per
+sufficiency gate (the 0.78 cluster IS the H6 zone; reopening requires ≥4-
+episode holdout). Q12: H1 not promoted. Q13-Q14: 0/8 before & after.
+Q15: 1/333 (0.3%). Q16: 0. Q17: 0. Q18: not evaluable (0 accepted).
+Q19: 0/10. Q20: 0 clips for G3. Q21: renderer untouched. Q22: blocked:
+benchmark sufficiency (≥4 episodes), scoring alignment, G3 diarization.
+
+## 7. Definition-of-Done checklist
+
+| Item | Status |
+|---|---|
+| V12R reused | ✓ |
+| Consensus vetoes hardened | ✓ (tests SA-06/07/08/22) |
+| 51-candidate re-consensus | ✓ (0 changes; offline) |
+| 344 pool judged (full census) | ✓ (A+B+C; C fixed) |
+| ≥8 PASS / ≥4 episodes OR scarcity proven | ✓ proven: 8/3 → insufficiency |
+| Tracer cohorts versioned | ✓ |
+| Production stage replay | ✓ |
+| First-death matrix | ✓ |
+| Stage metrics | ✓ |
+| Episode-disjoint split | ✓ (hash 70/30: cal 3 PASS, holdout 5 PASS) |
+| Counterfactual evidence per stage | ✓ (+ attribution staircase) |
+| No threshold gaming / no regression | ✓ |
+| Recall/leak targets met or justified | justified (attribution + sufficiency) |
+| >=3 accepted PASS clips | ✗ 0 — BLOCKER |
+| CI green (321 tests, tsc 0, eslint 0) | ✓ |
+| GitHub Actions green | ✓ (PR #8) |
+| Renderer untouched | ✓ |
+
+**Done — evidence boundary reached honestly: the selector kills every
+silver-PASS at ENDING_CONFIDENCE (classifier-constant 0.78), then at START,
+then at acceptance 70; no change was made because the benchmark is not yet
+sufficient (3 episodes) and single-gate fixes recover nothing — the fix path
+is explicit and queued behind a sufficiency-valid benchmark.**

@@ -370,31 +370,38 @@ export function traceCandidate(
         }
 
     if (firstFail !== null) {
-      const failInfo = firstFail === '04_ENDING_COMPLETE'
-        ? { features: { ending_type: ev.ending.endingType, ending_confidence: ev.ending.endingConfidence, repair_attempted: true, repaired_end: repairedEnd } }
-        : firstFail === '05_ENDING_CONFIDENCE'
-          ? { features: { ending_confidence: ev.ending.endingConfidence, duration_sec: round(finalDuration(), 2), repair_attempted: true, repaired_end: repairedEnd }, threshold: { min: minEndingConf } }
-          : firstFail === '06_CONTAMINATION_GATE'
-            ? { features: { contamination: ev.boundary.contamination, next_topic_detected: ev.boundary.nextTopicDetected, repair_attempted: true, repaired_end: repairedEnd }, threshold: { max: maxContamination } }
-            : { features: { duration_sec: round(finalDuration(), 2), repair_attempted: true, repaired_end: repairedEnd }, threshold: { min: minDur } };
-      const code = firstFail === '04_ENDING_COMPLETE' ? 'ENDING_INCOMPLETE'
-        : firstFail === '05_ENDING_CONFIDENCE' ? 'ENDING_CONFIDENCE_LOW'
-          : firstFail === '06_CONTAMINATION_GATE' ? 'NEXT_TOPIC_CONTAMINATION'
-            : firstFail === '07_DURATION_GATE' ? (finalDuration() > hardMax ? 'DURATION_HARD_MAX' : 'DURATION_MIN') : 'UNKNOWN';
-      const reasonMap: Record<string, string> = {
+          if (!bypassing(firstFail)) {
+            const reasonMap: Record<string, string> = {
               '04_ENDING_COMPLETE': `ending incomplete (${ev.ending.endingType})`,
               '05_ENDING_CONFIDENCE': `ending confidence ${ev.ending.endingConfidence.toFixed(2)} < ${minEndingConf}`,
               '06_CONTAMINATION_GATE': `next-topic contamination ${ev.boundary.contamination.toFixed(2)} > ${maxContamination}`,
               '07_DURATION_GATE': finalDuration() > hardMax ? `exceeds hard max (${round(finalDuration(), 1)}s > ${hardMax}s)` : `too short (${round(finalDuration(), 1)}s < ${minDur}s)`,
             };
+            const failInfo = firstFail === '04_ENDING_COMPLETE'
+              ? { features: { ending_type: ev.ending.endingType, ending_confidence: ev.ending.endingConfidence, repair_attempted: true, repaired_end: repairedEnd } }
+              : firstFail === '05_ENDING_CONFIDENCE'
+                ? { features: { ending_confidence: ev.ending.endingConfidence, duration_sec: round(finalDuration(), 2), repair_attempted: true, repaired_end: repairedEnd }, threshold: { min: minEndingConf } }
+                : firstFail === '06_CONTAMINATION_GATE'
+                  ? { features: { contamination: ev.boundary.contamination, next_topic_detected: ev.boundary.nextTopicDetected, repair_attempted: true, repaired_end: repairedEnd }, threshold: { max: maxContamination } }
+                  : { features: { duration_sec: round(finalDuration(), 2), repair_attempted: true, repaired_end: repairedEnd }, threshold: { min: minDur } };
+            const code = firstFail === '04_ENDING_COMPLETE' ? 'ENDING_INCOMPLETE'
+              : firstFail === '05_ENDING_CONFIDENCE' ? 'ENDING_CONFIDENCE_LOW'
+                : firstFail === '06_CONTAMINATION_GATE' ? 'NEXT_TOPIC_CONTAMINATION'
+                  : firstFail === '07_DURATION_GATE' ? (finalDuration() > hardMax ? 'DURATION_HARD_MAX' : 'DURATION_MIN') : 'UNKNOWN';
             die(firstFail,
               `${reasonMap[firstFail]}${repairedEnd ? ' (after repair attempt)' : ''}`,
               code,
               failInfo,
             );
-            if (!bypassing(firstFail)) return finalize();
-            survive(firstFail, { features: { bypassed: true }, explanation: `bypassed (counterfactual): ${firstFail}` });
+            return finalize();
           }
+          // Counterfactual bypass: failing stage recorded as survived-bypassed,
+          // all downstream stages stay active with the current evidence.
+          survive(firstFail, {
+            features: { bypassed: true, failed_condition: firstFail, ending_confidence: ev.ending.endingConfidence },
+            explanation: `bypassed (counterfactual): ${firstFail}`,
+          });
+        }
 
     // Record SURVIVED for the end-side stages, with repair evidence.
     if (repairedEnd) {

@@ -49,12 +49,24 @@ attribution can shift stage (e.g. an ENDING_CONFIDENCE lineage kill reports
 as 07 when the repair fixed the ending but the repaired window is still too
 short).
 
-## Silver-PASS survival / first-death (P cohort)
+## Silver-PASS survival / first-death (P cohort — after C fix)
 
-**Denominator is zero** (0 PASS candidates in the final two-judge
-consensus). Per brief §20 + Phase F §8.1: percentages are not computed;
-exact numerator/denominator reported. No gate can be blamed for "killing a
-silver positive" because no candidate carries a positive label.
+Final census with all three judges: **8 PASS / 333 FAIL / 3 REVIEW**
+(distribution: I6wCuvvaRPI ×5, GOqEl4ADyVk ×1, g2cQ2kD6lzs ×2; all PASS arise
+from `C_2OF3_PASS`).
+
+With the production config, **8/8 silver-PASS die before scoring**:
+- 7/8 die at **05_ENDING_CONFIDENCE** — every one with
+  `ending_confidence = 0.78`, a *classifier constant* assigned to complete
+  ending classes (ANSWER_COMPLETE / CONCLUSION). The 0.82 floor therefore
+  hard-rejects a semantically-complete class purely by its label-mapped
+  constant — the alignment defect Phase J exists to address.
+- 1/8 dies at **04_ENDING_COMPLETE** (ending classified UNKNOWN at the
+  window end; boundary/repair issue).
+
+Stage survival (P cohort): 00/01/02/03/04 all 8, then 7 die at 05 and 1 at
+04 → 0 candidates reach scoring. Exact numerators only; no invented
+percentages (§20).
 
 ## Herd / overlap suppression (Phase M evidence)
 

@@ -1,70 +1,81 @@
 # V13 Gate Ablation (Phase H) & Scoring/Ranking Analysis (Phase L/M)
 
-**Date:** 2026-08-09
+**Date:** 2026-08-09 (rev. 2 — after Judge C fix; benchmark now 8 PASS / 333 FAIL / 3 REVIEW)
 
 ## Counterfactual protocol
 
 One gate bypassed at a time; every other gate stays active; threshold
 variants tested separately (ending_conf 0.80 / 0.78, contamination 0.25).
-Because the split fell back to leave-one-episode-out (0 silver PASS in the
-70/30 partitions), every episode is treated as calibration for the ablation
-(no tuning happens — the ablations were run to ATTRIBUTE, with holdout
-deferred by the scarcity decision).
+The episode-disjoint split (hash 70/30, stored before tuning — SA-13) gives
+7 calibration episodes (3 PASS: GOqEl×1, g2cQ×2) and 3 holdout episodes
+(5 PASS: I6wCuvvaRPI×5).
 
-Evidence: `evidence/v13/counterfactuals.jsonl`, `gate_ablation_summary.json`.
+Evidence: `evidence/v13/counterfactuals.jsonl`, `gate_ablation_summary.json`,
+`attribution_staircase.jsonl`.
 
-## Results (344 candidates)
+## Results (calibration episodes, 225 rows)
 
-| Bypassed stage | Would recover silver-PASS | Would leak silver-FAIL |
+| Bypassed stage | Recover silver-PASS | Leak silver-FAIL |
 |---|---|---|
-| 03_START_GATE | 0 | **11** |
+| 03_START_GATE | 0 | 14 |
 | 04_ENDING_COMPLETE | 0 | 0 |
-| 05_ENDING_CONFIDENCE | 0 | 1 |
+| 05_ENDING_CONFIDENCE | 0* | 1 |
 | 06_CONTAMINATION_GATE | 0 | 0 |
-| 07_DURATION_GATE | 0 | 1 |
+| 07_DURATION_GATE | 0 | 0 |
 | 12_ACCEPTANCE_THRESHOLD | 0 | 4 |
 
-Threshold variants:
-- ending_conf 0.78: 1 FAIL candidate flips to ACCEPTED (leak), no PASS recovered.
-- ending_conf 0.80 / contamination 0.25: no flips.
+\* bypassing 05 lets calibration PASS candidates survive that gate, but they
+are then killed at 03_START_GATE — a single relaxation alone cannot recover
+a positive.
+
+Threshold variants: ending_conf 0.78 → 1 FAIL leaks (no PASS recovered on
+calibration); 0.80 and contamination 0.25 → no flips.
+
+## Attribution staircase (8 silver-PASS)
+
+`attribution_staircase.jsonl` replays each PASS under {none, only05, only03,
+03+05, 03+05+12}:
+
+| scenario | first death | accepted |
+|---|---|---|
+| none | 05_ENDING_CONFIDENCE (7×, conf=0.78 class constant) / 04 (1×) | no |
+| only05 | 03_START_GATE | no |
+| only03 | 05_ENDING_CONFIDENCE | no |
+| 03+05 | 12_ACCEPTANCE_THRESHOLD (scores 63–69 < 70) | no |
+| 03+05+12 | — | yes (score 63–69) |
+
+The chain for every positive: **ENDING_CONFIDENCE (classifier-constant 0.78
+floor) → START_GATE → acceptance threshold 70**. Each layer is necessary;
+no single gate change recovers anything (R6: fix the earliest causal stage —
+05 — but §5.1 forbids aggressive tuning while the benchmark has 8 PASS on
+only 3 episodes).
 
 ## Bad-gate signature check (Phase F §8.1)
 
-The BAD GATE SIGNATURE is "a gate that kills many silver positives while
-removing few silver negatives". With zero positives the signature cannot
-fire for recall; the inverse side is measured: every relaxation leaks FAIL
-candidates (START leaks 11). START_GATE is the strongest precision
-protector, not a recall bottleneck. No gate shows a recall-side deficit.
+05_ENDING_CONFIDENCE shows the BAD GATE SIGNATURE: it kills 7/8 silver
+positives (87.5%) while removing 153 FAILs — a very selective kill that
+correlates with the judge label. The defect is that the killer is the
+*classifier's own constant* (0.78) rather than graded evidence; the fix is a
+Phase-J formulation change (separate low evidence from evidence of
+incompleteness), not a threshold nudge.
 
 ## Scoring / ranking analysis (Phase L/M)
 
-- The single accepted candidate (Iqbal `c=3b416b15c9b5`, score 80) is
-  silver-FAIL: the ranking cannot be validated as "PASS outranks FAIL"
-  because no PASS exists; the accepted-FAIL case is captured (SA-03/SA-24)
-  and blocks feature-ready (Phase 24 checklist).
-- No scoring weight was changed; no score formula was changed; no
-  threshold was changed. All comparisons are reported on the same v13.0
-  benchmark version (config_before == config_after).
+- The single lineage-accepted candidate (Iqbal `c=3b416b15c9b5`, score 80)
+  remains silver-FAIL (SA-03/SA-24 trigger; documented, no masking).
+- PASS candidates score 63–69 under the heuristic engine — below the 70
+  acceptance floor; scoring alignment is part of the recommended follow-up.
+- No scoring weight, formula, or threshold changed; config_before ==
+  config_after (same benchmark v13.0).
 
 ## Decision (Phase I-N gate repair)
 
-Per brief §28 (stop condition): "The 344 candidate pool contains too few
-silver positives to calibrate selector gates" AND "any proposed gate
-relaxation improves positive recall only by materially increasing
-silver-FAIL leakage" — both fire. Therefore:
-
-- NO production threshold is changed.
-- NO scoring weight is changed.
-- NO prompt is changed.
-- H6 stays un-reopened (V12R result stands; no new tracer evidence for it).
-- H1 stays non-global (its one repaired variant is a REVIEW/FAIL under the
-  current judges; no holdout-verified benefit).
-- The only safe, real improvement demonstrated by V13 is the observable:
-  the pipeline-faithful TRACE tooling and the hardened consensus — both stay
-  additive.
-
-An honest opening is documented instead: the benchmark (2 families, no
-accessible third judge, 0 PASS) cannot currently claim silver-positive
-existence in the frozen corpus; the next step is either restoring a third
-judge family (OpenRouter/Google credentials) or adding candidate-generation
-recall before any selector tuning (§Phase O).
+- NO production threshold/weight/prompt changed (R1, R6, §5.1: sufficiency
+  gate unmet — 8 PASS / 3 episodes; no holdout-validated single change).
+- H6 not reopened as production behavior; the 0.78 cluster is reported as
+  the Phase-J fix candidate with full tracer evidence.
+- H1 stays non-global.
+- The recommended next sprint: (a) complete-ending classes must not
+  hard-reject (confidence floor applies to *evidence strength*, not to
+  semantic completeness); (b) START_GATE penalty audit for complete
+  windows; (c) score alignment — each gated on a ≥4-episode benchmark.
