@@ -2,7 +2,7 @@
   "brief": "Brief_V13_Production_Selector_Alignment_Silver_Pass_Recall.pdf",
   "generated_at": "2026-08-09T02:01:35.477Z",
   "strategy": "full pool consensus (preferred): Judge A + B over all 344 lineage candidates, Judge C on disagreement",
-  "judge_independence_tier": "Good+ (three model families, two provider endpoints)",
+  "judge_independence_tier": "Good (three model families via 9router gateway; OpenRouter unavailable - key without credits)",
   "candidates": [
     {
       "candidate_id": "c=a7a306c4bd0a",
@@ -4137,5 +4137,26 @@
     "total": 344,
     "prior_judged": 51,
     "episodes": 10
-  }
+  },
+  "judges": {
+    "A": {
+      "provider": "deepseek",
+      "model": "ds/deepseek-v4-flash",
+      "endpoint": "9router 127.0.0.1:20128/v1",
+      "family": "DeepSeek"
+    },
+    "B": {
+      "provider": "deepseek-transport",
+      "model": "ag/gemini-3.5-flash-low",
+      "endpoint": "9router 127.0.0.1:20128/v1",
+      "family": "Google Gemini"
+    },
+    "C": {
+      "provider": "openai",
+      "model": "cx/gpt-5.6-luna",
+      "endpoint": "9router 127.0.0.1:20128/v1",
+      "family": "OpenAI GPT"
+    }
+  },
+  "note": "Judge B switched from OpenRouter google/gemini-2.5-flash-lite to ag/gemini-3.5-flash-low via 9router (same Google family, materially different prompt) after the OpenRouter key had no credits. Three families, single endpoint; independence tier downgrade documented."
 }

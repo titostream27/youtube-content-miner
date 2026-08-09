@@ -22,7 +22,7 @@
  *
  * The veto_reason is persisted on every decision.
  */
-import type { ConsensusDecision, JudgeCall, JudgeTier } from '@/lib/v12r/judge-types';
+import type { ConsensusDecision, JudgeCall } from '@/lib/v12r/judge-types';
 import { decideConsensus as decideConsensusV12 } from '@/lib/v12r/consensus';
 
 export interface ConsensusOptionsV13 {
@@ -41,14 +41,6 @@ function contentJudge(call: JudgeCall): boolean {
 }
 
 /** Dimension flags observed on one judge's content verdict. */
-interface DimensionFlags {
-  next_topic_leakage: boolean;
-  hard_negative: boolean;
-  ending_complete: boolean;
-  start_complete: boolean;
-  context_independence: boolean;
-}
-
 function flagsOf(call: JudgeCall): DimensionVeto | null {
   if (!contentJudge(call) || !call.output) return null;
   return {

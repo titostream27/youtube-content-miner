@@ -38,13 +38,6 @@ const BYPASS_CANDIDATES: StageName[] = [
 ];
 
 /** Counterfactual threshold variants (small, evidence-backed moves only). */
-function thresholdVariants(): { name: string; overrides: Record<string, unknown> }[] {
-  return [
-    { name: 'ending_conf_0.80', overrides: { altEndingConfidence: 0.80 } },
-    { name: 'ending_conf_0.78', overrides: { altEndingConfidence: 0.78 } },
-    { name: 'contamination_0.25', overrides: { altMaxContamination: 0.25 } },
-  ];
-}
 
 function main(): void {
   const lineagePath = arg('--lineage') ?? 'docs/evidence/v12-lineage.jsonl';

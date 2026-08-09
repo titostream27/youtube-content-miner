@@ -86,6 +86,5 @@ function main(): void {
   console.log(JSON.stringify({ wrote: outPath, ...manifest }, null, 2));
 }
 
-const VERSION = process.env.V13_BENCHMARK_VERSION?.trim() || 'v13.0';
 
 main();

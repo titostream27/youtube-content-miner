@@ -155,19 +155,6 @@ function evidenceAt(
   };
 }
 
-/** Production next-topic guard (§7): never cross into the next topic. */
-function applyNextTopicGuard(
-  selectedEnd: number,
-  boundary: TopicBoundary,
-  endGuardSec: number,
-): number {
-  if (boundary.nextTopicDetected && boundary.nextTopicStart !== null) {
-    const guarded = boundary.nextTopicStart - endGuardSec;
-    if (guarded < selectedEnd) return Math.max(0, guarded);
-  }
-  return selectedEnd;
-}
-
 export function traceCandidate(
   lineageRow: LineageRow,
   transcript: Transcript,

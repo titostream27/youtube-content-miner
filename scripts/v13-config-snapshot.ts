@@ -8,7 +8,6 @@
  * Usage: DATABASE_PATH=... node --import tsx scripts/v13-config-snapshot.ts
  */
 import fs from 'node:fs';
-import path from 'node:path';
 import { config } from '../src/lib/config';
 import {
   CLIP_GATE_WEIGHTS,
