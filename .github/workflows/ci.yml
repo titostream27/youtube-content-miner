@@ -31,7 +31,38 @@ jobs:
         continue-on-error: false
 
       - name: Publish test summary
-        if: always()
+        if: ${{ always() }}
         run: |
           echo "## Test results" >> $GITHUB_STEP_SUMMARY
           echo "- vitest: all unit/contract/evaluation tests" >> $GITHUB_STEP_SUMMARY
+
+  # Brief V14R P7 — blocking offline evidence integrity gate (closes F-05).
+  # No secrets, no provider calls: provider-generated evidence is committed.
+  v14r-evidence-gate:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install exact lockfile dependencies
+        run: npm ci
+
+      - name: Offline evidence gate (npm run verify:v14r)
+        run: npm run verify:v14r
+
+      - name: Checksum validation (non-circular immutable manifest)
+        run: node scripts/v14r-check-checksums.ts
+
+      - name: Whitespace and conflict-marker check
+        run: git diff --check
+
+      - name: Worktree must be clean after verification
+        run: |
+          UNTRACKED=$(git status --porcelain | wc -l)
+          echo "untracked/modified entries: ${UNTRACKED}"
+          test "${UNTRACKED}" -eq 0
