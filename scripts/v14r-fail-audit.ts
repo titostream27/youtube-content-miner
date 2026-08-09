@@ -18,6 +18,7 @@ import { getTranscript } from '../src/lib/db/repositories/transcripts';
 import { buildJudgeInput } from '../src/lib/v12r/judge-input';
 import { callJudge } from '../src/lib/v12r/judge-runner';
 import { loadJsonlStrict } from '../src/lib/v14/artifact-paths';
+import { ensureJudgeEnv } from './judge-env';
 
 const R = (p: string): string => path.resolve(p);
 const OUT_DIR = 'evidence/v14r';
@@ -51,6 +52,9 @@ function selectSample(): { candidate_id: string; episode_id: string; window: { s
 }
 
 async function main(): Promise<void> {
+  // Self-healing judge environment: fixes empty OPENAI_API_KEY and unreachable
+  // base URLs (host.docker.internal) BEFORE any provider call (Brief V14R tooling).
+  await ensureJudgeEnv({ envFile: process.env.JUDGE_ENV_FILE });
   const outDir = R(OUT_DIR);
   fs.mkdirSync(outDir, { recursive: true });
   const judgePath = path.join(outDir, 'fail_audit_judge_outputs.jsonl');
