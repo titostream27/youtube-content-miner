@@ -29,9 +29,9 @@ function arg(name: string): string | undefined {
 }
 
 function main(): void {
-  const lineagePath = arg('--lineage') ?? 'docs/evidence/v12-lineage.jsonl';
-  const labelsPath = arg('--labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
-  const outDir = arg('--out-dir') ?? 'evidence/v13';
+  const lineagePath = arg('lineage') ?? 'docs/evidence/v12-lineage.jsonl';
+  const labelsPath = arg('labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
+  const outDir = arg('out-dir') ?? 'evidence/v13';
 
   const rows: LineageRow[] = fs
     .readFileSync(path.resolve(lineagePath), 'utf-8')

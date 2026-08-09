@@ -1,0 +1,177 @@
+{
+  "strategy": "leave-one-episode-out",
+  "benchmark_version": "v13.0",
+  "split_before_tuning": true,
+  "calibration_episodes": [],
+  "holdout_episodes": [],
+  "calibration_episode_count": 0,
+  "holdout_episode_count": 0,
+  "calibration_pass_count": null,
+  "holdout_pass_count": null,
+  "fallback_reason": "class balance invalid (calibration PASS=0, holdout PASS=0) — use leave-one-episode-out and document why",
+  "leave_one_episode_out": [
+    {
+      "episode_id": "2HLGcRpw1hc",
+      "evaluation_episode": "2HLGcRpw1hc",
+      "training_episodes": [
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "376JmatmnaI",
+      "evaluation_episode": "376JmatmnaI",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "3NSC5nps3OM",
+      "evaluation_episode": "3NSC5nps3OM",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "GOqEl4ADyVk",
+      "evaluation_episode": "GOqEl4ADyVk",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "Hb2rKGfIOrM",
+      "evaluation_episode": "Hb2rKGfIOrM",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "I6wCuvvaRPI",
+      "evaluation_episode": "I6wCuvvaRPI",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "Ive926sC6mc",
+      "evaluation_episode": "Ive926sC6mc",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "UZ1kCEGjYX0",
+      "evaluation_episode": "UZ1kCEGjYX0",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "XuoqKYxDHVc",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "XuoqKYxDHVc",
+      "evaluation_episode": "XuoqKYxDHVc",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "g2cQ2kD6lzs"
+      ],
+      "training_pass_count": 0
+    },
+    {
+      "episode_id": "g2cQ2kD6lzs",
+      "evaluation_episode": "g2cQ2kD6lzs",
+      "training_episodes": [
+        "2HLGcRpw1hc",
+        "376JmatmnaI",
+        "3NSC5nps3OM",
+        "GOqEl4ADyVk",
+        "Hb2rKGfIOrM",
+        "I6wCuvvaRPI",
+        "Ive926sC6mc",
+        "UZ1kCEGjYX0",
+        "XuoqKYxDHVc"
+      ],
+      "training_pass_count": 0
+    }
+  ],
+  "episodes_total": 10,
+  "candidates_total": 344,
+  "pass_total": 0
+}

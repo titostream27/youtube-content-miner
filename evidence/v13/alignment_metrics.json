@@ -1,0 +1,47 @@
+{
+  "silver_benchmark": {
+    "pass": 0,
+    "fail": 329,
+    "review": 15,
+    "episodes_with_pass": 0
+  },
+  "recall_at_eligible": {
+    "numerator": 0,
+    "denominator": 0,
+    "rate": null
+  },
+  "recall_at_accepted": {
+    "numerator": 0,
+    "denominator": 0,
+    "rate": null
+  },
+  "fail_leakage_at_accepted": {
+    "numerator": 1,
+    "denominator": 329,
+    "rate": 0.00303951367781155
+  },
+  "g2_production": {
+    "episodes": 10,
+    "accepted_total": 0,
+    "accepted_silver_pass": 0,
+    "accepted_silver_fail": 0,
+    "hard_negative_accepted": 0,
+    "episodes_with_passed_clip": 0
+  },
+  "top1_silver_recall": {
+    "numerator": 0,
+    "denominator": 0,
+    "rate": null
+  },
+  "top3_silver_recall": {
+    "numerator": 0,
+    "denominator": 0,
+    "rate": null
+  },
+  "pass_first_death_distribution": {},
+  "notes": [
+    "traces.jsonl = deterministic production stage replay over the frozen lineage",
+    "g2 = real production pipeline re-run (detectMoments + twoPassHighlightSelection + heuristic scoring)",
+    "top1/top3 computed on episodes that contain at least one silver PASS"
+  ]
+}

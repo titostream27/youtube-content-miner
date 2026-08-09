@@ -40,10 +40,10 @@ const BYPASS_CANDIDATES: StageName[] = [
 /** Counterfactual threshold variants (small, evidence-backed moves only). */
 
 function main(): void {
-  const lineagePath = arg('--lineage') ?? 'docs/evidence/v12-lineage.jsonl';
-  const labelsPath = arg('--labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
-  const splitPath = arg('--split') ?? 'evidence/v13/split_manifest.json';
-  const outDir = arg('--out-dir') ?? 'evidence/v13';
+  const lineagePath = arg('lineage') ?? 'docs/evidence/v12-lineage.jsonl';
+  const labelsPath = arg('labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
+  const splitPath = arg('split') ?? 'evidence/v13/split_manifest.json';
+  const outDir = arg('out-dir') ?? 'evidence/v13';
 
   const rows: LineageRow[] = fs
     .readFileSync(path.resolve(lineagePath), 'utf-8')
@@ -68,9 +68,10 @@ function main(): void {
       calibration_episodes?: string[];
       fallback_reason?: string | null;
     };
-    // Fallback LOEO: use every episode except one reserved holdout is
-    // impossible here; treat all episodes as calibration when split fell back.
+    // Leave-one-episode-out fallback has no fixed calibration set; every
+    // episode is treated as a calibration (training) episode for ablation.
     calibrationEpisodes = split.calibration_episodes ?? null;
+    if (calibrationEpisodes !== null && calibrationEpisodes.length === 0) calibrationEpisodes = null;
   }
   const calibrate = (episodeId: string): boolean =>
     calibrationEpisodes === null ? true : calibrationEpisodes.includes(episodeId);

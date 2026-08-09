@@ -57,10 +57,10 @@ function loadRows<T>(p: string): T[] {
 }
 
 function main(): void {
-  const tracesPath = arg('--traces') ?? 'evidence/v13/traces.jsonl';
-  const labelsPath = arg('--labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
-  const g2Path = arg('--g2') ?? 'evidence/v13/production_g2.jsonl';
-  const outPath = arg('--out') ?? 'evidence/v13/alignment_metrics.json';
+  const tracesPath = arg('traces') ?? 'evidence/v13/traces.jsonl';
+  const labelsPath = arg('labels') ?? 'evidence/v13/consensus_labels_v13.jsonl';
+  const g2Path = arg('g2') ?? 'evidence/v13/production_g2.jsonl';
+  const outPath = arg('out') ?? 'evidence/v13/alignment_metrics.json';
 
   const traces = loadRows<TraceRow>(tracesPath);
   const labels = new Map(loadRows<LabelRow>(labelsPath).map((r) => [r.candidate_id, r]));
