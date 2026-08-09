@@ -56,7 +56,7 @@ jobs:
         run: npm run verify:v14r
 
       - name: Checksum validation (non-circular immutable manifest)
-        run: node scripts/v14r-check-checksums.ts
+        run: "npm run verify:checksums"
 
       - name: Whitespace and conflict-marker check
         run: git diff --check
