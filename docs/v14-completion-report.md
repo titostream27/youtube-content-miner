@@ -1,5 +1,12 @@
 # V14 Completion Report — Selector Hard-Gate Semantics & Recall Calibration
 
+> **SUPERSEDED (Brief V14R).** This report's closure was found to contain a
+> material contradiction (E3 next-topic leakage row), seven checksum failures,
+> and a non-portable verification toolchain. The authoritative closure is
+> `docs/v14r-completion-report.md`; see `docs/v14r-errata.md` for every
+> corrected statement. Historical evidence is preserved untouched under
+> `evidence/v14/`.
+
 Verdict: **BLOCKED**
 Confidence: **HIGH** (baseline reproduction is byte-exact; every safety failure is
 candidate-level reproducible via `scripts/v14-experiments.ts` + the recorded runs)
