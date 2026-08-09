@@ -1,0 +1,13 @@
+{
+  "candidates_rejudged": 51,
+  "pass": {
+    "old": 2,
+    "new": 2,
+    "lost": 0
+  },
+  "review": 7,
+  "fail": 42,
+  "label_changes": 0,
+  "changes": [],
+  "note": "offline re-consensus using hardened critical vetoes; no new LLM calls"
+}

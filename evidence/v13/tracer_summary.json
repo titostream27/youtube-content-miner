@@ -1,0 +1,430 @@
+{
+  "candidates_traced": 344,
+  "cohort_counts": {
+    "P": 0,
+    "N": 0,
+    "R": 344
+  },
+  "first_death_distribution": {
+    "pass": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "fail": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    }
+  },
+  "per_episode_pass_first_death": {
+    "I6wCuvvaRPI": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "GOqEl4ADyVk": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "2HLGcRpw1hc": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "UZ1kCEGjYX0": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "Hb2rKGfIOrM": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "g2cQ2kD6lzs": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "Ive926sC6mc": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "3NSC5nps3OM": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "376JmatmnaI": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    },
+    "XuoqKYxDHVc": {
+      "00_LINEAGE_PRESENT": 0,
+      "01_PROPOSAL_VALID": 0,
+      "02_TEMPORAL_NORMALIZATION": 0,
+      "03_START_GATE": 0,
+      "04_ENDING_COMPLETE": 0,
+      "05_ENDING_CONFIDENCE": 0,
+      "06_CONTAMINATION_GATE": 0,
+      "07_DURATION_GATE": 0,
+      "08_DUPLICATE_OVERLAP": 0,
+      "09_COMPONENT_SCORING": 0,
+      "10_FINAL_SCORE": 0,
+      "11_RANKING": 0,
+      "12_ACCEPTANCE_THRESHOLD": 0,
+      "13_FINAL_ACCEPTED": 0
+    }
+  },
+  "stage_metrics": {
+    "00_LINEAGE_PRESENT": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "01_PROPOSAL_VALID": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "02_TEMPORAL_NORMALIZATION": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "03_START_GATE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "04_ENDING_COMPLETE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "05_ENDING_CONFIDENCE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "06_CONTAMINATION_GATE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "07_DURATION_GATE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "08_DUPLICATE_OVERLAP": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "09_COMPONENT_SCORING": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "10_FINAL_SCORE": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "11_RANKING": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "12_ACCEPTANCE_THRESHOLD": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    },
+    "13_FINAL_ACCEPTED": {
+      "silver_pass_survival_rate": null,
+      "silver_fail_survival_rate": null,
+      "pass_first_death_count": 0,
+      "pass_first_death_rate": null,
+      "fail_first_death_count": 0,
+      "selectivity": null,
+      "survive_count": {
+        "pass": 0,
+        "fail": 0
+      },
+      "first_death_count": {
+        "pass": 0,
+        "fail": 0
+      }
+    }
+  }
+}
