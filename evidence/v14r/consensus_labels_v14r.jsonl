@@ -1,0 +1,7 @@
+{"candidate_id":"c=293b9b02dca0","original_label":"FAIL","v14r_label":"REVIEW","rule":"AUDIT_C","reason":"audit judge believes publishable (contradicts A/B FAIL)","audit_status":"ok"}
+{"candidate_id":"c=417a9ce3c85c","original_label":"FAIL","v14r_label":"REVIEW","rule":"AUDIT_C","reason":"audit judge believes publishable (contradicts A/B FAIL)","audit_status":"ok"}
+{"candidate_id":"c=6745883eb40b","original_label":"FAIL","v14r_label":"FAIL","rule":"AUDIT_C","reason":"audit agrees with A/B FAIL consensus","audit_status":"ok"}
+{"candidate_id":"c=8824a0c3a18f","original_label":"FAIL","v14r_label":"REVIEW","rule":"AUDIT_C","reason":"audit judge believes publishable (contradicts A/B FAIL)","audit_status":"ok"}
+{"candidate_id":"c=ab244e1f7fb9","original_label":"FAIL","v14r_label":"FAIL","rule":"AUDIT_C","reason":"audit agrees with A/B FAIL consensus","audit_status":"ok"}
+{"candidate_id":"c=db382577df0a","original_label":"FAIL","v14r_label":"FAIL","rule":"AUDIT_C","reason":"audit agrees with A/B FAIL consensus","audit_status":"ok"}
+{"candidate_id":"c=f389b51fbb63","original_label":"FAIL","v14r_label":"REVIEW","rule":"AUDIT_C","reason":"audit judge believes publishable (contradicts A/B FAIL)","audit_status":"ok"}
