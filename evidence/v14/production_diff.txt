@@ -1,5 +1,16 @@
-=== tracked-file changes vs baseline (bf7381e2) ===
- protocol.yaml | 209 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 209 insertions(+)
-=== modified EXISTING files (should be none) ===
+=== production invariance proof (vs baseline bf7381e2) ===
+--- name-status (src/scripts/docs additions): ---
+A	scripts/v14-census.ts
+A	scripts/v14-experiments.ts
+A	scripts/v14-judge-run.ts
+A	scripts/v14-select.ts
+A	scripts/v14-split.ts
+A	scripts/v14-transcript-hashes.ts
+A	scripts/v14-verify.ts
+A	src/lib/v14/__tests__/v14-policy.test.ts
+A	src/lib/v14/ending-policy.ts
+A	src/lib/v14/metrics.ts
+A	src/lib/v14/replay-helpers.ts
+A	src/lib/v14/replay.ts
+--- modified PRE-EXISTING production files (must be empty): ---
 (end)
