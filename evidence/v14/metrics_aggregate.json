@@ -1,0 +1,118 @@
+{
+  "brief": "V14 aggregate headline metrics (computed 2026-08-09 from runs/<v>/variant_results.jsonl)",
+  "note": "PER PROTOCOL: no policy locked -> holdout column intentionally absent; holdout never evaluated",
+  "targets": {
+    "PASS_Recall_Eligible": ">=0.75",
+    "PASS_Recall_Accepted": "legacy>=5/8, holdout>=0.5",
+    "new_FAIL": "0",
+    "new_HN": "0",
+    "new_LK": "0"
+  },
+  "matrix": {
+    "legacy": {
+      "C0": {
+        "PASS_Recall_Eligible": {
+          "n": 0,
+          "N": 8,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.3244
+          ]
+        },
+        "PASS_Recall_Accepted": {
+          "n": 0,
+          "N": 8,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.3244
+          ]
+        },
+        "new_silver_FAIL_accepted": [],
+        "new_hard_negative_accepted": [],
+        "new_next_topic_leakage_accepted": []
+      },
+      "E3": {
+        "PASS_Recall_Eligible": {
+          "n": 0,
+          "N": 8,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.3244
+          ]
+        },
+        "PASS_Recall_Accepted": {
+          "n": 0,
+          "N": 8,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.3244
+          ]
+        },
+        "new_silver_FAIL_accepted": [
+          "c=9e121d6b7221",
+          "c=fb53d482602c"
+        ],
+        "new_hard_negative_accepted": [
+          "c=9e121d6b7221",
+          "c=fb53d482602c"
+        ],
+        "new_next_topic_leakage_accepted": [
+          "c=9e121d6b7221",
+          "c=fb53d482602c"
+        ]
+      }
+    },
+    "calibration": {
+      "C0": {
+        "PASS_Recall_Eligible": {
+          "n": 0,
+          "N": 2,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.6576
+          ]
+        },
+        "PASS_Recall_Accepted": {
+          "n": 0,
+          "N": 2,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.6576
+          ]
+        },
+        "new_silver_FAIL_accepted": [],
+        "new_hard_negative_accepted": [],
+        "new_next_topic_leakage_accepted": []
+      },
+      "E3": {
+        "PASS_Recall_Eligible": {
+          "n": 0,
+          "N": 2,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.6576
+          ]
+        },
+        "PASS_Recall_Accepted": {
+          "n": 0,
+          "N": 2,
+          "rate": 0.0,
+          "wilson95": [
+            0,
+            0.6576
+          ]
+        },
+        "new_silver_FAIL_accepted": [],
+        "new_hard_negative_accepted": [],
+        "new_next_topic_leakage_accepted": []
+      }
+    }
+  }
+}

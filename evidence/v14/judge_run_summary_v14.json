@@ -1,0 +1,14 @@
+{
+  "mode": "full A/B (+C on disagreement)",
+  "benchmark_version": "v14.0",
+  "candidates_pending_at_start": 160,
+  "completed_total": 160,
+  "stats": {
+    "pass": 8,
+    "review": 2,
+    "fail": 150,
+    "provider_fail": 0,
+    "parse_fail": 0,
+    "c_invoked": 10
+  }
+}

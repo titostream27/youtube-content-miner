@@ -1,0 +1,70 @@
+{
+  "experiment_version": "v14.0",
+  "created_at": "2026-08-09T10:26:08.503Z",
+  "split_unit": "episode",
+  "legacy_episodes": [
+    "I6wCuvvaRPI",
+    "GOqEl4ADyVk",
+    "2HLGcRpw1hc",
+    "UZ1kCEGjYX0",
+    "Hb2rKGfIOrM",
+    "g2cQ2kD6lzs",
+    "Ive926sC6mc",
+    "3NSC5nps3OM",
+    "376JmatmnaI",
+    "XuoqKYxDHVc"
+  ],
+  "new_episodes": [
+    "LAmGfokvgzA",
+    "e1WM_JEmP-Q",
+    "hb7Oqrj3F3k",
+    "vs6x8VUGXCw"
+  ],
+  "deterministic_rule": "sha256(episode_id + ':v14.0') mod 100; <50 => calibration, >=50 => holdout",
+  "episode_to_split": {
+    "I6wCuvvaRPI": "legacy",
+    "GOqEl4ADyVk": "legacy",
+    "2HLGcRpw1hc": "legacy",
+    "UZ1kCEGjYX0": "legacy",
+    "Hb2rKGfIOrM": "legacy",
+    "g2cQ2kD6lzs": "legacy",
+    "Ive926sC6mc": "legacy",
+    "3NSC5nps3OM": "legacy",
+    "376JmatmnaI": "legacy",
+    "XuoqKYxDHVc": "legacy",
+    "LAmGfokvgzA": "calibration",
+    "vs6x8VUGXCw": "calibration",
+    "e1WM_JEmP-Q": "holdout",
+    "hb7Oqrj3F3k": "holdout"
+  },
+  "calibration": [
+    "LAmGfokvgzA",
+    "vs6x8VUGXCw"
+  ],
+  "holdout": [
+    "e1WM_JEmP-Q",
+    "hb7Oqrj3F3k"
+  ],
+  "candidate_count": 504,
+  "label_counts": {
+    "FAIL": 483,
+    "PASS": 16,
+    "REVIEW": 5
+  },
+  "hashes": {
+    "legacy_lineage": "6dc9396a9deae95798f2d3c345ed16c32e2a33ac37af7c45477ad523cf4ae5fe",
+    "legacy_labels": "b8f10441d66e75ce7e235f1e74cd8d77685ba586dd72b453908a4dfa5968c2fd",
+    "census": "12d8811d8705bf3bc3c97ded00e287948b78a1b9036ccd70530a9812265b4b4c",
+    "labels_v14": "7b158405d1aa90207999da16aec561193f49dd5656a65e63290637805170fbde",
+    "judge_outputs_v14": "7157e51e55bed2843e020bf954c6dd69ca357f4ccaff97d39bd227751be01080",
+    "protocol": "35fb2c55ffdf8a661eb68b36270b3ec254a40f34df66f10a330f6fb1cdab2505",
+    "baseline": "4f9be93b1d52ceffca7ffe8bb2d355ba5a6846069511ecfffb4fdd38a96989ff",
+    "code": "b83273176a3a3dce09921a51780a35eda48cf379e49abc1e7b5a7f328c66064c",
+    "metric_spec": "cca22787fb5af41e27db7598b880b9fc1e1a77327209944ad8b90177f8872979"
+  },
+  "leakage_checks": {
+    "episode_overlap": "asserted: every episode in exactly one split; legacy never clean holdout",
+    "candidate_overlap": "asserted by construction (candidate->episode->split single map)",
+    "holdout_sealed_until_lock": true
+  }
+}
