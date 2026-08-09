@@ -49,6 +49,9 @@ function loadCompleted(outDir: string): Set<string> {
   }
   for (const [id, tiers] of byId) {
     if (tiers.has('A') && tiers.has('B')) set.add(id);
+    // C-only mode needs candidates whose C verdict is missing or failed;
+    // they are added ONLY when we are re-routing C (must not reprocess
+    // candidates that already have a working C verdict).
   }
   return set;
 }
@@ -86,6 +89,18 @@ async function main(): Promise<void> {
   let entries = manifest.candidates.filter((e) => !doneSet.has(e.candidate_id));
   if (limit > 0) entries = entries.slice(0, limit);
 
+  // --c-only: only candidates whose consensus row exists as INCOMPLETE_VOTES
+  // (C failed on disagreement) get a C call; A/B are reused from disk.
+  const cOnly = hasFlag('c-only');
+
+  // In c-only mode process only candidates whose current consensus is a
+  // dead C (INCOMPLETE_VOTES) and whose A/B calls exist on disk.
+  let targetIds: Set<string> | null = null;
+  if (cOnly) {
+    targetIds = incompleteVotesCandidates(path.resolve(outDir, 'consensus_labels_v13.jsonl'));
+    entries = entries.filter((e) => (targetIds as Set<string>).has(e.candidate_id));
+  }
+
   const judgePath = path.resolve(outDir, 'judge_outputs.jsonl');
   const consensusPath = path.resolve(outDir, 'consensus_labels_v13.jsonl');
   fs.mkdirSync(path.resolve(outDir), { recursive: true });
@@ -95,8 +110,33 @@ async function main(): Promise<void> {
   const version = process.env.V13_BENCHMARK_VERSION?.trim() || 'v13.0';
   let done = 0;
   const stats = { pass: 0, review: 0, fail: 0, provider_fail: 0, parse_fail: 0, c_invoked: 0 };
+function loadCalls(outDir: string, candidateId: string, judgePath: string): { a: JudgeCall | null; b: JudgeCall | null; c: JudgeCall | null } {
+  if (!fs.existsSync(judgePath)) return { a: null, b: null, c: null };
+  const calls: JudgeCall[] = [];
+  for (const line of fs.readFileSync(judgePath, 'utf-8').split('\n')) {
+    if (!line.trim()) continue;
+    const row = JSON.parse(line) as JudgeCall & { candidate_id?: string };
+    if (row.candidate_id === candidateId) calls.push(row);
+  }
+  const a = calls.find((c) => c.tier === 'A') ?? null;
+  const b = calls.find((c) => c.tier === 'B') ?? null;
+  const c = calls.find((c) => c.tier === 'C') ?? null;
+  return { a, b, c };
+}
 
-  const processOne = async (entry: ManifestEntry): Promise<void> => {
+/** Candidates whose consensus row says C failed (INCOMPLETE_VOTES). */
+function incompleteVotesCandidates(consensusPath: string): Set<string> {
+  const out = new Set<string>();
+  if (!fs.existsSync(consensusPath)) return out;
+  for (const line of fs.readFileSync(consensusPath, 'utf-8').split('\n')) {
+    if (!line.trim()) continue;
+    const rec = JSON.parse(line) as { candidate_id?: string; rule?: string };
+    if (rec.candidate_id && rec.rule === 'INCOMPLETE_VOTES') out.add(rec.candidate_id);
+  }
+  return out;
+}
+
+const processOne = async (entry: ManifestEntry): Promise<void> => {
     const transcript = getTranscript(entry.episode_id);
     if (!transcript || transcript.cues.length === 0) {
       fs.appendFileSync(
@@ -113,12 +153,23 @@ async function main(): Promise<void> {
       entry.candidate_id,
     );
 
-    const judgeA: JudgeCall | null = skipA ? null : await callJudge('A', contract);
-    const judgeB: JudgeCall | null = skipB ? null : await callJudge('B', contract);
-
+    let judgeA: JudgeCall | null = null;
+    let judgeB: JudgeCall | null = null;
     let judgeC: JudgeCall | null = null;
-    if (!skipC && judgeA && judgeB && needsJudgeC(judgeA, judgeB)) {
-      judgeC = await callJudge('C', contract);
+    if (cOnly) {
+      const existing = loadCalls(outDir, entry.candidate_id, judgePath);
+      judgeA = existing.a;
+      judgeB = existing.b;
+      const needC = !existing.c || existing.c.status !== 'ok'
+        ? await callJudge('C', contract)
+        : existing.c;
+      if (needC && needC.status === 'ok') judgeC = needC;
+    } else {
+      judgeA = skipA ? null : await callJudge('A', contract);
+      judgeB = skipB ? null : await callJudge('B', contract);
+      if (!skipC && judgeA && judgeB && needsJudgeC(judgeA, judgeB)) {
+        judgeC = await callJudge('C', contract);
+      }
     }
 
     const verdict = decideConsensusV13(
@@ -166,6 +217,21 @@ async function main(): Promise<void> {
   for (let i = 0; i < entries.length; i += concurrency) {
     const batch = entries.slice(i, i + concurrency);
     await Promise.all(batch.map(processOne));
+  }
+
+  // C-only mode: replace the old INCOMPLETE_VOTES rows with the new labels
+  // so the consensus file never carries stale duplicates.
+  if (cOnly && targetIds && targetIds.size > 0) {
+    const lines = fs.readFileSync(consensusPath, 'utf-8').split('\n').filter((l) => l.trim());
+    const kept = lines.filter((l) => {
+      try {
+        const rec = JSON.parse(l) as { candidate_id?: string };
+        return !rec.candidate_id || !targetIds.has(rec.candidate_id);
+      } catch {
+        return true;
+      }
+    });
+    fs.writeFileSync(consensusPath, kept.join('\n') + (kept.length > 0 ? '\n' : ''), 'utf-8');
   }
 
   const summary = {
