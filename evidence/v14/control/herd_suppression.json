@@ -1,0 +1,434 @@
+[
+  {
+    "episode_id": "GOqEl4ADyVk",
+    "suppressed_candidate_id": "c=863e40f6ff3c",
+    "suppressed_by_candidate_id": "c=89f5f2623db5",
+    "overlap_sec": 1.6,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "PASS"
+  },
+  {
+    "episode_id": "GOqEl4ADyVk",
+    "suppressed_candidate_id": "c=89f5f2623db5",
+    "suppressed_by_candidate_id": "c=863e40f6ff3c",
+    "overlap_sec": 1.6,
+    "suppressed_silver": "PASS",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "GOqEl4ADyVk",
+    "suppressed_candidate_id": "c=f4f0d296e652",
+    "suppressed_by_candidate_id": "c=3de6906bccbc",
+    "overlap_sec": 1.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "GOqEl4ADyVk",
+    "suppressed_candidate_id": "c=3de6906bccbc",
+    "suppressed_by_candidate_id": "c=f4f0d296e652",
+    "overlap_sec": 1.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "2HLGcRpw1hc",
+    "suppressed_candidate_id": "c=307b36cbd455",
+    "suppressed_by_candidate_id": "c=9291e73da4b7",
+    "overlap_sec": 2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "2HLGcRpw1hc",
+    "suppressed_candidate_id": "c=9291e73da4b7",
+    "suppressed_by_candidate_id": "c=307b36cbd455",
+    "overlap_sec": 2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "2HLGcRpw1hc",
+    "suppressed_candidate_id": "c=4802ebe604ca",
+    "suppressed_by_candidate_id": "c=6e2a670a1e2b",
+    "overlap_sec": 5.36,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "2HLGcRpw1hc",
+    "suppressed_candidate_id": "c=6e2a670a1e2b",
+    "suppressed_by_candidate_id": "c=4802ebe604ca",
+    "overlap_sec": 5.36,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=407d4ce69d2c",
+    "suppressed_by_candidate_id": "c=6aa93bf835b8",
+    "overlap_sec": 1.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=6aa93bf835b8",
+    "suppressed_by_candidate_id": "c=407d4ce69d2c",
+    "overlap_sec": 1.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=e4ed462ee2d0",
+    "suppressed_by_candidate_id": "c=e9ca5e935dbc",
+    "overlap_sec": 5.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=e9ca5e935dbc",
+    "suppressed_by_candidate_id": "c=e4ed462ee2d0",
+    "overlap_sec": 5.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=19e3a9aca16c",
+    "suppressed_by_candidate_id": "c=8583317c867a",
+    "overlap_sec": 1.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=8583317c867a",
+    "suppressed_by_candidate_id": "c=19e3a9aca16c",
+    "overlap_sec": 1.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=e996af8e7116",
+    "suppressed_by_candidate_id": "c=ef1b8926843f",
+    "overlap_sec": 3.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=ef1b8926843f",
+    "suppressed_by_candidate_id": "c=e996af8e7116",
+    "overlap_sec": 3.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=db867b4124ae",
+    "suppressed_by_candidate_id": "c=59d1a5729434",
+    "overlap_sec": 2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "UZ1kCEGjYX0",
+    "suppressed_candidate_id": "c=59d1a5729434",
+    "suppressed_by_candidate_id": "c=db867b4124ae",
+    "overlap_sec": 2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Hb2rKGfIOrM",
+    "suppressed_candidate_id": "c=17754a36d226",
+    "suppressed_by_candidate_id": "c=7be2bb6bbc80",
+    "overlap_sec": 8.2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Hb2rKGfIOrM",
+    "suppressed_candidate_id": "c=7be2bb6bbc80",
+    "suppressed_by_candidate_id": "c=17754a36d226",
+    "overlap_sec": 8.2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Ive926sC6mc",
+    "suppressed_candidate_id": "c=522a46ef783d",
+    "suppressed_by_candidate_id": "c=d08b5d5f0afc",
+    "overlap_sec": 3.48,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Ive926sC6mc",
+    "suppressed_candidate_id": "c=d08b5d5f0afc",
+    "suppressed_by_candidate_id": "c=522a46ef783d",
+    "overlap_sec": 3.48,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Ive926sC6mc",
+    "suppressed_candidate_id": "c=f36aee07fbca",
+    "suppressed_by_candidate_id": "c=15bc4db7c71c",
+    "overlap_sec": 3.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "Ive926sC6mc",
+    "suppressed_candidate_id": "c=15bc4db7c71c",
+    "suppressed_by_candidate_id": "c=f36aee07fbca",
+    "overlap_sec": 3.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "3NSC5nps3OM",
+    "suppressed_candidate_id": "c=af2c9767dfc9",
+    "suppressed_by_candidate_id": "c=d84c8ed84c1d",
+    "overlap_sec": 5.08,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "3NSC5nps3OM",
+    "suppressed_candidate_id": "c=d84c8ed84c1d",
+    "suppressed_by_candidate_id": "c=af2c9767dfc9",
+    "overlap_sec": 5.08,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=838e8882741c",
+    "suppressed_by_candidate_id": "c=04eb387f9df0",
+    "overlap_sec": 13.72,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=04eb387f9df0",
+    "suppressed_by_candidate_id": "c=838e8882741c",
+    "overlap_sec": 13.72,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=20ead57a75ba",
+    "suppressed_by_candidate_id": "c=66793f247b52",
+    "overlap_sec": 1.72,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=66793f247b52",
+    "suppressed_by_candidate_id": "c=20ead57a75ba",
+    "overlap_sec": 1.72,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=66793f247b52",
+    "suppressed_by_candidate_id": "c=dc86cdd46fad",
+    "overlap_sec": 13.44,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=dc86cdd46fad",
+    "suppressed_by_candidate_id": "c=66793f247b52",
+    "overlap_sec": 13.44,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=d6a753effac3",
+    "suppressed_by_candidate_id": "c=5ba8e08ddcfa",
+    "overlap_sec": 12.92,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=5ba8e08ddcfa",
+    "suppressed_by_candidate_id": "c=d6a753effac3",
+    "overlap_sec": 12.92,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=5ba8e08ddcfa",
+    "suppressed_by_candidate_id": "c=fc414046e98f",
+    "overlap_sec": 17.36,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=fc414046e98f",
+    "suppressed_by_candidate_id": "c=5ba8e08ddcfa",
+    "overlap_sec": 17.36,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=24a233d5fb09",
+    "suppressed_by_candidate_id": "c=8652ccf7e90f",
+    "overlap_sec": 15.76,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=8652ccf7e90f",
+    "suppressed_by_candidate_id": "c=24a233d5fb09",
+    "overlap_sec": 15.76,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=5d4688039ab1",
+    "suppressed_by_candidate_id": "c=b69cff48a835",
+    "overlap_sec": 11.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=b69cff48a835",
+    "suppressed_by_candidate_id": "c=5d4688039ab1",
+    "overlap_sec": 11.68,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=92bef482c319",
+    "suppressed_by_candidate_id": "c=abf6809c1f45",
+    "overlap_sec": 14.4,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=abf6809c1f45",
+    "suppressed_by_candidate_id": "c=92bef482c319",
+    "overlap_sec": 14.4,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=7c6619cfa752",
+    "suppressed_by_candidate_id": "c=f2368808c0c5",
+    "overlap_sec": 1.32,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=f2368808c0c5",
+    "suppressed_by_candidate_id": "c=7c6619cfa752",
+    "overlap_sec": 1.32,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=f2368808c0c5",
+    "suppressed_by_candidate_id": "c=750dfd7d46fb",
+    "overlap_sec": 2.04,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=750dfd7d46fb",
+    "suppressed_by_candidate_id": "c=f2368808c0c5",
+    "overlap_sec": 2.04,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=051da761b525",
+    "suppressed_by_candidate_id": "c=8a8caaba84df",
+    "overlap_sec": 17.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=8a8caaba84df",
+    "suppressed_by_candidate_id": "c=051da761b525",
+    "overlap_sec": 17.84,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=0fb0d871c5aa",
+    "suppressed_by_candidate_id": "c=b64aba548e90",
+    "overlap_sec": 13.2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "376JmatmnaI",
+    "suppressed_candidate_id": "c=b64aba548e90",
+    "suppressed_by_candidate_id": "c=0fb0d871c5aa",
+    "overlap_sec": 13.2,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "XuoqKYxDHVc",
+    "suppressed_candidate_id": "c=da859c20ba8d",
+    "suppressed_by_candidate_id": "c=979e03b50ec1",
+    "overlap_sec": 1.12,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "XuoqKYxDHVc",
+    "suppressed_candidate_id": "c=979e03b50ec1",
+    "suppressed_by_candidate_id": "c=da859c20ba8d",
+    "overlap_sec": 1.12,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "XuoqKYxDHVc",
+    "suppressed_candidate_id": "c=979e03b50ec1",
+    "suppressed_by_candidate_id": "c=a0591b5149a8",
+    "overlap_sec": 2.48,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  },
+  {
+    "episode_id": "XuoqKYxDHVc",
+    "suppressed_candidate_id": "c=a0591b5149a8",
+    "suppressed_by_candidate_id": "c=979e03b50ec1",
+    "overlap_sec": 2.48,
+    "suppressed_silver": "FAIL",
+    "suppressor_silver": "FAIL"
+  }
+]

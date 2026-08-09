@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-08-09T10:59:49.552Z",
+  "checks": [
+    {
+      "id": "V14-DAT-001",
+      "status": "PASS",
+      "detail": "legacy 344 = 8 PASS + 333 FAIL + 3 REVIEW (verified {\"FAIL\":333,\"PASS\":8,\"REVIEW\":3})"
+    },
+    {
+      "id": "V14-DAT-001b",
+      "status": "PASS",
+      "detail": "new 160 = 8 PASS + 150 FAIL + 2 REVIEW (verified {\"FAIL\":150,\"REVIEW\":2,\"PASS\":8})"
+    },
+    {
+      "id": "V14-DAT-002",
+      "status": "PASS",
+      "detail": "episode-disjoint: 14 episodes; legacy=10 calib=2 holdout=2"
+    },
+    {
+      "id": "V14-DAT-003",
+      "status": "PASS",
+      "detail": "lock hashes all populated"
+    },
+    {
+      "id": "V14-LEG-001",
+      "status": "PASS",
+      "detail": "C0 replay equals V13 control; PASS deaths {\"05_ENDING_CONFIDENCE\":7,\"04_ENDING_COMPLETE\":1}"
+    },
+    {
+      "id": "V14-DET-001",
+      "status": "PASS",
+      "detail": "C0 double-run byte-identical"
+    },
+    {
+      "id": "V14-TRC-002",
+      "status": "PASS",
+      "detail": "NOT_REACHED rows never carry a PASS action"
+    },
+    {
+      "id": "V14-SAF-003",
+      "status": "NOT_EVALUABLE",
+      "detail": "no selected policy (calibration rejected every variant); holdout stays sealed"
+    },
+    {
+      "id": "V14-SAF-001",
+      "status": "PASS",
+      "detail": "safety matrix: C0:SAFE | E1:REJECT(3 new FAIL, 3 new HN, 3 new LK) | E2:REJECT(3 new FAIL, 3 new HN, 3 new LK) | E3:REJECT(2 new FAIL, 2 new HN, 2 new LK) | E4:REJECT(3 new FAIL, 3 new HN, 3 new LK) | S1:REJECT(2 new FAIL, 2 new HN, 2 new LK) | S2:REJECT(2 new FAIL, 2 new HN, 2 new LK) | NEGATIVE_CONTROL:REJECT(410 new FAIL, 353 new HN, 332 new LK)"
+    },
+    {
+      "id": "V14-PRD-001",
+      "status": "PASS",
+      "detail": "defaults unchanged: floor 0.82, clip threshold 70"
+    },
+    {
+      "id": "V14-PRD-002",
+      "status": "PASS",
+      "detail": "production sources never import the v14 experimental seam"
+    },
+    {
+      "id": "V14-EVD-001",
+      "status": "PASS",
+      "detail": "metrics.json reconciles to raw candidate outcomes"
+    }
+  ],
+  "summary": {
+    "pass": 11,
+    "fail": 0,
+    "not_evaluable": 1
+  }
+}

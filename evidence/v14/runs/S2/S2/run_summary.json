@@ -1,0 +1,10 @@
+{
+  "variant_id": "S2",
+  "tag": "S2",
+  "splits": [
+    "legacy",
+    "calibration"
+  ],
+  "candidates": 424,
+  "written_at": "2026-08-09T10:28:54.601Z"
+}

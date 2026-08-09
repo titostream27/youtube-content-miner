@@ -1,0 +1,1774 @@
+{
+ "brief": "Brief_V14_Selector_Hard_Gate_Semantics_and_Recall_Calibration.pdf",
+ "generated_at": "2026-08-09T00:00:00Z",
+ "strategy": "full new-episode census consensus (A+B, C on disagreement)",
+ "judge_independence_tier": "Good (three model families, one gateway endpoint)",
+ "candidates": [
+  {
+   "candidate_id": "c=9d692dad74ab",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 38.28,
+    "end_sec": 109.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=7e58f435b77b",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 107.64,
+    "end_sec": 142.24
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=824c082a3d90",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 598.36,
+    "end_sec": 645.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1e6db7684cf5",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 699.16,
+    "end_sec": 761.48
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=c4e9f380fafc",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 812.56,
+    "end_sec": 861.16
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=7b65adabb593",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1039.36,
+    "end_sec": 1091
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f5ee0b594e06",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1377.48,
+    "end_sec": 1417.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8a8c6c159418",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1479.24,
+    "end_sec": 1518.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=77c85268ffbb",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1574.8,
+    "end_sec": 1597.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e5ff40b38939",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1708.32,
+    "end_sec": 1741.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=ff96a912a96b",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1802,
+    "end_sec": 1856.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=a7e7e1cca9e3",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 1936.32,
+    "end_sec": 2002.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=08d9c6038256",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2081.44,
+    "end_sec": 2119.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=2db100c4d3fc",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2317,
+    "end_sec": 2364.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e93ed61d0b77",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2563.32,
+    "end_sec": 2606.4
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=4c3bdbf3cc27",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2743.24,
+    "end_sec": 2771.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=eb368cc6e1d1",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2774.76,
+    "end_sec": 2819.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=db9c366a36ba",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 2838.88,
+    "end_sec": 2878.76
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=b8377085968f",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3021.28,
+    "end_sec": 3063.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1e698710416e",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3062.24,
+    "end_sec": 3111.04
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f06f944ce9d1",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3171.12,
+    "end_sec": 3212.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=6b19130cbab5",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3245.76,
+    "end_sec": 3323.04
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=37b93f6222b1",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3420.76,
+    "end_sec": 3464.88
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=981bbdb2e679",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3467.72,
+    "end_sec": 3537.76
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3ce81ef16088",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3687.96,
+    "end_sec": 3746.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=0e66be36eaed",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3751.68,
+    "end_sec": 3805.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=fd43a360f9ca",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 3831.72,
+    "end_sec": 3874.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=db382577df0a",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4012.08,
+    "end_sec": 4056.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=71c9ad54af71",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4103.2,
+    "end_sec": 4157.96
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=973630f05211",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4300.24,
+    "end_sec": 4348.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f389b51fbb63",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4606.04,
+    "end_sec": 4650.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=ea5a4f3ca781",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4732.96,
+    "end_sec": 4779.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=2dbb6d71a5b8",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4795.16,
+    "end_sec": 4826.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=80d0ff2654a4",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4824.04,
+    "end_sec": 4882.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=0add66c94274",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 4919.56,
+    "end_sec": 4996
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f22fba8fcc22",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 5003.16,
+    "end_sec": 5047.88
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=7a99811e6633",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 5357.08,
+    "end_sec": 5401.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8541af1b8ff1",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 5550.8,
+    "end_sec": 5586.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=76b32fe81087",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 5584.44,
+    "end_sec": 5652.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8a513a1e9c2e",
+   "episode_id": "LAmGfokvgzA",
+   "window": {
+    "start_sec": 5650,
+    "end_sec": 5681.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=b3ec4388ce38",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3.2,
+    "end_sec": 47.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e10c70636c81",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 79.2,
+    "end_sec": 132.08
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=051ea557b784",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 159.36,
+    "end_sec": 208.16
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=4e89459c1303",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 241.48,
+    "end_sec": 272.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3d78f4571393",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 271.4,
+    "end_sec": 336.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=b92dd9c89795",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 377.44,
+    "end_sec": 429.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=d66cfcd814d6",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 436.6,
+    "end_sec": 484.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9babc8091d99",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 485.56,
+    "end_sec": 530.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1ce1cdebbd20",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 528.68,
+    "end_sec": 573.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=6745883eb40b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 596.36,
+    "end_sec": 641.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=25a62e87d995",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 647.8,
+    "end_sec": 697.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=352cd992470b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 746.68,
+    "end_sec": 770
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=47efcee17104",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1014.36,
+    "end_sec": 1030.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=42d384383812",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1109.72,
+    "end_sec": 1131.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=421b5ac3e5ab",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1136.44,
+    "end_sec": 1184.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=b9005b0e4764",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1426.52,
+    "end_sec": 1469.04
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=a4ff89a987c7",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1470.8,
+    "end_sec": 1507.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=39c5e091b006",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 1901.88,
+    "end_sec": 1932.48
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=dbf7ac4074cc",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 2153.01,
+    "end_sec": 2175.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=fc2488d321a0",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 2221.24,
+    "end_sec": 2264.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=285e3707aae1",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 2399.12,
+    "end_sec": 2463.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=390b2148100b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 2512.2,
+    "end_sec": 2559.48
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=cbe086641b95",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 2970.84,
+    "end_sec": 3020.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9f05b121be6f",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3068.68,
+    "end_sec": 3109.76
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=a55286096e31",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3115.36,
+    "end_sec": 3191.56
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=c0eb53ccbf1e",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3189.64,
+    "end_sec": 3209.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=0c0ca0d69587",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3217.76,
+    "end_sec": 3242
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=43ec3a12eabd",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3288.16,
+    "end_sec": 3350.96
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=62238cbfe0bf",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3393.56,
+    "end_sec": 3434.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=da73f2596879",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3472.64,
+    "end_sec": 3517.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=fe9b701c408b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3528.04,
+    "end_sec": 3546.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=5a61533d062c",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3543.8,
+    "end_sec": 3592.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=cb5289e61f1e",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3710.4,
+    "end_sec": 3736.16
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=b5d25348103b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3806.56,
+    "end_sec": 3847.08
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9acac59436a6",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3845.4,
+    "end_sec": 3892.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3ac0b8e7746b",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3918.44,
+    "end_sec": 3966.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e3a3f1486f21",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 3989,
+    "end_sec": 4044.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=507a248f90bb",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 4061.16,
+    "end_sec": 4100.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3375263c69f5",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 4111.52,
+    "end_sec": 4155.56
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=2166f3484838",
+   "episode_id": "e1WM_JEmP-Q",
+   "window": {
+    "start_sec": 4159.2,
+    "end_sec": 4187.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f07d0ecbdc9f",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3.08,
+    "end_sec": 22.92
+   },
+   "rejection_stage": null,
+   "kept": true,
+   "accepted": true
+  },
+  {
+   "candidate_id": "c=8e25238a0e07",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 48.2,
+    "end_sec": 67.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=918000f1b9f2",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 74.68,
+    "end_sec": 127.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8824a0c3a18f",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 153.96,
+    "end_sec": 200.4
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9b40dd8e97ea",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 214,
+    "end_sec": 286
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=57811eb75add",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 430.8,
+    "end_sec": 478.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=293b9b02dca0",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 592.28,
+    "end_sec": 619.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=cf921f1c90c0",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 814.88,
+    "end_sec": 862.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=604453b4f6bb",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1002.72,
+    "end_sec": 1029.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=ff5968c86811",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1085.36,
+    "end_sec": 1103.08
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1cb6cba5e576",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1122.88,
+    "end_sec": 1171.04
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1a0adeec172d",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1322.88,
+    "end_sec": 1368.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=881219e195ff",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1400.16,
+    "end_sec": 1448
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=417a9ce3c85c",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1464.88,
+    "end_sec": 1507.24
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f8a02e469277",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1555.28,
+    "end_sec": 1618.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e73691df6263",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1677.16,
+    "end_sec": 1710.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=355c0fe72e4d",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1775.84,
+    "end_sec": 1820.84
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=baf1fdef6dbd",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1894.28,
+    "end_sec": 1947.28
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=12563f293f8a",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 1973.64,
+    "end_sec": 1999.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=779439de875d",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2042.6,
+    "end_sec": 2111.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=fa182511057b",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2109.24,
+    "end_sec": 2169.4
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=c6a3ed911b56",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2206.04,
+    "end_sec": 2285.4
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e9ec9a6d17bf",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2473.52,
+    "end_sec": 2529.04
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e1e3040f6a69",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2543.4,
+    "end_sec": 2592
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=bac006cb4711",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2625.36,
+    "end_sec": 2706.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=790ee54b0a67",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2736.12,
+    "end_sec": 2805.68
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=667ff5b7fcb3",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 2839.44,
+    "end_sec": 2927.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=7b75236017fd",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3061.16,
+    "end_sec": 3142.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=2c723cb21d6b",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3148.92,
+    "end_sec": 3197.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=da649102f023",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3315.2,
+    "end_sec": 3340.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=6ba2018a60b0",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3367.88,
+    "end_sec": 3442.4
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=38309a8e691e",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3452.72,
+    "end_sec": 3467.92
+   },
+   "rejection_stage": null,
+   "kept": true,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9839d01c956d",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3468.12,
+    "end_sec": 3537.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=86af15ffdb4c",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3546.28,
+    "end_sec": 3593.08
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=228523d9c05b",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3592.8,
+    "end_sec": 3674.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=ed627329854d",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3695.72,
+    "end_sec": 3732.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=a0023917d9d5",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3743.04,
+    "end_sec": 3793.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=67a6a404b30c",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3836.24,
+    "end_sec": 3899.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=768932c28441",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3897.36,
+    "end_sec": 3938.16
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f59a8afad60a",
+   "episode_id": "hb7Oqrj3F3k",
+   "window": {
+    "start_sec": 3950.32,
+    "end_sec": 3979.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=c8cd731b1924",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 54.24,
+    "end_sec": 142.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=42d635384958",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 192.48,
+    "end_sec": 221.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=dd50b24fdd19",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 321.12,
+    "end_sec": 369.12
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=6d69e26a54d4",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 382.32,
+    "end_sec": 428.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8aced23b4e66",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 477.28,
+    "end_sec": 540.48
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=f932f2803187",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 550.24,
+    "end_sec": 631.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=581afd9b9b12",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 749.44,
+    "end_sec": 818.64
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e932e163453e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 941.52,
+    "end_sec": 1014.24
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=349087ed8bfb",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 1216.08,
+    "end_sec": 1275.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=10fceb802d7e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 1292.56,
+    "end_sec": 1355.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=bf3aa3783b18",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 1876,
+    "end_sec": 1931.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=75fa40ae77e0",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2043.76,
+    "end_sec": 2087.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=27ad4c267974",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2144.88,
+    "end_sec": 2181.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=74db4bef1717",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2338.64,
+    "end_sec": 2384.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=9a007779a702",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2630.56,
+    "end_sec": 2678
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=910cc4345aef",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2688.16,
+    "end_sec": 2757.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=295979ebdb26",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2807.84,
+    "end_sec": 2864.8
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=64361bf4b27e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2866.24,
+    "end_sec": 2933.92
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3c4424551805",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 2976,
+    "end_sec": 3024.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=1eaba615b4a5",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 3147.84,
+    "end_sec": 3237.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=424bf001b74d",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 3481.44,
+    "end_sec": 3510.24
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e5b10b9b261e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 3669.28,
+    "end_sec": 3742
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=64683ab0d92e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 3857.28,
+    "end_sec": 3905.2
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3b8a75600874",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 4124.72,
+    "end_sec": 4171.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e55fa678dc8b",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 4410.48,
+    "end_sec": 4454.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=5a3dd2e0129b",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 4450.72,
+    "end_sec": 4497.52
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=cd9e9e1d6552",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 4784.72,
+    "end_sec": 4829.36
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=67d812a788aa",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5080.48,
+    "end_sec": 5130.96
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=462a889a5137",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5195.44,
+    "end_sec": 5246.72
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=eec2dcd2190e",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5267.36,
+    "end_sec": 5312.56
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=e8b3fe5ed20d",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5453.44,
+    "end_sec": 5502.96
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=53cad791d9b6",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5685.52,
+    "end_sec": 5728.88
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=38b3ff060d19",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 5904.8,
+    "end_sec": 5972.32
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=0ef2270deef0",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6045.04,
+    "end_sec": 6100.96
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=09b4cdf9d432",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6318.08,
+    "end_sec": 6365.6
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=3a5bb006e3f4",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6555.68,
+    "end_sec": 6620
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=da12fead9624",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6668.64,
+    "end_sec": 6741.44
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=ab244e1f7fb9",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6823.6,
+    "end_sec": 6870.48
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=8fb5d1aacb96",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 6904.96,
+    "end_sec": 6970.56
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  },
+  {
+   "candidate_id": "c=c800e4d5a1ea",
+   "episode_id": "vs6x8VUGXCw",
+   "window": {
+    "start_sec": 7377.92,
+    "end_sec": 7430.24
+   },
+   "rejection_stage": null,
+   "kept": false,
+   "accepted": false
+  }
+ ],
+ "counts": {
+  "LAmGfokvgzA": 40,
+  "e1WM_JEmP-Q": 40,
+  "hb7Oqrj3F3k": 40,
+  "vs6x8VUGXCw": 40
+ }
+}
