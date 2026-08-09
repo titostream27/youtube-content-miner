@@ -1,0 +1,226 @@
+{
+  "00_LINEAGE_PRESENT": {
+    "silver_pass_survival_rate": 1,
+    "silver_fail_survival_rate": 1,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": 0,
+    "survive_count": {
+      "pass": 8,
+      "fail": 333
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "01_PROPOSAL_VALID": {
+    "silver_pass_survival_rate": 1,
+    "silver_fail_survival_rate": 1,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": 0,
+    "survive_count": {
+      "pass": 8,
+      "fail": 333
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "02_TEMPORAL_NORMALIZATION": {
+    "silver_pass_survival_rate": 1,
+    "silver_fail_survival_rate": 1,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": 0,
+    "survive_count": {
+      "pass": 8,
+      "fail": 333
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "03_START_GATE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.018018018018018018,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 95,
+    "selectivity": -0.018018018018018056,
+    "survive_count": {
+      "pass": 0,
+      "fail": 6
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 95
+    }
+  },
+  "04_ENDING_COMPLETE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.3033033033033033,
+    "pass_first_death_count": 1,
+    "pass_first_death_rate": 0.125,
+    "fail_first_death_count": 50,
+    "selectivity": -0.30330330330330324,
+    "survive_count": {
+      "pass": 0,
+      "fail": 101
+    },
+    "first_death_count": {
+      "pass": 1,
+      "fail": 50
+    }
+  },
+  "05_ENDING_CONFIDENCE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.3033033033033033,
+    "pass_first_death_count": 7,
+    "pass_first_death_rate": 0.875,
+    "fail_first_death_count": 156,
+    "selectivity": -0.30330330330330324,
+    "survive_count": {
+      "pass": 0,
+      "fail": 101
+    },
+    "first_death_count": {
+      "pass": 7,
+      "fail": 156
+    }
+  },
+  "06_CONTAMINATION_GATE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.3033033033033033,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 1,
+    "selectivity": -0.30330330330330324,
+    "survive_count": {
+      "pass": 0,
+      "fail": 101
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 1
+    }
+  },
+  "07_DURATION_GATE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.3033033033033033,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 25,
+    "selectivity": -0.30330330330330324,
+    "survive_count": {
+      "pass": 0,
+      "fail": 101
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 25
+    }
+  },
+  "08_DUPLICATE_OVERLAP": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.018018018018018018,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": -0.018018018018018056,
+    "survive_count": {
+      "pass": 0,
+      "fail": 6
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "09_COMPONENT_SCORING": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.018018018018018018,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": -0.018018018018018056,
+    "survive_count": {
+      "pass": 0,
+      "fail": 6
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "10_FINAL_SCORE": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.018018018018018018,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": -0.018018018018018056,
+    "survive_count": {
+      "pass": 0,
+      "fail": 6
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "11_RANKING": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.018018018018018018,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": -0.018018018018018056,
+    "survive_count": {
+      "pass": 0,
+      "fail": 6
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  },
+  "12_ACCEPTANCE_THRESHOLD": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.003003003003003003,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 5,
+    "selectivity": -0.0030030030030030463,
+    "survive_count": {
+      "pass": 0,
+      "fail": 1
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 5
+    }
+  },
+  "13_FINAL_ACCEPTED": {
+    "silver_pass_survival_rate": 0,
+    "silver_fail_survival_rate": 0.003003003003003003,
+    "pass_first_death_count": 0,
+    "pass_first_death_rate": 0,
+    "fail_first_death_count": 0,
+    "selectivity": -0.0030030030030030463,
+    "survive_count": {
+      "pass": 0,
+      "fail": 1
+    },
+    "first_death_count": {
+      "pass": 0,
+      "fail": 0
+    }
+  }
+}

@@ -1,0 +1,209 @@
+# Brief V14 — Protocol Pre-registration (P1)
+# Selector Hard-Gate Semantics & Recall Calibration
+# Baseline: main @ bf7381e2 (verified locally; 344 = 8 PASS + 333 FAIL + 3 REVIEW)
+# Binding: this file is frozen and hashed BEFORE any expansion outcome is viewed.
+
+protocol_version: v1.0
+created: 2026-08-09
+author: protocol-agent (hermes)
+source: "Brief_V14_Selector_Hard_Gate_Semantics_and_Recall_Calibration.pdf (v1.0)"
+baseline:
+  sha: "bf7381e2"
+  census_verified: true
+  label_counts:
+    PASS: 8
+    FAIL: 333
+    REVIEW: 3
+  pass_first_death:
+    "05_ENDING_CONFIDENCE": 7
+    "04_ENDING_COMPLETE": 1
+  accepted_fail_id: "c=3b416b15c9b5"
+  safety_envelope: "1/333 accepted FAIL; hard-negative accepted 0; next-topic leakage accepted 0"
+
+hypotheses:
+  H1: "confidence is incorrectly used as a proxy for incompleteness"
+  H2: "complete-class mapping is overconfident semantically but underconfident numerically"
+  H3: "ENDING_CONFIDENCE is only the first visible blocker; START_GATE and scoring independently miscalibrated"
+  H4: "some PASS labels contain label noise or ambiguous endings"
+  H5: "the bypass chain is partly an instrumentation artifact (stage order vs execution index)"
+
+variants:
+  C0:
+    ending: "production semantics (floor 0.82, complete gate)"
+    start: "production"
+    threshold: 70
+    role: "control replay"
+  E1:
+    ending: "floor lowered to 0.78 (diagnostic ONLY; never production-enabled)"
+    start: "production"
+    threshold: 70
+  E2:
+    ending: "COMPLETE-class exception below 0.82; UNKNOWN/incomplete still gated"
+    start: "production"
+    threshold: 70
+  E3:
+    ending: "three-state evidence hard reject (INCOMPLETE only) + bounded monotone soft penalty cap=4"
+    start: "production"
+    threshold: 70
+    role: "primary_semantic_candidate"
+  E4:
+    ending: "three-state evidence hard reject, NO confidence penalty"
+    start: "production"
+    threshold: 70
+    role: "penalty_necessity"
+  S1:
+    ending: "locked winner from ending calibration"
+    start: "production (trace only)"
+    threshold: 70
+  S2:
+    ending: "locked winner"
+    start: "evidence-backed hard reject + uncertainty soft penalty"
+    threshold: 70
+    role: "primary_start_semantic_audit"
+  Q1:
+    ending: "locked"
+    start: "locked"
+    threshold: 70
+    role: "score_contribution_decomposition"
+  T1:
+    ending: "locked"
+    start: "locked"
+    thresholds: [65, 67.5, 70, 72.5, 75]
+    role: "sensitivity_report_only"
+  NEGATIVE_CONTROL:
+    ending: "permissive (accept continuously)"
+    start: "permissive"
+    threshold: 0
+    role: "negative-control; excluded from selection"
+
+soft_penalty:
+  definition: "p_COMPLETE = min(cap, round((0.82 - conf) * 50)) | p_UNKNOWN = min(cap, round((0.82 - conf) * 100)) | conf >= 0.82 => 0"
+  properties: "bounded; monotone in confidence; deterministic; scored as own component 'ending_uncertainty'"
+  caps_grid: [0, 2, 4, 6]
+  default_candidate_cap: 4
+  double_counting: "no; evidence owned once; penalty never a hard-reject reason"
+
+three_state_model:
+  COMPLETE: "no hard reject from low confidence alone; bounded soft penalty only"
+  INCOMPLETE: "hard reject only with positive evidence + machine-readable reason code"
+  UNKNOWN: "no hard reject for uncertainty; bounded soft penalty or REVIEW; never coerced to INCOMPLETE"
+  hard_reject_formula: "observed_invalidity = true AND reason_code in APPROVED AND evidence_payload non-empty"
+
+metrics:
+  "PASS_Recall@Eligible": "PASS reaching final scoring / labeled PASS"
+  "PASS_Recall@Accepted": "PASS finally accepted / labeled PASS"
+  "FAIL_Leakage@Accepted": "FAIL finally accepted / labeled FAIL"
+  "Hard-Negative Acceptance": "hard negatives finally accepted / labeled hard negatives"
+  "Next-Topic Leakage": "next-topic leakage cases accepted / labeled next-topic leakage cases"
+  denominator_rule: "labeled PASS is the recall denominator regardless of early gates; NOT_REACHED is not eligible"
+  wilson: "95% Wilson interval for every rate (denominator > 0)"
+  reporting: "micro pooled + macro per episode; exact counts n/N with percentage; REVIEW separate stratum"
+
+targets_priority_lexicographic:
+  - id: T0
+    name: "Data sufficiency"
+    pass: ">=6 episodes; >=4 PASS-bearing episodes; >=12 PASS total; holdout >=2 episodes and >=4 PASS across >=2"
+    failure: "BLOCKED_INSUFFICIENT_DATA"
+  - id: T1a
+    name: "Hard negative acceptance = 0"
+    failure: "policy rejected"
+  - id: T1b
+    name: "Next-topic leakage acceptance = 0"
+    failure: "policy rejected"
+  - id: T1c
+    name: "New silver-FAIL accepted = 0"
+    failure: "policy rejected"
+  - id: T1d
+    name: "Legacy FAIL leakage no worse than 1/333 with verified identity"
+    failure: "rejected or BLOCKED (identity unverified)"
+  - id: T2a
+    name: "Ending correctness: the 7 complete-class 0.78 cases not hard-rejected on confidence alone"
+    failure: "semantic design fails"
+  - id: T2b
+    name: "Legacy Recall@Eligible >= 6/8 (75%)"
+    failure: "no candidate policy"
+  - id: T2c
+    name: "Legacy Recall@Accepted >= 5/8 (62.5%); stretch 6/8"
+    failure: "no candidate policy"
+  - id: T2d
+    name: "Holdout Recall@Eligible >= 75% (exact count)"
+    failure: "BLOCKED; no retune"
+  - id: T2e
+    name: "Holdout Recall@Accepted >= 50% (exact count)"
+    failure: "BLOCKED; no retune"
+  - id: T3
+    name: "Episode stability: no PASS-bearing holdout episode at 0% eligible; calibration-holdout gap <= 20 pts (both den >= 5)"
+    failure: "OFFLINE-CANDIDATE at most"
+  - id: T4
+    name: "Production invariance: defaults/gates/0.82/70/dispatch unchanged"
+    failure: "BLOCKED (scope violation)"
+
+selection_hierarchy:
+  - "1. reject any variant failing hard-negative or leakage safety"
+  - "2. reject any variant accepting a new silver-FAIL"
+  - "3. require ending semantic correctness among survivors"
+  - "4. require legacy + calibration recall targets"
+  - "5. lock exactly ONE policy before holdout"
+  - "6. evaluate holdout once"
+  - "7. ties: simpler evidence semantics and smaller penalty magnitude"
+  - "No compensating tradeoff: safety is lexicographic."
+
+data:
+  eligible_pool: "14 cached transcripts (10 legacy + 4 new)"
+  new_episodes:
+    - "LAmGfokvgzA"
+    - "e1WM_JEmP-Q"
+    - "hb7Oqrj3F3k"
+    - "vs6x8VUGXCw"
+  exclusion_log: "none excluded; all 4 pass summary gates (cached transcript, youtube_asr, en)"
+  candidate_generation: "same as V13: detectMoments -> twoPassHighlightSelection; maxSegments 40; generator_version v14-lineage-v1"
+  labeling:
+    blind: true
+    judges: "A=ds/deepseek-v4-flash, B=ag/gemini-3.5-flash-low, C=cx/gpt-5.6-luna (9router)"
+    judgeC_rule: "invoked on any A/B disagreement; provider failures => REVIEW rule R6/R7"
+    fail_sample: "deterministic every-20th FAIL id receives second independent review"
+    preserve_v13: true
+    errata: "separate versioned file with old_new/reason/evidence/reviewer"
+  labels_timestamps: true
+
+split:
+  unit: "episode"
+  legacy: "the 10 V13 episodes (never clean holdout)"
+  new_assignment: "deterministic: sha256(episode_id + ':v14.0') mod 100; bucket < 50 => calibration, else holdout"
+  lock: "split_lock.json includes episode mapping, label hash, dataset hash, variant ids, code sha, metric spec hash"
+  leakage_checks:
+    - "zero episode overlap across splits"
+    - "zero candidate/source-boundary duplicate overlap"
+    - "feature/penalty/threshold fitting uses calibration only"
+    - "no holdout-derived constant enters code"
+
+execution_order:
+  - "P0 baseline verify (done: bf7381e2, 8/333/3, deaths 7+1)"
+  - "P1 protocol pre-registration (this file; git-committed BEFORE viewing any expansion outcome)"
+  - "P2 census + judge labeling for the 4 new episodes; sufficiency gate"
+  - "P3 split lock"
+  - "P4 instrumentation (trace, evidence, execution_index, soft penalty)"
+  - "P5 calibration: C0, E1..E4, S1, S2, Q1, T1 (report), NEGATIVE_CONTROL; lock policy"
+  - "P6 holdout: ONE locked run"
+  - "P7 regression + evidence package + completion report + verdict"
+
+stop_rules:
+  - "baseline mismatch / artifact missing => BLOCKED"
+  - "holdout viewed before lock or episode overlap => contaminated; rebuild holdout from predeclared top-up"
+  - "policy accepts hard-negative / next-topic leakage / new FAIL => reject policy"
+  - "instrumentation changes control outcomes => fix instrumentation"
+  - "production semantics/defaults change => BLOCKED"
+  - "required evidence cannot be generated => BLOCKED"
+
+anti_gaming:
+  - "publish all primary variants incl. failures"
+  - "threshold 70 fixed for primary selection; T1 is reporting only"
+  - "no relabeling after results"
+  - "no denominator overwrites; full manifest reconciliation"
+  - "content-addressed evidence dirs; superseded runs kept with status"
+  - "no candidate-ID exceptions"
+
+verdicts: "allowed: BLOCKED | OFFLINE-CANDIDATE | OFFLINE-VALIDATED | FEATURE-READY"
+production_activation: "NOT AUTHORIZED by V14"
+
+artifacts: "evidence/v14/{baseline,protocol,episode_manifest,candidates,silver_labels,split_lock,stage_trace,first_death,score_contributions,variant_results,metrics,policy_switches,test_report,production_diff,completion_report,SHA256SUMS}"
