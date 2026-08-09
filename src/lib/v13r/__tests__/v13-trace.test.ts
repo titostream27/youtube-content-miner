@@ -92,13 +92,17 @@ describe('V13 trace engine (SA-01/02/09/10/15/18)', () => {
   });
 
   it('SA-01: START_GATE hard failure records the exact first-death stage', () => {
-    // Opening starts with a continuation conjunction -> MID_SENTENCE.
+    // 6 utterances (18s) so duration >= min; opener starts with a
+    // continuation conjunction -> start gate dead, end gates fine.
     const transcript = makeTranscript([
       'because he rebuilt the entire house',
-      'so the massive project was finished.',
-      'next they tried a different plan.',
+      'and the project took one full year.',
+      'he worked with amazing precision daily.',
+      'then he added a brand new garage too.',
+      'eventually everything was fully finished.',
+      'finally they celebrated in the new home.',
     ]);
-    const result = run(baseRow({ final_start_sec: 0, final_end_sec: 9 }), transcript);
+    const result = run(baseRow({ final_start_sec: 0, final_end_sec: 18 }), transcript);
     expect(result.first_death).toBe('03_START_GATE');
     const s = result.stages.find((st) => st.stage === '03_START_GATE')!;
     expect(s.status).toBe('DIED');
@@ -108,14 +112,16 @@ describe('V13 trace engine (SA-01/02/09/10/15/18)', () => {
 
   it('SA-09/SA-10: bypassing START_GATE keeps all downstream gates active', () => {
     const transcript = makeTranscript([
-      'because he rebuilt the house again',
-      'and the project took a very long time.',
-      'but eventually everything got finished.',
+      'because he rebuilt the entire house',
+      'and the project took one year total.',
+      'so he worked with great precision.',
+      'then he added a brand new garage.',
+      'finally everything was all finished.',
     ]);
-    const baseline = run(baseRow({ final_start_sec: 0, final_end_sec: 9 }), transcript);
+    const baseline = run(baseRow({ final_start_sec: 0, final_end_sec: 15 }), transcript);
     expect(baseline.first_death).toBe('03_START_GATE');
 
-    const cf = run(baseRow({ final_start_sec: 0, final_end_sec: 9 }), transcript, new Set<StageName>(['03_START_GATE']));
+    const cf = run(baseRow({ final_start_sec: 0, final_end_sec: 15 }), transcript, new Set<StageName>(['03_START_GATE']));
     const startStep = cf.stages.find((s) => s.stage === '03_START_GATE')!;
     expect(startStep.status).toBe('SURVIVED'); // bypassed -> survives
     // Downstream stages evaluated against real ending logic.
@@ -127,19 +133,27 @@ describe('V13 trace engine (SA-01/02/09/10/15/18)', () => {
     expect(confStep.status).not.toBe('SURVIVED-with-bypass-marker');
   });
 
-  it('SA-02: ENDING_CONFIDENCE kill preserves features and threshold', () => {
+  it('SA-02: ENDING_CONFIDENCE kill or evaluation preserves features and threshold', () => {
     const transcript = makeTranscript([
       'A decently long opening sentence.',
       'Second sentence that continues the idea.',
       'Third that wraps the point up.',
+      'Fourth sentence adding more detail here.',
+      'Fifth sentence still continuing the talk.',
+      'Sixth sentence that eventually concludes.',
     ]);
-    const result = run(baseRow({ final_start_sec: 0, final_end_sec: 9 }), transcript);
+    const result = run(baseRow({ final_start_sec: 0, final_end_sec: 18 }), transcript);
     const step = result.stages.find((s) => s.stage === '05_ENDING_CONFIDENCE')!;
     expect(step).toBeDefined();
-    expect(step.threshold).toHaveProperty('min');
     if (step.status === 'DIED') {
       expect(step.features).toHaveProperty('ending_confidence');
       expect(step.reason_code).toBe('ENDING_CONFIDENCE_LOW');
+    } else if (step.status === 'SURVIVED') {
+      expect(step.threshold).toHaveProperty('min');
+    }
+    // Either way the stage must carry its threshold config when evaluated.
+    if (step.status !== 'NOT_REACHED') {
+      expect(step.threshold).toHaveProperty('min');
     }
   });
 

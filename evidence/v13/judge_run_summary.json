@@ -1,0 +1,12 @@
+{
+  "candidates_pending_at_start": 0,
+  "completed_total": 0,
+  "stats": {
+    "pass": 0,
+    "review": 0,
+    "fail": 0,
+    "provider_fail": 0,
+    "parse_fail": 0,
+    "c_invoked": 0
+  }
+}

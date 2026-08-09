@@ -1,14 +1,14 @@
 {
   "00_LINEAGE_PRESENT": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 1,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 329
     },
     "first_death_count": {
       "pass": 0,
@@ -17,14 +17,14 @@
   },
   "01_PROPOSAL_VALID": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 1,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 329
     },
     "first_death_count": {
       "pass": 0,
@@ -33,14 +33,14 @@
   },
   "02_TEMPORAL_NORMALIZATION": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 1,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 329
     },
     "first_death_count": {
       "pass": 0,
@@ -49,94 +49,94 @@
   },
   "03_START_GATE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.015197568389057751,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 82,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 5
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 82
     }
   },
   "04_ENDING_COMPLETE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.26443768996960487,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 26,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 87
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 26
     }
   },
   "05_ENDING_CONFIDENCE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.26443768996960487,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 134,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 87
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 134
     }
   },
   "06_CONTAMINATION_GATE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.26443768996960487,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 1,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 87
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 1
     }
   },
   "07_DURATION_GATE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.26443768996960487,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 81,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 87
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 81
     }
   },
   "08_DUPLICATE_OVERLAP": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.015197568389057751,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 5
     },
     "first_death_count": {
       "pass": 0,
@@ -145,14 +145,14 @@
   },
   "09_COMPONENT_SCORING": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.015197568389057751,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 5
     },
     "first_death_count": {
       "pass": 0,
@@ -161,14 +161,14 @@
   },
   "10_FINAL_SCORE": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.015197568389057751,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 5
     },
     "first_death_count": {
       "pass": 0,
@@ -177,14 +177,14 @@
   },
   "11_RANKING": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.015197568389057751,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 5
     },
     "first_death_count": {
       "pass": 0,
@@ -193,30 +193,30 @@
   },
   "12_ACCEPTANCE_THRESHOLD": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.00303951367781155,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
-    "fail_first_death_count": 0,
+    "fail_first_death_count": 4,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 1
     },
     "first_death_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 4
     }
   },
   "13_FINAL_ACCEPTED": {
     "silver_pass_survival_rate": null,
-    "silver_fail_survival_rate": null,
+    "silver_fail_survival_rate": 0.00303951367781155,
     "pass_first_death_count": 0,
     "pass_first_death_rate": null,
     "fail_first_death_count": 0,
     "selectivity": null,
     "survive_count": {
       "pass": 0,
-      "fail": 0
+      "fail": 1
     },
     "first_death_count": {
       "pass": 0,
