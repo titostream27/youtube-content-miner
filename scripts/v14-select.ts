@@ -13,16 +13,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { policySwitchRows, type OutcomeLike } from '../src/lib/v14/metrics';
+import {
+  runDirFor,
+  requiredRunFile,
+  loadJsonlStrict,
+  type RunVariantId,
+} from '../src/lib/v14/artifact-paths';
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-function loadOutcomes(p: string): OutcomeLike[] {
-  const abs = path.resolve(p);
-  if (!fs.existsSync(abs)) return [];
-  return fs.readFileSync(abs, 'utf-8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as OutcomeLike);
+function loadOutcomes(variant: RunVariantId): OutcomeLike[] {
+  const abs = requiredRunFile(runsBaseDirectory(), variant, 'variant_results.jsonl');
+  return loadJsonlStrict(abs) as unknown as OutcomeLike[];
+}
+
+function runsBaseDirectory(): string {
+  return path.resolve(arg('runs') ?? 'evidence/v14/runs');
 }
 
 const ACCEPTED_BASELINE_FAIL = 'c=3b416b15c9b5';
@@ -85,28 +94,34 @@ function evaluateVariant(
 }
 
 function main(): void {
-  const runsBase = path.resolve(arg('runs') ?? 'evidence/v14/runs');
+  const runsBase = runsBaseDirectory();
   const outPath = path.resolve(arg('out') ?? 'evidence/v14/policy_lock.json');
-  const variants = ['C0', 'E1', 'E2', 'E3', 'E4', 'S1', 'S2', 'NEGATIVE_CONTROL'];
-  const control = loadOutcomes(path.join(runsBase, 'c0', 'C0', 'variant_results.jsonl'));
+  const variants: RunVariantId[] = ['C0', 'E1', 'E2', 'E3', 'E4', 'S1', 'S2', 'NEGATIVE_CONTROL'];
+  const control = loadOutcomes('C0');
 
   const results: Record<string, unknown>[] = [];
-  const byCount: Record<string, number> = {};
+  const census: Record<string, number> = {};
   for (const v of variants) {
-    const id = v === 'C0' ? 'C0' : v;
-    const out = loadOutcomes(path.join(runsBase, v, id, 'variant_results.jsonl'));
+    const out = loadOutcomes(v);
+    census[v] = out.length;
     const vOut = out.filter((o) => o.split !== 'holdout');
     const legacy = out.filter((o) => o.split === 'legacy');
+    if (vOut.length === 0) {
+      throw new Error(`EMPTY_VARIANT_OUTCOMES: ${v}`);
+    }
+    if (vOut.length !== 424) {
+      throw new Error(`EXPECTED_V14_CENSUS_424: ${v} has ${vOut.length}`);
+    }
     const ev = evaluateVariant(v, vOut, legacy);
-    byCount[v] = out.length;
     results.push(ev);
     if (control.length > 0 && v !== 'C0') {
       const switches = policySwitchRows(control.filter((o) => o.split !== 'holdout'), vOut);
-      fs.mkdirSync(path.join(runsBase, v, id), { recursive: true });
-      const csv = ['candidate_id,label,hard_negative,next_topic_leakage_case,control_accepted,variant_accepted,control_first_death,variant_first_death,why_changed,safety_review,acceptable']
-        .concat(switches.map((s) => [s.candidate_id, s.label, s.hard_negative, s.next_topic_leakage_case, s.control_accepted, s.variant_accepted, s.control_first_death ?? '', s.variant_first_death ?? '', s.why_changed, s.safety_review, s.acceptable].join(',')))
-        .join('\n') + '\n';
-      fs.writeFileSync(path.join(runsBase, v, id, 'policy_switches.csv'), csv, 'utf-8');
+            const switchesDir = path.join(runsBase, runDirFor(v), v);
+            fs.mkdirSync(switchesDir, { recursive: true });
+            const csv = ['candidate_id,label,hard_negative,next_topic_leakage_case,control_accepted,variant_accepted,control_first_death,variant_first_death,why_changed,safety_review,acceptable']
+              .concat(switches.map((s) => [s.candidate_id, s.label, s.hard_negative, s.next_topic_leakage_case, s.control_accepted, s.variant_accepted, s.control_first_death ?? '', s.variant_first_death ?? '', s.why_changed, s.safety_review, s.acceptable].join(',')))
+              .join('\n') + '\n';
+            fs.writeFileSync(path.join(switchesDir, 'policy_switches.csv'), csv, 'utf-8');
     }
   }
 

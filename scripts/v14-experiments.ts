@@ -17,6 +17,7 @@ import { replayCandidateV14 } from '../src/lib/v14/replay';
 import type { V14ReplayResult } from '../src/lib/v14/replay-helpers';
 import { VARIANT_POLICIES, type EndingVariantId } from '../src/lib/v14/ending-policy';
 import { computeRates, policySwitchRows, type MetricRow, type OutcomeLike, type Label } from '../src/lib/v14/metrics';
+import { loadJsonlStrict, requiredFile, runDirFor, type RunVariantId } from '../src/lib/v14/artifact-paths';
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -45,17 +46,18 @@ const V14_JUDGE = 'evidence/v14/judge_outputs_v14.jsonl';
 const SPLIT_LOCK = 'evidence/v14/split_lock.json';
 
 function loadJsonl(p: string): Record<string, unknown>[] {
-  const abs = path.resolve(p);
-  return fs.existsSync(abs)
-    ? fs.readFileSync(abs, 'utf-8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l) as Record<string, unknown>)
-    : [];
+  // Fail closed: required inputs must exist, be non-empty and parse.
+  return loadJsonlStrict(path.resolve(p));
 }
 
 function loadSplit(): Record<string, string> {
   const p = path.resolve(SPLIT_LOCK);
-  if (!fs.existsSync(p)) return {};
-  const lock = JSON.parse(fs.readFileSync(p, 'utf-8')) as { episode_to_split: Record<string, string>; calibration: string[]; holdout: string[] };
+  const abs = requiredFile(p);
+  const lock = JSON.parse(fs.readFileSync(abs, 'utf-8')) as { episode_to_split: Record<string, string>; calibration: string[]; holdout: string[] };
   const map: Record<string, string> = { ...lock.episode_to_split };
+  if (Object.keys(map).length === 0) {
+    throw new Error(`EMPTY_SPLIT_LOCK: ${abs}`);
+  }
   return map;
 }
 
@@ -308,7 +310,7 @@ function variantOpts(o: { endingVariant: EndingVariantId; startPenalty: number; 
 function main(): void {
   const variant = arg('variant') ?? 'C0';
   const splits = (arg('splits') ?? 'legacy,calibration').split(',').map((s) => s.trim()).filter(Boolean);
-  const tag = arg('tag') ?? variant.toLowerCase();
+  const tag = arg('tag') ?? runDirFor(variant as RunVariantId);
   const thresholds = (arg('threshold-grid') ?? '').split(',').map((s) => Number.parseFloat(s.trim())).filter(Number.isFinite);
   const outBase = path.resolve(arg('out-dir') ?? `evidence/v14/runs/${tag}`);
   const checkGolden = hasFlag('golden');
