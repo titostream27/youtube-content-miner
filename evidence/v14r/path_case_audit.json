@@ -1,0 +1,14 @@
+{
+  "verify_uses_lowercase_base_e3": true,
+  "verify_uses_lowercase_base_c0": true,
+  "committed_run_dirs": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "NEGATIVE_CONTROL",
+    "S1",
+    "S2",
+    "c0"
+  ]
+}

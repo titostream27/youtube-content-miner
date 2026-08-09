@@ -1,0 +1,51 @@
+[
+  {
+    "path": "evidence/v14/baseline.json",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "4f9be93b1d52ceffca7ffe8bb2d355ba5a6846069511ecfffb4fdd38a96989ff",
+    "git_blob_sha256": "a66bae0ecad613a72ed40d0f5067977dbe3c9dd4470a7bd596cdee361d6e37b2",
+    "probable_cause": "CRLF"
+  },
+  {
+    "path": "evidence/v14/candidates.csv",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "f5d43e2919763ac3ff5931250edb45be5293145c3b45e41c13e12c71f59e9c83",
+    "git_blob_sha256": "4a20fd7be066158c8b598dfbd9ede6963ab2a33890e4f7cf92d3e474640515f9",
+    "probable_cause": "CRLF"
+  },
+  {
+    "path": "evidence/v14/episode_manifest.csv",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "d42b825bf58bf6b83a394b63d41bb3dbb7a996dfc5a615f84feded1b9af6e0f3",
+    "git_blob_sha256": "943c329158fee6501f023ce3c9f73409bd49f690b3851a27523295bd68699437",
+    "probable_cause": "CRLF"
+  },
+  {
+    "path": "evidence/v14/metrics_aggregate.json",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "4638712ca6d6ae1e5708f1fb2553e585999d60e4d64e5462a8cd9e227373f057",
+    "git_blob_sha256": "396699ee3ce635f76722f450d7bd0c5596e291145d473fd599be90994dfffdff",
+    "probable_cause": "CRLF"
+  },
+  {
+    "path": "evidence/v14/new_manifest.json",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "4cf3ffe1f18fd2e983f039114d5ec32b19138f14558ff8b8d17212866d19c527",
+    "git_blob_sha256": "94204924a704a78b1d891da0cae4a747acd78c86bb648bab18b4cdac1533974f",
+    "probable_cause": "CRLF"
+  },
+  {
+    "path": "evidence/v14/production_diff.txt",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "2dec650175e346831205c0818c709e8765669f46ca7389123f76aefe572a4fb9",
+    "git_blob_sha256": "5d5896ebbc58e06577554d8f85118b6804a39eeae1eb96f745a0488bd76d5587",
+    "probable_cause": "UNKNOWN"
+  },
+  {
+    "path": "evidence/v14/sha256sums_v13_artifacts.txt",
+    "status": "HASH_MISMATCH",
+    "expected_sha256": "a6ba0e894a7ac99912d5ed3881360b7450fffd816e6548d5104acba298d38754",
+    "git_blob_sha256": "110da0841b7f5586edc561d5f841a65f8e47b69d162c8ef8a326a3f3824d896e",
+    "probable_cause": "CRLF"
+  }
+]
