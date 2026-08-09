@@ -1,0 +1,45 @@
+{
+  "old_manifest_entries": 90,
+  "old_failures": [
+    {
+      "path": "evidence/v14/baseline.json",
+      "probable_cause": "CRLF"
+    },
+    {
+      "path": "evidence/v14/candidates.csv",
+      "probable_cause": "CRLF"
+    },
+    {
+      "path": "evidence/v14/episode_manifest.csv",
+      "probable_cause": "CRLF"
+    },
+    {
+      "path": "evidence/v14/metrics_aggregate.json",
+      "probable_cause": "CRLF"
+    },
+    {
+      "path": "evidence/v14/new_manifest.json",
+      "probable_cause": "CRLF"
+    },
+    {
+      "path": "evidence/v14/production_diff.txt",
+      "probable_cause": "UNKNOWN"
+    },
+    {
+      "path": "evidence/v14/sha256sums_v13_artifacts.txt",
+      "probable_cause": "CRLF"
+    }
+  ],
+  "resolved_causes": {
+    "evidence/v14/production_diff.txt": "manifest was generated before the final regeneration of production_diff.txt (stale content version at hash time; blob is LF and differs by more than CRLF normalization)"
+  },
+  "new_manifest_entries": 76,
+  "new_manifest_sha256": "92f555c0753bb2ff52c9516ec2cc38eb79e82f218a5e364a243447cc8c01f99f",
+  "self_excluded": true,
+  "mutable_excluded": [
+    "evidence/v14/runs/*/run_summary.json",
+    "evidence/v14/verification_report.json",
+    "evidence/v14/census_new.jsonl"
+  ],
+  "canonical_bytes": "LF-normalized hashing; .gitattributes eol=lf for evidence"
+}

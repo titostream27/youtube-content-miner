@@ -1,0 +1,7 @@
+{
+  "workflow": "CI",
+  "job": "v14r-evidence-gate",
+  "run_id": "PENDING",
+  "status": "PENDING",
+  "note": "populated after first green run; manifest regenerated once (R-10)"
+}

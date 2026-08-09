@@ -1,0 +1,11 @@
+{
+  "suite": "local Windows validation (git-bash / Node v22.23.1 / tsx)",
+  "vitest_files": 48,
+  "vitest_tests": 343,
+  "tsc_errors": 0,
+  "eslint_errors": 0,
+  "v14r_verify": "12/12 ok (evidence/v14r/verification_report.json)",
+  "checksums": "79/79 (final run)",
+  "git_diff_check": "clean",
+  "note": "deterministic; no timestamps (part of immutable manifest)"
+}
